@@ -62,8 +62,12 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
      or technology it upgrades, as Light Cavalry is under Scout Cavalry. Walls and towers in Fortifications are
      lines too, as the Keep is under the Guard Tower. Marking works along these lines (see
      [How marking works](#how-marking-works)).
-   - A new unique item goes into a Unique group, in alphabetical order: a unique unit under the building that
-     trains it, a unique technology under the Castle, and a unique building into Economy or Military.
+   - A new unique unit goes into the Unique Units group of the building that trains it, and a new unique technology
+     into the Castle's Unique Technologies, in alphabetical order. A new unique building has no group: it goes
+     straight into Economy or Military, next to the building it stands in for (see `"replaces"` in
+     [How marking works](#how-marking-works)), or under the building it belongs to, as the Harbor is the first row
+     under the Dock. A unit or technology that stands in for another, as the Fire Lancer does for the Eagle Scout
+     and Cranequins for Parthian Tactics, names it with `"replaces"` too.
    - Every entry in a list is followed by a comma, except the last one. Visual Studio Code underlines mistakes in red.
 
    Reload the `?update` page. The report should no longer mention those items.
@@ -245,8 +249,8 @@ A script only uses the scripts below it in this order: `datahandler.js`, `model.
 - `civs`: the civilisations, by their English names.
 - `icons`: where the icons are, the tab icon, and the civilisations whose icon has another name than theirs.
 - `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true`, and an item
-  can name an item it `"excludes"`, or the items it `"replaces"` (see [How marking works](#how-marking-works)).
-  **Edited by hand.**
+  can be marked `"own": true`, or name an item it `"excludes"`, or the items it `"replaces"` (see
+  [How marking works](#how-marking-works)). **Edited by hand.**
 - `availability`: which civilisations have each item. **Written by the updater; never edit it.**
 - `pictures`: each item's icon, and whether it is common, regional or unique. **Written by the updater.**
 - `ignore`: names from the game that the page leaves out. **Edited by hand.**
@@ -305,31 +309,50 @@ item sits in the tree decides what else its mark reaches:
   building marks all in it but the building itself, which shows a dash. Must lack never passes up.
 - Marking opens the item down to its first fork, and every row the mark reached.
 - An item can name another item that no civilisation has together with it, as the Xolotl Warrior names the Stable:
-  `{"item": "Xolotl Warrior", "excludes": "Stable"}`. Marking either one must have clears the other, and everything
-  in it, without marking it must lack: marking the Xolotl Warrior clears the Stable, and a full Stable clears the
-  Xolotl Warrior. Must lack on either leaves the other alone. Otherwise the Xolotl Warrior is not part of the
-  Stable: marking the Stable must lack leaves it alone, and "Full Stable" does not count it. It is the first row
-  under the Stable, so that marking it opens only rows below it.
+  `{"item": "Xolotl Warrior", "excludes": "Stable"}`. While the Xolotl Warrior is marked must have, the Stable and
+  everything in it but the Xolotl Warrior are greyed out and cannot be marked. While the Stable, or anything in it,
+  is marked must have, the Xolotl Warrior is greyed out. Must lack greys out nothing. The Stable stays open, so the
+  Xolotl Warrior stays in sight, and its arrow still works; the rows in it are closed, as greyed-out items are.
+  Otherwise the Xolotl Warrior is not part of the Stable: marking the Stable must lack leaves it alone, and "Full
+  Stable" does not count it. It is the first row under the Stable, so that marking it opens only rows below it.
 - An item can name the items it stands in for, one by name or several in a list. The Fortified Church names the
-  Monastery, the Folwark the Mill, and the Mule Cart and the Settlement the drop-off sites their civilisations lack:
+  Monastery, the Folwark the Mill, the Pasture the Farm, the Donjon the Watch Tower, the Mule Cart and the
+  Settlement the drop-off sites their civilisations lack, the Varangian Guard and the Fire Lancer the Eagle Scout,
+  the Dromon, the Catapult Galleon and the Lou Chuan the Cannon Galleon, the Champi Scout the Militia, the Armored
+  Elephant the Battering Ram, the Rocket Cart the Mangonel, and Cranequins Parthian Tactics:
   `{"item": "Fortified Church", "replaces": "Monastery"}`
   `{"item": "Mule Cart", "replaces": ["Lumber Camp", "Mining Camp"]}`
   The page then also shows, under it, everything in those items outside their unique groups, in the order named,
   so their technologies are listed only once in `data.json`, but the Missionary stays the Monastery's, and the
-  Warrior Priest the Fortified Church's. Such rows are the same items in every place: marking Two-Man Saw under the
-  Mule Cart marks it under the Lumber Camp and the Settlement too, with one entry in **Filters**, and opens nothing
-  elsewhere (requirement 31 allows this). While an item is marked must have, the items it names, or that name it,
-  are greyed out and closed, and cannot be marked or opened until the mark is cleared. An item that is marked must
-  have itself is never greyed out: marking the Economy group marks the Lumber Camp and the Mule Cart alike, and
-  either can still be cleared.
+  Warrior Priest the Fortified Church's. An item that counts as a unit or technology lends nothing, as its rows
+  are its own upgrades: the Donjon shows neither the Guard Tower nor the Keep, which the Sicilians lack, as they
+  lack the Watch Tower. Nor is a row marked `"own": true`, or anything under it. The Domestication line, which only
+  the Khitans have, is marked so: `{"item": "Domestication", "own": true, "kids": [...]}`. The Folwark and the
+  Settlement thus show the Mill's Horse Collar line, but not its Domestication line. Such rows are the same items
+  in every place: marking Two-Man Saw under the Mule Cart marks it under the Lumber Camp and the Settlement too,
+  with one entry in **Filters**, and opens nothing elsewhere (requirement 31 allows this). While an item is marked
+  must have, its alternatives are greyed out and closed, and cannot be marked or opened until the mark is cleared
+  (requirement 37). They are the items it names, the items that name it, and the other items that name what it
+  names. Marking the Folwark greys out the Mill and the Settlement, which names the Mill too; marking the
+  Settlement greys out the Mill, the Lumber Camp, the Mining Camp, the Folwark and the Mule Cart; marking the Fire
+  Lancer greys out the Eagle Scout and the Varangian Guard. The Folwark and the Mule Cart name nothing in common,
+  so neither greys out the other. Greying never adds rows to an item. An item that is marked must have itself is
+  never greyed out: marking the Economy group marks the Lumber Camp and the Mule Cart alike, and either can still
+  be cleared.
 - In **Filters**, a fully marked building or group with more than one row under it reads "Full", such as "Full
   Blacksmith" (requirement 24). A line is named after its deepest item marked must have, such as "Champion" or
   "Keep", and so is a building at the top of a single line: a fully marked Lumber Camp reads "Two-Man Saw".
+- A unique item marked must have always has its own entry in **Filters** (requirement 36), unless every item in
+  its line is unique, as in the Gbeto line, which reads "Elite Gbeto". A fully marked Folwark reads "Folwark" and
+  "Crop Rotation", and even a full Economy lists "Folwark" beside "Full Economy". Clearing the Folwark's entry
+  clears only the Folwark, and clearing any other entry leaves it marked. The page counts an item as unique by its
+  `reach` in `pictures`.
 
 Some items are left out of the tree unless the visitor ticks **Include Unique and Universal** in Options: the groups
-marked `"unique": true` (Unique Units, Unique Technologies and Unique Buildings), and the items that all
-civilisations, all but one, or only one has, such as the House, which only the Huns lack. The page works these out by
-itself, and keeps such an item when something under it is shown, such as the Watch Tower above the Guard Tower.
+marked `"unique": true` (Unique Units and Unique Technologies), the items aoe2techtree calls unique, such as the
+Harbor, and the items that all civilisations, all but one, or only one has, such as the House, which only the Huns
+lack. The page works these out by itself, and keeps such an item when something under it is shown, such as the
+Watch Tower above the Guard Tower.
 Unticking **Include Regionals** also leaves out the items aoe2techtree calls regional, such as the Eagle Scout.
 
 ### Simple UI and the pictures
@@ -353,11 +376,14 @@ Under the Find box there are then two buttons instead of three: **Clear**, and *
 pane, whatever the language. Each shows the whole button picture in its own proportions, so in a narrow window the
 buttons and their text get smaller. Simple UI keeps the three buttons.
 
-The Options window then has **Cancel** and **OK** on the right instead of **Close**, also each the whole button
-picture. A change made in it only shows in the window until **OK** applies it; **Cancel**, Escape or closing the
-window in any other way drops it. With Simple UI, **Close** stays, and every change takes effect at once, as
-`REQUIREMENTS.md` asks. So unticking Simple UI turns the pictures on at once, and from then on the window waits for
-**OK**.
+The Options window then shows its **Cancel** and **OK** buttons as the whole button picture. With or without Simple
+UI, a change made in the window, a new language included, only shows in the window until **OK** applies it;
+**Cancel**, Escape or closing the window in any other way drops it, and the window opens again showing what applies.
+With Simple UI, the window is 10 pixels larger on every side, and there are 5 more pixels between the rows from its
+title to its buttons.
+
+The focus outline of a box or a language in the Options window is drawn just inside its edges, as in the tree,
+because the scrolling list around it would cut off an outline drawn outside.
 
 ### Assets
 
@@ -403,7 +429,7 @@ file names and that no folder holds too many files.
 | `run.js` | Runs the rounds, shows the report, and checks that there are at most 100 tests. |
 | `helpers.js` | No tests: shared helpers, and the sample items the tests use, picked from the data so that the tests survive game updates. |
 | `behaviour.js` | Marking, **Filters**, counts, opening and closing, and **Find**. |
-| `interface.js` | The keyboard, the language menu, every language, the Options window, and the runs of the accessibility audit. |
+| `interface.js` | The keyboard, the language menu, every language, the Options window, the filters of unique items, and the runs of the accessibility audit. |
 | `pictures.js` | The pictures, with Simple UI off. |
 | `audit.js` | The accessibility audit (contrast, focus, sizes, names and more), which the other files run in many states. |
 | `static.js` | The files themselves: the rules for the code, and mistakes in `data.json` and the language files. |

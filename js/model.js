@@ -21,8 +21,8 @@ function collect(nodes, parent) {
     const key = node.item ?? node.group;
     const item = {
       i: items.length, key, path: parent ? `${parent.path}|${key}` : key, group: !node.item, lines: !!node.lines,
-      set: node.item ? setOf(data.availability[node.item]) : ALL, self: null, kids: [], parent,
-      excludes: node.excludes, rivals: [], replaces: node.replaces, alternatives: [], copy: !!node.copy, original: null,
+      set: node.item ? setOf(data.availability[node.item]) : ALL, self: null, kids: [], parent, original: null,
+      excludes: node.excludes, rivals: [], opponents: [], replaces: node.replaces, alternatives: [], copy: !!node.copy,
     };
     (parent ? parent.kids : roots).push(item);
     items.push(item);
@@ -34,7 +34,8 @@ export const whole = (item) => (item.all ??= item.kids.reduce((s, kid) => s & wh
 
 function prune(nodes, every = false, regionals = true) {
   return nodes.flatMap((node) => {
-    if ((node.unique && !every) || (!regionals && data.pictures[node.item]?.reach === "regional")) return [];
+    const reach = data.pictures[node.item]?.reach;
+    if ((!every && (node.unique || reach === "unique")) || (!regionals && reach === "regional")) return [];
     const kids = prune(node.kids ?? [], every, regionals);
     const rule = node.item && data.availability[node.item];
     const civs = rule ? size(setOf(rule)) : 0;
@@ -43,21 +44,24 @@ function prune(nodes, every = false, regionals = true) {
   });
 }
 
-function nodeOf(nodes, key) {
+const common = (node) => ({
+  ...node, copy: true, kids: (node.kids ?? []).filter((kid) => !kid.unique && !kid.own).map(common),
+});
+
+function borrowed(nodes, key, line = false) {
   for (const node of nodes) {
-    const found = node.item === key ? node : nodeOf(node.kids ?? [], key);
+    if (node.item === key) return line ? [] : common(node).kids;
+    const found = borrowed(node.kids ?? [], key, line || !!node.item || !!node.lines);
     if (found) return found;
   }
   return null;
 }
 
-const common = (node) => ({ ...node, copy: true, kids: (node.kids ?? []).filter((kid) => !kid.unique).map(common) });
-
 const named = (link) => [link ?? []].flat();
 
 const variants = (nodes) => nodes.map((node) => {
-  const originals = named(node.replaces).map((key) => nodeOf(data.tree, key)).filter(Boolean);
-  return { ...node, kids: [...variants(node.kids ?? []), ...originals.flatMap((original) => common(original).kids)] };
+  const originals = named(node.replaces).flatMap((key) => borrowed(data.tree, key) ?? []);
+  return { ...node, kids: [...variants(node.kids ?? []), ...originals] };
 });
 
 function twin() {
@@ -78,6 +82,22 @@ function pair(link, list) {
   }
 }
 
+const side = (item, rival) => (item === rival ? [] : [item, ...item.kids.flatMap((kid) => side(kid, rival))]);
+
+function oppose() {
+  for (const item of items) for (const rival of item.rivals) {
+    for (const each of side(item, rival)) each.opponents.push(...side(rival, item));
+  }
+}
+
+function siblings() {
+  for (const item of items.filter((each) => each.replaces)) {
+    const others = item.alternatives.filter((each) => named(item.replaces).includes(each.key))
+      .flatMap((each) => each.alternatives);
+    for (const other of others) if (other !== item && !item.alternatives.includes(other)) item.alternatives.push(other);
+  }
+}
+
 export function rebuild() {
   const marks = new Map(items.map((item) => [item.path, item.self]));
   items.length = 0;
@@ -85,12 +105,19 @@ export function rebuild() {
   collect(prune(variants(data.tree), include, regional), null);
   items.forEach(whole);
   pair("excludes", "rivals");
+  oppose();
   pair("replaces", "alternatives");
+  siblings();
   for (const item of items) item.self = marks.get(item.path) ?? null;
   twin();
 }
 
-export const barred = (item) => item.self !== "has" && item.alternatives.some((other) => other.self === "has");
+export const barred = (item) => item.self !== "has"
+  && [...item.alternatives, ...item.opponents].some((other) => other.self === "has");
+
+const within = (item, top) => !!item.parent && (item.parent === top || within(item.parent, top));
+
+export const locked = (item) => barred(item) && !item.rivals.some((rival) => within(rival, item));
 
 export function setMark(item, mark, top = item) {
   if (!item.group) item.self = mark;
@@ -137,11 +164,8 @@ const reached = (item) => [...chainOf(item), ...(isUnitOrTech(item) ? passedTo(i
 export function mark(item, kind) {
   const next = current(item) === kind ? null : kind;
   put(item, next);
-  if (next !== "has") return next ? reached(item) : [];
-  const above = prerequisites(item);
-  above.forEach((each) => { each.self = "has"; });
-  [item, ...above].forEach((each) => each.rivals.forEach((rival) => put(rival, null)));
-  return reached(item);
+  if (next === "has") prerequisites(item).forEach((each) => { each.self = "has"; });
+  return next ? reached(item) : [];
 }
 
 export function boxState(item) {
@@ -178,19 +202,28 @@ export function chainOf(item) {
   return chain;
 }
 
+const unique = (item) => data.pictures[item.key]?.reach === "unique";
+
+const alone = (item) => unique(item) && !lineOf(item).every(unique);
+
+const held = (item, mark) => mark === "has" && alone(item);
+
 export function filtersOf() {
   const covered = (item, mark) => items.some((each) => (each === item || each.original === item) && each.parent
-    && state(each.parent) === mark);
+    && state(each.parent) === mark && !held(each.parent, mark));
 
-  const marked = items.filter((item) => !item.original && markOf(item) && !covered(item, markOf(item)))
-    .map((item) => ({ item, mark: markOf(item), line: lineOf(item) }));
+  const marked = items.filter((item) => !item.original && markOf(item) && !covered(item, markOf(item))
+    && !held(item, markOf(item))).map((item) => ({ item, mark: markOf(item), line: lineOf(item) }));
 
   const depth = ({ item, line }) => line.indexOf(item);
 
   const outranks = (other, filter) => other !== filter && other.mark === filter.mark && other.line[0] === filter.line[0]
     && (filter.mark === "has" ? depth(other) > depth(filter) : depth(other) < depth(filter));
 
-  return marked.filter((filter) => !marked.some((other) => outranks(other, filter)));
+  const own = items.filter((item) => !item.original && held(item, item.self))
+    .map((item) => ({ item, mark: "has", line: lineOf(item), own: true }));
+  return [...own, ...marked.filter((filter) => !marked.some((other) => outranks(other, filter)))]
+    .sort((a, b) => a.item.i - b.item.i);
 }
 
 export function share() {
@@ -199,17 +232,21 @@ export function share() {
   shared = new Set([...seen].filter(([, n]) => n > 1).map(([name]) => name));
 }
 
-export function chipName(item, kind) {
+export function chipName(item, kind, own = false) {
   const unit = isUnitOrTech(item);
-  const named = (kind === "has" && lineOf(item).findLast((each) => each.self === "has")) || item;
+  const named = (kind === "has" && !own && lineOf(item).findLast((each) => each.self === "has" && !alone(each)))
+    || item;
   const name = shared.has(nameOf(named)) && named.parent
     ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) })
     : nameOf(named);
   return !unit && item.kids.length > 1 && state(item) === "has" ? fill(words.ui.full, { name }) : name;
 }
 
-export function unmarkLine(item, kind) {
+export function unmarkLine(item, kind, own = false) {
+  const kept = own ? [] : items.filter((each) => held(each, each.self));
   const line = lineOf(item);
-  if (line.length > 1) line.filter((each) => each.self === kind).forEach((each) => { each.self = null; });
+  if (own) item.self = null;
+  else if (line.length > 1) line.filter((each) => each.self === kind).forEach((each) => { each.self = null; });
   else setMark(item, null);
+  kept.forEach((each) => { each.self = "has"; });
 }

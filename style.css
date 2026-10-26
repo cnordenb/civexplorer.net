@@ -180,7 +180,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 
 .tree, .tree ul { margin: 0; padding: 0; list-style: none; }
 .tree ul { margin-left: calc(var(--target) / 2); border-left: 1px dotted var(--line); }
-.tree .barred > .row { opacity: 0.5; pointer-events: none; }
+.tree .row > [aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
 .row { display: flex; align-items: center; min-height: var(--target); }
 .twisty, .gap { position: relative; flex: none; width: var(--target); height: var(--target); }
 .twisty { padding: 0; border: 0; border-radius: 4px; background: none; color: var(--ink); cursor: pointer; }
@@ -223,9 +223,8 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures :is(.node, .option, .chip):active > .box, .pictures .node.pressed > .box { background-position-x: 100%; }
 .pictures .box::before, .pictures :not([data-state="mixed"]) > .box::after { content: none; }
 .pictures [data-state="mixed"] > .box::after { border-top: 2.5px solid #000; }
-.views, #tooltips, #optionsCancel, #optionsOk { display: none; }
+.views, #tooltips { display: none; }
 .pictures #tooltips { display: flex; }
-.pictures :is(#optionsCancel, #optionsOk) { display: block; }
 .pictures .views { display: flex; flex-wrap: wrap; align-items: center; gap: 0 16px; margin-top: 8px; }
 .view { display: inline-flex; align-items: center; gap: 10px; min-height: var(--target); padding: 0 8px; border-radius: 4px; }
 .pictures .view input {
@@ -259,7 +258,6 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
   border-image: url("assets/images/ui/panels/nodes9slice.webp") 64 fill / 30px repeat;
 }
 .pictures .options h2 { grid-row: 1; }
-.pictures .options form { display: flex; grid-row: 4; justify-content: flex-end; gap: 8px; }
 .pictures .option:hover { background: rgb(255 255 255 / 0.25); }
 .pictures .language-list { border-color: #391c1b; background: none; }
 @media (height >= 588px) {
@@ -300,7 +298,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures :is(.tools, .options form) .tool { min-height: 0; aspect-ratio: 290 / 50; }
 .pictures .tools .tool { width: 100%; padding: 0 6%; font-size: min(1rem, 3.8cqi); }
 .pictures .options form .tool { flex: 0 1 12rem; min-width: 0; padding: 0 12px; }
-.pictures :is(.tools, .options form) .tool::before, .pictures :is(.tools, .options form) .tool::after, .pictures #optionsClose, .pictures .pane:has(.tree > li > .row > [aria-expanded="true"]) #expandAll, .pictures .pane:not(:has(.tree > li > .row > [aria-expanded="true"])) #collapseAll { display: none; }
+.pictures :is(.tools, .options form) .tool::before, .pictures :is(.tools, .options form) .tool::after, .pictures .pane:has(.tree > li > .row > [aria-expanded="true"]) #expandAll, .pictures .pane:not(:has(.tree > li > .row > [aria-expanded="true"])) #collapseAll { display: none; }
 .pictures :is(.tools, .options form) .caption { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .pictures :is(.find label, #includeHint) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .pictures .field { flex: none; width: min(325px, 100% - 6em); }
@@ -344,7 +342,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 }
 .tree > li > .row .name, .node:is(.group, .self) .name { font-weight: 700; }
 .node .n { margin-left: auto; padding-left: 8px; white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; }
-:is(.twisty, .node):focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+:is(.twisty, .node, .option, .language-option):focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
 
 .ticked {
   position: relative; display: flex; flex: 0 1 auto; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 0; margin: 6px 6px 4px;
@@ -371,8 +369,12 @@ dialog p { margin: 8px 0; }
 .options { width: min(32rem, calc(100vw - 38px)); max-width: none; }
 .options[open] { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 8px 12px; height: min(30rem, calc(100vh - 32px)); height: min(30rem, calc(100dvh - 32px)); }
 .options h2, .options form { grid-column: 1 / 3; margin: 0; }
+.options form { display: flex; grid-row: 4; justify-content: flex-end; gap: 8px; }
 .settings { grid-area: 3 / 1 / 4 / 3; min-height: 0; overflow-y: auto; }
 .settings p { margin: 8px 0; }
+:root:not(.pictures) .options { width: min(32rem + 20px, 100vw - 18px); height: min(30rem + 20px, 100vh - 12px); height: min(30rem + 20px, 100dvh - 12px); max-height: calc(100vh - 12px); padding-inline: 26px; row-gap: 13px; }
+:root:not(.pictures) .settings { display: flex; flex-direction: column; gap: 5px; }
+:root:not(.pictures) .options form { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; justify-self: end; }
 .option { display: flex; align-items: center; gap: 10px; min-height: var(--target); padding: 0 8px; border-radius: 4px; cursor: pointer; -webkit-user-select: none; user-select: none; }
 .option:hover { background: var(--hover); }
 .report[open] { display: flex; flex-direction: column; gap: 8px; }

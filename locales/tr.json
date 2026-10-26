@@ -39,7 +39,6 @@
       "viewList": "Liste",
       "viewTile": "Döşeme",
       "tooltips": "İpuçları",
-      "close": "Kapat",
       "cancel": "İptal",
       "ok": "Tamam"
     },
@@ -48,7 +47,6 @@
       "military": "Askerî",
       "uniqueUnits": "Özgün Birimler",
       "uniqueTechnologies": "Özgün Teknolojiler",
-      "uniqueBuildings": "Özgün Binalar",
       "fortifications": "Tahkimatlar"
     },
     "civs": {

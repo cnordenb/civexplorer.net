@@ -1,5 +1,5 @@
 import {
-  data, language, attempt, recall, remember, preferredLanguage, loadLanguage, useLanguage,
+  data, attempt, recall, remember, preferredLanguage, loadLanguage, useLanguage,
 } from "./datahandler.js";
 import { items, include, regional, setIncluded, setRegionals } from "./model.js";
 import { $, clone, simple, writeFixed, writeTexts, label, showLoadError } from "./stringbuilder.js";
@@ -33,6 +33,7 @@ function showLanguage(code) {
 }
 
 export function setLanguage(code) {
+  chosen = code;
   useLanguage(code);
   writeTexts();
   showLanguage(code);
@@ -76,7 +77,7 @@ export function setSimple(on) {
 const picked = () => options().find((option) => option.getAttribute("aria-current") === "true")?.dataset.language;
 
 export const choices = {
-  language: { now: () => language, set: choose, shown: picked, show: showLanguage },
+  language: { now: () => chosen, set: choose, shown: picked, show: showLanguage },
   include: { now: () => include, set: setInclude },
   regional: { now: () => regional, set: setRegional },
   simple: { now: simple, set: setSimple },
@@ -86,10 +87,7 @@ const checked = (id) => $(id).getAttribute("aria-checked") === "true";
 
 const shownOf = (id) => (choices[id].shown ? choices[id].shown() : checked(id));
 
-function toggle(id) {
-  if (simple()) choices[id].set(!checked(id));
-  else tick(id, !checked(id));
-}
+const toggle = (id) => tick(id, !checked(id));
 
 function apply() {
   for (const [id, choice] of Object.entries(choices)) if (shownOf(id) !== choice.now()) choice.set(shownOf(id));
@@ -163,7 +161,7 @@ function wireLanguages() {
   $("languageList").addEventListener("click", (e) => {
     if (onScrollbar(e)) return;
     const option = e.target.closest("[data-language]");
-    if (option) (simple() ? choose : showLanguage)(option.dataset.language);
+    if (option) showLanguage(option.dataset.language);
     setMenu(false, button);
   });
   picker.addEventListener("keydown", onMenuKey);

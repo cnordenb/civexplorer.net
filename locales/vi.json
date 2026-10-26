@@ -39,7 +39,6 @@
       "viewList": "Danh sách",
       "viewTile": "Ô",
       "tooltips": "Chú thích",
-      "close": "Đóng",
       "cancel": "Hủy",
       "ok": "OK"
     },
@@ -48,7 +47,6 @@
       "military": "Quân sự",
       "uniqueUnits": "Đơn vị chuyên biệt",
       "uniqueTechnologies": "Công nghệ chuyên biệt",
-      "uniqueBuildings": "Công trình chuyên biệt",
       "fortifications": "Công sự"
     },
     "civs": {

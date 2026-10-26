@@ -39,7 +39,6 @@
       "viewList": "Liste",
       "viewTile": "Vignettes",
       "tooltips": "Infobulles",
-      "close": "Fermer",
       "cancel": "Annuler",
       "ok": "OK"
     },
@@ -48,7 +47,6 @@
       "military": "Militaire",
       "uniqueUnits": "Unités uniques",
       "uniqueTechnologies": "Technologies uniques",
-      "uniqueBuildings": "Bâtiments uniques",
       "fortifications": "Fortifications"
     },
     "civs": {

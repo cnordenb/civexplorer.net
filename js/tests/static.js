@@ -239,7 +239,7 @@ export function tagTests() {
     codes().filter((code) => !data.languages[code].name || !TAG.test(data.languages[code].tag)));
 }
 
-const KNOWN = ["item", "group", "kids", "unique", "lines", "excludes", "replaces"];
+const KNOWN = ["item", "group", "kids", "unique", "lines", "own", "excludes", "replaces"];
 
 const alike = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -264,11 +264,13 @@ function treeTests(all) {
 
   const odd = (node) => Object.keys(node).some((key) => !KNOWN.includes(key))
     || ["unique", "lines"].some((flag) => flag in node && (node[flag] !== true || !node.group))
+    || ("own" in node && (node.own !== true || !node.item))
     || ["excludes", "replaces"].some((link) => link in node && (!node.item || ![node[link]].flat().length
       || [node[link]].flat().some((key) => key === node.item || !all.includes(key))));
 
-  expect("data: the tree uses only item, group, kids, unique, lines, excludes and replaces, only groups are unique or "
-    + "lines, marked with true, and an item excludes or replaces other items, by name or in a list of names",
+  expect("data: the tree uses only item, group, kids, unique, lines, own, excludes and replaces, only groups are "
+    + "unique or lines and only items own, marked with true, and an item excludes or replaces other items, by name or "
+    + "in a list of names",
     nodes(data.tree).filter(odd).map((node) => node.item ?? node.group));
   const undescribed = all.filter((key) => {
     const rule = data.availability[key];

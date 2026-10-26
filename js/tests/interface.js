@@ -1,16 +1,16 @@
 import {
   data, ALL, size, fill, attempt, recall, remember, params, language, nameOf, preferredLanguage, words, plain,
 } from "../datahandler.js";
-import { items, roots } from "../model.js";
+import { items, roots, lineOf, lineEnd } from "../model.js";
 import { $ } from "../stringbuilder.js";
-import { isOpen } from "../nodetree.js";
+import { isOpen, setOpen } from "../nodetree.js";
 import { options, setInclude, setSimple } from "../optionshandler.js";
 import { openReport, report } from "../report.js";
 import { audit } from "./audit.js";
 import {
   root, check, expect, same, tidy, codes, keys, describe, everything, nameFor, visibleTexts, keyDown, tap, pick,
   reset, listed, expected, fixtures, shownKeys, uniqueKeys, regionalKeys, outside, keptPath, byPath, spans, ui, box,
-  chainOf, type,
+  chainOf, type, rendered,
 } from "./helpers.js";
 
 function englishFirst() {
@@ -55,11 +55,14 @@ export function menuTests({ partial }) {
     && button.getAttribute("aria-expanded") === "false" && new Set(sizes).size === 1, sizes.join(", "));
   const first = language;
   const next = codes().find((code) => code !== first);
-  pick(next);
-  check("language menu: choosing a language changes the page language, names it on the button, closes the menu and "
-    + "returns focus", root.lang === data.languages[next].tag
-    && document.querySelector("h1 .title-long").textContent === ui().title && $("languageList").hidden
-    && document.activeElement === button && nameFor(button).includes(data.languages[next].name));
+  button.click();
+  options().find((option) => option.dataset.language === next).click();
+  const named = root.lang === data.languages[first].tag && $("languageList").hidden && document.activeElement === button
+    && nameFor(button).includes(data.languages[next].name);
+  $("optionsOk").click();
+  check("language menu: choosing a language names it on the button, closes the menu and returns focus, and OK changes "
+    + "the page language", named && root.lang === data.languages[next].tag
+    && document.querySelector("h1 .title-long").textContent === ui().title);
   check("language menu: the choice is kept in the address, and without a choice the page is in English", englishFirst()
     && (location.protocol === "file:" || new URLSearchParams(location.search).get("lng") === next));
   check("language menu: marks are kept when the language changes", partial.self === "has"
@@ -105,30 +108,52 @@ export function optionTests() {
     + "and regional items are in", shownKeys().length < all.length && shownKeys().every((key) => !unique.has(key))
     && shownKeys().some((key) => regional.has(key)) && items.every((item) => item.kids.length > 0
       || (!item.group && size(item.set) > 1 && size(item.set) < data.civs.length - 1)));
+  const defaults = shownKeys();
   const path = keptPath();
   tap(byPath(path).node);
   const listedBefore = listed();
   const button = $("optionsButton");
+  const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
+  const shut = () => !$("options").open && document.activeElement === button;
+  const confirm = (id) => [button, $(id), $("optionsOk")].forEach((el) => el.click());
   button.focus();
   button.click();
-  const opened = $("options").open && $("include").getAttribute("aria-checked") === "false"
-    && $("regional").getAttribute("aria-checked") === "true";
+  const opened = $("options").open && !ticked("include") && ticked("regional")
+    && same([...$("optionsOk").parentElement.children].filter(rendered).map((el) => el.id),
+      ["optionsCancel", "optionsOk"]);
   $("include").click();
-  const widened = $("include").getAttribute("aria-checked") === "true" && $("include").dataset.state === "has"
-    && shownKeys().length === all.length && byPath(path)?.self === "has" && same(listed(), listedBefore);
-  $("regional").click();
-  const narrowed = $("regional").getAttribute("aria-checked") === "false" && $("regional").dataset.state === ""
+  const waited = ticked("include") && $("include").dataset.state === "has" && same(shownKeys(), defaults);
+  $("optionsOk").click();
+  const okayed = shut();
+  const widened = shownKeys().length === all.length && byPath(path)?.self === "has" && same(listed(), listedBefore);
+  confirm("regional");
+  const narrowed = !ticked("regional") && $("regional").dataset.state === ""
     && same(shownKeys(), outside(data.tree, regional)) && byPath(path)?.self === "has" && same(listed(), listedBefore);
   const remembered = recall("include") === "true" && recall("regional") === "false";
-  $("regional").click();
-  check("options: ticking Include shows every item, unique and universal ones included, and unticking Include "
+  confirm("regional");
+  check("options: ticking Include shows every item on OK, unique and universal ones included, and unticking Include "
     + "Regionals leaves out regional items and what is under them, keeping marks", widened && narrowed
-    && $("regional").getAttribute("aria-checked") === "true" && shownKeys().length === all.length,
-    `include ${widened}, regional ${narrowed}`);
+    && ticked("regional") && shownKeys().length === all.length, `include ${widened}, regional ${narrowed}`);
   check("options: the choices are remembered", remembered || attempt(() => localStorage) === null);
-  $("options").querySelector("form button").click();
-  check("options: the Options button opens the window with Include unticked and Include Regionals ticked, and Close "
-    + "closes it and returns focus", opened && !$("options").open && document.activeElement === button);
+  const first = language;
+  button.click();
+  $("include").click();
+  $("languageButton").click();
+  options().find((option) => option.dataset.language !== first).click();
+  $("optionsCancel").click();
+  const cancelled = shut() && shownKeys().length === all.length && language === first;
+  button.click();
+  const fresh = ticked("include") && $("languageName").textContent === data.languages[first].name;
+  $("include").click();
+  $("options").close();
+  const closed = shownKeys().length === all.length;
+  button.click();
+  const again = ticked("include");
+  $("optionsCancel").click();
+  check("options: the Options button opens the window with Include unticked, Include Regionals ticked, and Cancel and "
+    + "OK at the foot; changes wait for OK, which applies them, Cancel or closing the window throws them away, and "
+    + "both buttons return focus", opened && waited && okayed && cancelled && fresh && closed && again,
+    `${waited}, ${okayed}, ${cancelled}, ${fresh}, ${closed}, ${again}`);
   reset();
   setInclude(false);
 }
@@ -138,7 +163,7 @@ function menuAudit({ partial }) {
   tap(partial.node);
   $("optionsButton").click();
   $("languageButton").click();
-  audit("language menu open", { focus: false });
+  audit("language menu open");
   reset();
 }
 
@@ -192,17 +217,21 @@ function optionKeys() {
   const path = keptPath();
   tap(byPath(path).node);
   const listedBefore = listed();
+  const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
   $("optionsButton").click();
-  $("include").click();
   keyDown($("include"), " ");
   keyDown($("regional"), " ");
-  const unticked = $("regional").getAttribute("aria-checked") === "false"
-    && shownKeys().every((key) => !regional.has(key));
+  const flipped = ticked("include") && !ticked("regional") && !shownKeys().some((key) => unique.has(key));
+  $("optionsOk").click();
+  const applied = shownKeys().some((key) => unique.has(key)) && shownKeys().every((key) => !regional.has(key));
+  $("optionsButton").click();
+  keyDown($("include"), " ");
   keyDown($("regional"), " ");
-  check("options: Space unticks Include or Include Regionals and leaves those items out, keeping marks, and ticks them "
-    + "again", $("include").getAttribute("aria-checked") === "false" && shownKeys().every((key) => !unique.has(key))
-    && unticked && $("regional").getAttribute("aria-checked") === "true" && byPath(path)?.self === "has"
-    && same(listed(), listedBefore));
+  $("optionsOk").click();
+  check("options: Space ticks or unticks Include and Include Regionals, and OK then shows or leaves out those items, "
+    + "keeping marks", flipped && applied && !ticked("include") && shownKeys().every((key) => !unique.has(key))
+    && ticked("regional") && shownKeys().some((key) => regional.has(key)) && byPath(path)?.self === "has"
+    && same(listed(), listedBefore), `${flipped}, ${applied}`);
   reset();
   setInclude(false);
 }
@@ -210,7 +239,7 @@ function optionKeys() {
 function optionAudits() {
   reset();
   $("optionsButton").click();
-  audit("accessibility (options window open)", { focus: false });
+  audit("accessibility (options window open)");
   reset();
   setInclude(true);
   $("expandAll").click();
@@ -322,4 +351,44 @@ export function reportTests() {
     kept && focused && right && unchanged,
     `title, count and Close at ${before}, then ${tops()}; focus ${focused}, right ${right}, plain ${unchanged}`);
   $("report").close();
+}
+
+export function uniqueFilterTests() {
+  reset();
+  setInclude(true);
+  const name = "filters: a unique item marked must have has its own filter button, even in a full group, which clears "
+    + "only it, while its line's or group's button leaves it marked; a wholly unique line has one button (Req. 36)";
+  const unique = (item) => data.pictures[item.key]?.reach === "unique";
+  const item = items.find((each) => unique(each) && lineOf(each).some((other) => !unique(other)));
+  const whole = items.find((each) => unique(each) && lineOf(each).length > 1 && lineOf(each).every(unique));
+  const names = () => [...$("chips").querySelectorAll(".chip-name")].map((chip) => chip.textContent).sort();
+  const unmark = (text) => [...$("chips").querySelectorAll(".chip")]
+    .find((chip) => chip.querySelector(".chip-name").textContent === text)?.click();
+  if (!item || !whole) {
+    check(name, false, "no unique item in a line with others, or no wholly unique line");
+    setInclude(false);
+    return;
+  }
+
+  for (const each of [item, whole]) for (let p = each.parent; p; p = p.parent) setOpen(p, true);
+  const end = lineOf(item).at(-1);
+  tap(item.node);
+  const both = same(names(), [nameOf(item), nameOf(end)].sort());
+  unmark(nameOf(item));
+  const first = item.self === null && end.self === "has" && same(names(), [nameOf(end)]);
+  $("clear").click();
+  tap(item.node);
+  unmark(nameOf(end));
+  const second = item.self === "has" && end.self === null && same(names(), [nameOf(item)]);
+  $("clear").click();
+  tap(roots.find((top) => item.path.startsWith(`${top.path}|`)).node);
+  const full = names().filter((text) => text !== nameOf(item));
+  full.forEach(unmark);
+  const grouped = full.length === 1 && item.self === "has" && same(names(), [nameOf(item)]);
+  $("clear").click();
+  tap(lineEnd(whole).node);
+  const exempt = same(names(), [nameOf(lineEnd(whole))]);
+  check(name, both && first && second && grouped && exempt, `${both}, ${first}, ${second}, ${grouped}, ${exempt}`);
+  reset();
+  setInclude(false);
 }

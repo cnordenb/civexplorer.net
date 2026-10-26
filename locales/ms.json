@@ -39,7 +39,6 @@
       "viewList": "Senarai",
       "viewTile": "Jubin",
       "tooltips": "Petua alat",
-      "close": "Tutup",
       "cancel": "Batal",
       "ok": "OK"
     },
@@ -48,7 +47,6 @@
       "military": "Ketenteraan",
       "uniqueUnits": "Unit Unik",
       "uniqueTechnologies": "Teknologi Unik",
-      "uniqueBuildings": "Bangunan Unik",
       "fortifications": "Kubu Pertahanan"
     },
     "civs": {

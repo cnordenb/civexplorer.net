@@ -39,7 +39,6 @@
       "viewList": "清單",
       "viewTile": "圖塊",
       "tooltips": "工具提示",
-      "close": "關閉",
       "cancel": "取消",
       "ok": "確定"
     },
@@ -48,7 +47,6 @@
       "military": "軍事",
       "uniqueUnits": "特殊單位",
       "uniqueTechnologies": "特殊科技",
-      "uniqueBuildings": "特殊建築",
       "fortifications": "防禦工事"
     },
     "civs": {

@@ -1,10 +1,11 @@
-import { ALL, fill, size, words, numbers, nameOf, plural, plain } from "../datahandler.js";
+import { ALL, data, fill, size, words, numbers, nameOf, plural, plain } from "../datahandler.js";
 import { items, roots, state, lineOf, lineEnd, chipName, isUnitOrTech } from "../model.js";
 import { $ } from "../stringbuilder.js";
 import { isOpen, setOpen, shown } from "../nodetree.js";
+import { setInclude } from "../optionshandler.js";
 import {
   root, check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below, drawn, marks, yellow,
-  chainOf,
+  chainOf, fixtures, ownKeys, alternativesOf,
 } from "./helpers.js";
 
 const sameCount = (item) => {
@@ -186,43 +187,53 @@ function parents({ branch, loose, without }) {
 
 function rivals({ rival }) {
   reset();
-  const name = "marking: of two items where one excludes the other, must have on either clears the other, and "
-    + "everything in it, without marking it must lack or opening rows above it, and must lack leaves the other alone";
+  const name = "marking: of two items where one excludes the other, must have on the one greys out the other and "
+    + "everything in it but the one, which stays in sight, with the other's arrow still working, and must have on any "
+    + "of those greys out the one; what is greyed out cannot be marked, and must lack greys out nothing";
   const other = rival?.rivals[0];
   if (!other) {
     check(name, false, "no item in data.json excludes another");
     return;
   }
 
-  const now = (item) => (isUnitOrTech(item) ? item.self : state(item));
+  const side = (top, skip) => (top === skip ? [] : [top, ...top.kids.flatMap((kid) => side(kid, skip))]);
 
-  const still = (item, act) => {
-    const at = items.filter(shown).indexOf(item);
-    act();
-    return items.filter(shown).indexOf(item) === at;
+  const greys = () => items.filter((item) => item.node.ariaDisabled === "true");
+
+  const blocks = (by) => {
+    $("clear").click();
+    tap(by.node);
+    const greyed = same(greys(), [rival]);
+    tap(rival.node);
+    return greyed && rival.self === null;
   };
 
-  const marked = () => items.filter((item) => item.self);
-
+  const theirs = side(other, rival);
   for (let p = rival.parent; p; p = p.parent) setOpen(p, true);
-  tap(other.node);
-  const first = still(rival, () => tap(rival.node)) && now(rival) === "has" && now(other) === null
-    && same(marked(), [rival]) && same(chipNames(), [chipName(rival, "has")]) && same(listed(), expected(rival.set));
-  const second = still(other, () => tap(other.node)) && now(other) === "has" && rival.self === null
-    && same(chipNames(), [chipName(other, "has")]);
-  tap(other.node);
+  tap(rival.node);
+  const first = shown(rival) && same(greys(), theirs) && theirs.slice(1).every((item) => !isOpen(item))
+    && same(chipNames(), [chipName(rival, "has")]) && same(listed(), expected(rival.set));
+  other.twisty.click();
+  const free = !isOpen(other) && other.twisty.ariaDisabled !== "true"
+    && getComputedStyle(other.twisty).pointerEvents !== "none";
+  other.twisty.click();
+  theirs.forEach((item) => tap(item.node));
+  const kept = free && isOpen(other) && rival.self === "has" && theirs.every((item) => !item.self);
+  const back = [other, theirs.findLast((item) => !item.group && item.parent !== other)].every(blocks);
+  $("clear").click();
   keyDown(rival.node, "x");
   keyDown(other.node, "x");
-  check(name, first && second && rival.self === "lacks" && now(other) === "lacks",
-    `${first}, ${second}, ${rival.self}, ${now(other)}`);
+  check(name, first && kept && back && !greys().length && rival.self === "lacks" && state(other) === "lacks",
+    `${first}, ${kept}, ${back}, ${greys().length}, ${rival.self}, ${state(other)}`);
   reset();
 }
 
-function standIns() {
+function standIns(sample) {
   reset();
-  const name = "marking: an item that replaces others also holds everything in them outside their unique groups, as "
-    + "the same items: marking one there marks both, with one filter, opening nothing in the other; must have on one "
-    + "greys out the other and closes it, and it cannot be marked or opened until the mark is cleared";
+  const name = "marking: an item that replaces others also holds everything in the buildings among them outside "
+    + "their unique groups, as the same items: marking one there marks both, with one filter, opening nothing in the "
+    + "other; must have on one greys out every alternative, what it replaces and the other variants of those, and "
+    + "closes it, and it cannot be marked or opened until cleared (Req. 37)";
   const item = items.find((each) => each.replaces && each.alternatives.length);
   const other = item?.alternatives[0];
   if (!other) {
@@ -231,7 +242,7 @@ function standIns() {
   }
 
   const greyed = (each) => each.node.getAttribute("aria-disabled") === "true"
-    && Number(getComputedStyle(each.node.parentElement).opacity) < 1;
+    && Number(getComputedStyle(each.node).opacity) < 1;
 
   const inside = (top) => items.filter((each) => below(each, top)).map((each) => each.key);
 
@@ -256,10 +267,25 @@ function standIns() {
   const freed = item.self === null && !greyed(other);
   const second = shut(item, other);
   tap(other.node);
-  const held = items.filter((each) => each.replaces).every((each) => inside(each).length > 0
-    && same(inside(each), each.alternatives.flatMap(inside)));
-  check(name, held && one && first && freed && second && !greyed(item),
-    `${held}, ${one}, ${first}, ${freed}, ${second}`);
+  const last = !greyed(item);
+  setInclude(true);
+  const rows = (top) => inside(top).filter((key) => ["common", "regional"].includes(data.pictures[key]?.reach));
+  const own = ownKeys();
+  const lent = (alt) => (isUnitOrTech(alt) ? [] : rows(alt).filter((key) => !own.has(key)));
+  const copies = (top) => items.filter((each) => each.copy && !each.group && below(each, top)).map((each) => each.key);
+  const replacing = items.filter((each) => each.replaces);
+  const held = replacing.some((each) => copies(each).length) && replacing.every((each) => same(copies(each),
+    each.alternatives.filter((alt) => [each.replaces].flat().includes(alt.key)).flatMap(lent)));
+  const greys = () => items.filter((each) => each.node.ariaDisabled === "true").map((each) => each.key).sort();
+  const exclusive = items.filter((each) => alternativesOf(each.key).length).every((each) => {
+    $("clear").click();
+    tap(each.node);
+    return same(greys(), alternativesOf(each.key));
+  });
+  setInclude(false);
+  Object.assign(sample, fixtures());
+  check(name, held && exclusive && one && first && freed && second && last,
+    `${held}, ${exclusive}, ${one}, ${first}, ${freed}, ${second}`);
   reset();
 }
 
@@ -366,7 +392,7 @@ export async function behaviourTests(sample) {
   lineTops(sample);
   parents(sample);
   rivals(sample);
-  standIns();
+  standIns(sample);
   lines(sample);
   counts(sample);
   tree();

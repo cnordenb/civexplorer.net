@@ -274,8 +274,13 @@ function simpleSwitch() {
   $("simple").click();
   problems.push(
     ...need(simpleTicked(false), "the box is not unticked"),
-    ...need(same(pictures(), before.pictures), "not every image came back"),
+    ...need(!pictures().length && !civLinks(), "unticking changed the page before OK"),
     ...need(simpleSpot() === spot, `unticking moved the box from ${spot} to ${simpleSpot()}`),
+  );
+  $("optionsOk").click();
+  $("optionsButton").click();
+  problems.push(
+    ...need(same(pictures(), before.pictures), "not every image came back"),
     ...need(civLinks() === $("civs").children.length, "the links did not come back"),
   );
   return problems;
@@ -304,11 +309,11 @@ export async function pictureTests() {
     + "branch is open, side by side as wide as the pane, each the whole button picture, the same in every language",
     toolLooks());
   reset();
-  expect("options: without Simple UI, Options has Cancel and OK on the right instead of Close, each the whole button "
-    + "picture; changes wait for OK, and Cancel or closing the window throws them away", confirming());
+  expect("options: without Simple UI, Options has Cancel and OK on the right, each the whole button picture; "
+    + "changes wait for OK, and Cancel or closing the window throws them away", confirming());
   reset();
-  expect("options: Simple UI takes away every image and civilisation link on OK, and unticking it gives them back at "
-    + "once, without moving its box", simpleSwitch());
+  expect("options: Simple UI takes away every image and civilisation link on OK, and unticking it gives them back on "
+    + "OK, neither changing the page before OK nor moving its box", simpleSwitch());
   reset();
   setSimple(true);
 }

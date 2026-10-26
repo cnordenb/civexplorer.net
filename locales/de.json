@@ -43,7 +43,6 @@
       "viewList": "Liste",
       "viewTile": "Kacheln",
       "tooltips": "Tooltips",
-      "close": "Schließen",
       "cancel": "Abbrechen",
       "ok": "OK"
     },
@@ -52,7 +51,6 @@
       "military": "Militär",
       "uniqueUnits": "Spezialeinheiten",
       "uniqueTechnologies": "Spezialtechnologien",
-      "uniqueBuildings": "Spezialgebäude",
       "fortifications": "Befestigungen"
     },
     "civs": {

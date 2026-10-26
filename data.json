@@ -64,7 +64,7 @@
             {"item": "Crop Rotation"}
           ]}
         ]},
-        {"item": "Domestication", "kids": [
+        {"item": "Domestication", "own": true, "kids": [
           {"item": "Pastoralism", "kids": [
             {"item": "Transhumance"}
           ]}
@@ -86,7 +86,7 @@
         ]}
       ]},
       {"item": "Farm"},
-      {"item": "Pasture"},
+      {"item": "Pasture", "replaces": "Farm"},
       {"item": "Mule Cart", "replaces": ["Lumber Camp", "Mining Camp"]},
       {"item": "Settlement", "replaces": ["Mill", "Lumber Camp", "Mining Camp"]},
       {"item": "Market", "kids": [
@@ -99,11 +99,8 @@
       ]},
       {"item": "Caravanserai"},
       {"item": "Wonder"},
-      {"group": "uniqueBuildings", "unique": true, "kids": [
-        {"item": "Feitoria"},
-        {"item": "Folwark", "replaces": "Mill"},
-        {"item": "Harbor"}
-      ]}
+      {"item": "Feitoria"},
+      {"item": "Folwark", "replaces": "Mill"}
     ]},
     {"group": "military", "kids": [
       {"item": "Barracks", "kids": [
@@ -116,7 +113,7 @@
             ]}
           ]}
         ]},
-        {"item": "Champi Scout", "kids": [
+        {"item": "Champi Scout", "replaces": "Militia", "kids": [
           {"item": "Champi Runner", "kids": [
             {"item": "Champi Warrior", "kids": [
               {"item": "Elite Champi Warrior"}
@@ -133,10 +130,10 @@
             {"item": "Elite Eagle Warrior"}
           ]}
         ]},
-        {"item": "Varangian Guard", "kids": [
+        {"item": "Varangian Guard", "replaces": "Eagle Scout", "kids": [
           {"item": "Elite Varangian Guard"}
         ]},
-        {"item": "Fire Lancer", "kids": [
+        {"item": "Fire Lancer", "replaces": "Eagle Scout", "kids": [
           {"item": "Elite Fire Lancer"}
         ]},
         {"group": "uniqueUnits", "unique": true, "kids": [
@@ -188,7 +185,7 @@
         ]},
         {"item": "Thumb Ring"},
         {"item": "Parthian Tactics"},
-        {"item": "Cranequins"}
+        {"item": "Cranequins", "replaces": "Parthian Tactics"}
       ]},
       {"item": "Stable", "kids": [
         {"item": "Xolotl Warrior", "excludes": "Stable"},
@@ -237,13 +234,13 @@
             {"item": "Siege Onager"}
           ]}
         ]},
-        {"item": "Armored Elephant", "kids": [
+        {"item": "Armored Elephant", "replaces": "Battering Ram", "kids": [
           {"item": "Siege Elephant"}
         ]},
         {"item": "Scorpion", "kids": [
           {"item": "Heavy Scorpion"}
         ]},
-        {"item": "Rocket Cart", "kids": [
+        {"item": "Rocket Cart", "replaces": "Mangonel", "kids": [
           {"item": "Heavy Rocket Cart"}
         ]},
         {"item": "Siege Tower"},
@@ -550,12 +547,11 @@
           {"item": "Yeomen"}
         ]}
       ]},
-      {"group": "uniqueBuildings", "unique": true, "kids": [
-        {"item": "Donjon"},
-        {"item": "Krepost"}
-      ]}
+      {"item": "Donjon", "replaces": "Watch Tower"},
+      {"item": "Krepost"}
     ]},
     {"item": "Dock", "kids": [
+      {"item": "Harbor"},
       {"item": "Fishing Ship", "kids": [
         {"item": "Fish Trap"}
       ]},
@@ -587,9 +583,9 @@
       {"item": "Cannon Galleon", "kids": [
         {"item": "Elite Cannon Galleon"}
       ]},
-      {"item": "Dromon"},
-      {"item": "Catapult Galleon"},
-      {"item": "Lou Chuan"},
+      {"item": "Dromon", "replaces": "Cannon Galleon"},
+      {"item": "Catapult Galleon", "replaces": "Cannon Galleon"},
+      {"item": "Lou Chuan", "replaces": "Cannon Galleon"},
       {"group": "uniqueUnits", "unique": true, "kids": [
         {"item": "Caravel", "kids": [
           {"item": "Elite Caravel"}
@@ -1717,7 +1713,6 @@
       "viewList": "List",
       "viewTile": "Tile",
       "tooltips": "Tooltips",
-      "close": "Close",
       "cancel": "Cancel",
       "ok": "OK"
     },
@@ -1726,7 +1721,6 @@
       "military": "Military",
       "uniqueUnits": "Unique Units",
       "uniqueTechnologies": "Unique Technologies",
-      "uniqueBuildings": "Unique Buildings",
       "fortifications": "Fortifications"
     },
     "civs": {

@@ -1,5 +1,7 @@
 import { data, words, numbers, size, plural, fill, nameOf, plain, iconFile } from "./datahandler.js";
-import { items, roots, matching, rebuild, setMark, boxState, mark, fit, unmarkLine, chainOf, barred } from "./model.js";
+import {
+  items, roots, matching, rebuild, setMark, boxState, mark, fit, unmarkLine, chainOf, barred, locked,
+} from "./model.js";
 import { $, clone, simple, compose, label, listCivs, listFilters } from "./stringbuilder.js";
 
 let found = [];
@@ -11,7 +13,7 @@ export const isOpen = (item) => item.twisty?.getAttribute("aria-expanded") === "
 
 export const shown = (item) => !item.parent || (isOpen(item.parent) && shown(item.parent));
 
-const behind = (item) => !!item.parent && (barred(item.parent) || behind(item.parent));
+const behind = (item) => !!item.parent && (locked(item.parent) || behind(item.parent));
 
 export const itemAt = (target) => items[target.closest?.(".node")?.dataset.i];
 
@@ -93,7 +95,7 @@ export function setOpen(item, open) {
 }
 
 const expand = (item) => {
-  if (!barred(item)) chainOf(item).forEach((each) => setOpen(each, true));
+  if (!locked(item)) chainOf(item).forEach((each) => setOpen(each, true));
 };
 
 function paint() {
@@ -105,13 +107,14 @@ function paint() {
     item.node.classList.toggle("self", !!item.self);
     const shut = barred(item);
     item.entry.classList.toggle("barred", shut);
-    for (const el of [item.node, item.twisty]) if (el) el.ariaDisabled = shut ? "true" : null;
+    item.node.ariaDisabled = shut ? "true" : null;
+    if (item.twisty) item.twisty.ariaDisabled = locked(item) ? "true" : null;
   }
 }
 
 export function update() {
   const marked = fit();
-  items.filter(barred).forEach((item) => setOpen(item, false));
+  items.filter(locked).forEach((item) => setOpen(item, false));
   paint();
   listCivs(marked.length > 0);
   items.forEach(count);
@@ -215,7 +218,7 @@ function onChip(e) {
   const chip = e.target.closest(".chip");
   if (!chip) return;
   const at = [...$("chips").querySelectorAll(".chip")].indexOf(chip);
-  unmarkLine(items[chip.dataset.i], chip.dataset.state);
+  unmarkLine(items[chip.dataset.i], chip.dataset.state, chip.hasAttribute("data-own"));
   update();
   const chips = $("chips").querySelectorAll(".chip");
   (chips[at] || chips[at - 1] || $("civTitle")).focus();
@@ -224,7 +227,7 @@ function onChip(e) {
 function wireTools() {
   const swap = (from, to, open) => $(from).addEventListener("click", () => {
     const focused = document.activeElement === $(from);
-    items.filter((item) => !open || !barred(item)).forEach((item) => setOpen(item, open));
+    items.filter((item) => !open || !locked(item)).forEach((item) => setOpen(item, open));
     if (focused && !simple()) $(to).focus();
   });
 

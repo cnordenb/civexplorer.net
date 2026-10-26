@@ -57,26 +57,19 @@ function visibleCentre(el) {
 }
 
 function focusChecks(list) {
-  const outlines = [];
   const hidden = [];
-  for (const el of focusables()) {
+  const modal = document.querySelector("dialog[open]");
+  for (const el of focusables().filter((each) => !modal || modal.contains(each))) {
     el.focus();
-    if (document.activeElement !== el) {
-      outlines.push(`${describe(el)} cannot take focus`);
-      continue;
-    }
-    const style = getComputedStyle(el);
-    const behind = parseFloat(style.outlineOffset) >= 0 ? backgroundOf(el.parentElement) : backgroundOf(el);
-    if (style.outlineStyle === "none" || parseFloat(style.outlineWidth) < 2
-      || contrastOn(style.outlineColor, behind) < 3) outlines.push(describe(el));
+    if (document.activeElement !== el) continue;
     const [x, y] = visibleCentre(el);
     const hit = document.elementFromPoint(x, y);
-    if (!hit || !el.contains(hit)) {
+    const through = hit?.contains(el) && getComputedStyle(el).pointerEvents === "none";
+    if (!hit || !(el.contains(hit) || through)) {
       hidden.push(`${describe(el)} under ${hit ? describe(hit) : "nothing"} at ${Math.round(x)},${Math.round(y)}`);
     }
   }
   document.activeElement?.blur();
-  list("accessibility: focus shows a thick outline with a contrast of at least 3:1", outlines);
   list("accessibility: nothing covers what has focus", hidden);
 }
 

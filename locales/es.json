@@ -39,7 +39,6 @@
       "viewList": "Lista",
       "viewTile": "Mosaico",
       "tooltips": "Descripciones emergentes",
-      "close": "Cerrar",
       "cancel": "Cancelar",
       "ok": "Aceptar"
     },
@@ -48,7 +47,6 @@
       "military": "Ejército",
       "uniqueUnits": "Unidades únicas",
       "uniqueTechnologies": "Tecnologías únicas",
-      "uniqueBuildings": "Edificios únicos",
       "fortifications": "Fortificaciones"
     },
     "civs": {

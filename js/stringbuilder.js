@@ -64,12 +64,13 @@ export function listCivs(marked) {
 export function listFilters() {
   const filters = filtersOf();
   $("ticked").hidden = !filters.length;
-  $("chips").replaceChildren(...filters.map(({ item, mark }) => {
+  $("chips").replaceChildren(...filters.map(({ item, mark, own }) => {
     const li = clone("chipTemplate");
     const chip = li.querySelector(".chip");
-    const name = chipName(item, mark);
+    const name = chipName(item, mark, own);
     chip.dataset.i = item.i;
     chip.dataset.state = mark;
+    chip.toggleAttribute("data-own", !!own);
     li.querySelector(".chip-label").textContent = fill(words.ui[mark === "has" ? "clearHas" : "clearLacks"], { name });
     li.querySelector(".chip-name").textContent = name;
     return li;

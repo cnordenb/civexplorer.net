@@ -39,7 +39,6 @@
       "viewList": "リスト",
       "viewTile": "タイル",
       "tooltips": "ツールチップ",
-      "close": "閉じる",
       "cancel": "キャンセル",
       "ok": "OK"
     },
@@ -48,7 +47,6 @@
       "military": "軍事",
       "uniqueUnits": "固有ユニット",
       "uniqueTechnologies": "固有テクノロジー",
-      "uniqueBuildings": "固有の建物",
       "fortifications": "防御施設"
     },
     "civs": {

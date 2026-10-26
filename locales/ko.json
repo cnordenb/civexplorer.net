@@ -39,7 +39,6 @@
       "viewList": "목록",
       "viewTile": "타일",
       "tooltips": "툴팁",
-      "close": "닫기",
       "cancel": "취소",
       "ok": "확인"
     },
@@ -48,7 +47,6 @@
       "military": "군사",
       "uniqueUnits": "특수 유닛",
       "uniqueTechnologies": "특수 기술",
-      "uniqueBuildings": "특수 건물",
       "fortifications": "방어 시설"
     },
     "civs": {

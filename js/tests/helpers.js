@@ -1,6 +1,6 @@
 import { data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language } from "../datahandler.js";
 import { items, whole, lineOf, lineEnd, shared } from "../model.js";
-import { $, simple } from "../stringbuilder.js";
+import { $ } from "../stringbuilder.js";
 import { setMenu, options } from "../optionshandler.js";
 
 export const TAG = /^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i;
@@ -148,7 +148,7 @@ export const pick = (code) => {
   if (!$("options").open) $("optionsButton").click();
   if ($("languageList").hidden) $("languageButton").click();
   options().find((option) => option.dataset.language === code).click();
-  if (!simple()) $("optionsOk").click();
+  $("optionsOk").click();
 };
 
 export const reset = () => {
@@ -202,11 +202,30 @@ export const shownKeys = () => [...new Set(items.filter((item) => !item.group).m
 
 export const uniqueKeys = () => {
   const under = (nodes, inside) => nodes.flatMap((node) => [
-    ...(inside && node.item ? [node.item] : []), ...under(node.kids ?? [], inside || node.unique === true),
+    ...(node.item && (inside || data.pictures[node.item].reach === "unique") ? [node.item] : []),
+    ...under(node.kids ?? [], inside || node.unique === true),
   ]);
 
   return new Set(under(data.tree, false));
 };
+
+export const ownKeys = () => {
+  const under = (nodes, inside) => nodes.flatMap((node) => [
+    ...(node.item && (inside || node.own) ? [node.item] : []), ...under(node.kids ?? [], inside || node.own === true),
+  ]);
+
+  return new Set(under(data.tree, false));
+};
+
+export function alternativesOf(key) {
+  const named = (node) => [node?.replaces ?? []].flat();
+  const nodes = (list) => list.flatMap((node) => [node, ...nodes(node.kids ?? [])]);
+  const variants = nodes(data.tree).filter((node) => node.replaces);
+  const own = named(variants.find((node) => node.item === key));
+  const others = variants.filter((node) => node.item !== key
+    && (named(node).includes(key) || named(node).some((each) => own.includes(each))));
+  return [...new Set([...own, ...others.map((node) => node.item)])].sort();
+}
 
 export const regionalKeys = () => new Set(keys().filter((key) => data.pictures[key].reach === "regional"));
 

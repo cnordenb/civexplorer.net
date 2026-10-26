@@ -39,7 +39,6 @@
       "viewList": "Elenco",
       "viewTile": "Riquadri",
       "tooltips": "Suggerimenti",
-      "close": "Chiudi",
       "cancel": "Annulla",
       "ok": "OK"
     },
@@ -48,7 +47,6 @@
       "military": "Esercito",
       "uniqueUnits": "Unità riservate",
       "uniqueTechnologies": "Tecnologie riservate",
-      "uniqueBuildings": "Edifici riservati",
       "fortifications": "Fortificazioni"
     },
     "civs": {

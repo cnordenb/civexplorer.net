@@ -39,7 +39,6 @@
       "viewList": "सूची",
       "viewTile": "टाइल",
       "tooltips": "टूलटिप",
-      "close": "बंद करें",
       "cancel": "रद्द करें",
       "ok": "ठीक है"
     },
@@ -48,7 +47,6 @@
       "military": "सेना",
       "uniqueUnits": "अद्वितीय यूनिट",
       "uniqueTechnologies": "अद्वितीय तकनीकें",
-      "uniqueBuildings": "अद्वितीय इमारतें",
       "fortifications": "किलेबंदी"
     },
     "civs": {

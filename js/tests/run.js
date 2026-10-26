@@ -7,7 +7,9 @@ import { openReport, report } from "../report.js";
 import { root, results, check, codes, pick, reset, fixtures } from "./helpers.js";
 import { scripts, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static.js";
 import { behaviourTests } from "./behaviour.js";
-import { menuTests, languageTests, optionTests, keyboardTests, accessibilityTests, reportTests } from "./interface.js";
+import {
+  menuTests, languageTests, optionTests, keyboardTests, accessibilityTests, reportTests, uniqueFilterTests,
+} from "./interface.js";
 import { pictureTests } from "./pictures.js";
 
 const LIMIT = 100;
@@ -65,6 +67,7 @@ async function rounds() {
   codes().forEach((code) => languageTests(code, sample));
   optionTests();
   await pictureTests();
+  uniqueFilterTests();
   tagTests();
   pick(codes()[0]);
   const fresh = fixtures();

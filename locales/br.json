@@ -39,7 +39,6 @@
       "viewList": "Lista",
       "viewTile": "Blocos",
       "tooltips": "Dicas",
-      "close": "Fechar",
       "cancel": "Cancelar",
       "ok": "OK"
     },
@@ -48,7 +47,6 @@
       "military": "Militar",
       "uniqueUnits": "Unidades exclusivas",
       "uniqueTechnologies": "Tecnologias exclusivas",
-      "uniqueBuildings": "Construções exclusivas",
       "fortifications": "Fortificações"
     },
     "civs": {

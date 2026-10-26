@@ -48,7 +48,6 @@
       "viewList": "Список",
       "viewTile": "Плитки",
       "tooltips": "Подсказки",
-      "close": "Закрыть",
       "cancel": "Отмена",
       "ok": "ОК"
     },
@@ -57,7 +56,6 @@
       "military": "Армия",
       "uniqueUnits": "Уникальные юниты",
       "uniqueTechnologies": "Уникальные технологии",
-      "uniqueBuildings": "Уникальные здания",
       "fortifications": "Укрепления"
     },
     "civs": {
