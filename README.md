@@ -5,8 +5,8 @@
 [![testing](https://img.shields.io/badge/testing-yes-C3FF00)](https://github.com/cnordenb/aoe2civexplorer/blob/main/documentation/TESTS.md)
 [![maintainable](https://img.shields.io/badge/maintainable-yes-00FF72)](https://github.com/cnordenb/aoe2civexplorer/blob/main/documentation/MAINTAINER.md)
 
-# aoe2civexplorer
-https://civexplorer.net
+# [civexplorer.net](https://civexplorer.net)
+
 <img width="1632" height="918" alt="image" src="https://github.com/user-attachments/assets/b7559b3f-e651-42e7-8e4c-b4c919772f06" />
 
 
