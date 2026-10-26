@@ -39,7 +39,7 @@ Functional completeness & correctness tests:
 - [Test 21](#test-21): Must have on an item greys out the item it excludes, and the other way round
 - [Test 22](#test-22): An item that replaces buildings holds their items, and must have on one greys out every alternative
 - [Test 23](#test-23): Marking a unit or technology opens its line
-- [Test 24](#test-24): Below the top of a line, a mark passes down only at the same count, and must have passes up
+- [Test 24](#test-24): A mark passes down only to the same civs, and must have up to items they all have
 - [Test 25](#test-25): A closed item shows its own and its full count
 - [Test 26](#test-26): A closed line shows its first and last counts
 - [Test 27](#test-27): An open item shows only its own count
@@ -356,18 +356,18 @@ Only the other side greys out, unmarkable; the Xolotl stays in sight and the Sta
 ## Test 22
 
 ### File residence:
-`js/tests/behaviour.js`, lines 231-290
+`js/tests/behaviour.js`, lines 231-292
 
 ### Purpose:
 Verify Req. 37: a stand-in, such as the Mule Cart, holds what it replaces, and must have on one greys out the rest.
 
 ### Assertion expectation:
-Holds the non-own, non-unique rows it replaces; one mark and filter; greys out only its alternatives till cleared.
+Holds the non-own, non-unique rows it replaces; one mark and filter; greys out only marked items' variants till cleared.
 
 ## Test 23
 
 ### File residence:
-`js/tests/behaviour.js`, lines 294-298
+`js/tests/behaviour.js`, lines 315-319
 
 ### Purpose:
 Verify Req. 28 and 31: marking a unit or technology opens it, showing every item marked with it.
@@ -378,18 +378,18 @@ Clicking a closed line item opens it down to the end of its line, so every item 
 ## Test 24
 
 ### File residence:
-`js/tests/behaviour.js`, lines 300-311
+`js/tests/behaviour.js`, lines 294-310 and 321-337
 
 ### Purpose:
-Verify Req. 29, 30 and 34: below a line's top, a mark passes down only at equal counts; must have also passes up.
+Verify Req. 13, 29, 30 and 34: a mark passes down only to the same civs; must have passes up to items they all have.
 
 ### Assertion expectation:
-A click marks the items below with equal counts and every item above; X skips other counts and marks nothing above.
+Click marks same-civ items below and above; X marks nothing above nor clears below; left-out unique items lift rows.
 
 ## Test 25
 
 ### File residence:
-`js/tests/behaviour.js`, line 336
+`js/tests/behaviour.js`, line 362
 
 ### Purpose:
 Verify each item's compatible civilisations count (Req. 3).
@@ -400,7 +400,7 @@ Closed items with contents show "own–all" counts and other items their own cou
 ## Test 26
 
 ### File residence:
-`js/tests/behaviour.js`, lines 337-338
+`js/tests/behaviour.js`, lines 363-364
 
 ### Purpose:
 Verify that a closed upgrade line shows the range from its first item to its last upgrade.
@@ -411,7 +411,7 @@ The line's count reads its first item's civ count, then its last item's civ coun
 ## Test 27
 
 ### File residence:
-`js/tests/behaviour.js`, lines 339-340
+`js/tests/behaviour.js`, lines 365-366
 
 ### Purpose:
 Avoid a misleading range once an item's contents are visible.
@@ -422,7 +422,7 @@ After Expand all, every item shows only its own count.
 ## Test 28
 
 ### File residence:
-`js/tests/behaviour.js`, lines 341-346
+`js/tests/behaviour.js`, lines 367-372
 
 ### Purpose:
 Verify that the counts follow the active filters (Req. 3).
@@ -433,7 +433,7 @@ With a must-have and a must-lack mark, open and closed items count only the civs
 ## Test 29
 
 ### File residence:
-`js/tests/behaviour.js`, lines 359-360
+`js/tests/behaviour.js`, lines 385-386
 
 ### Purpose:
 Verify Req. 18 and 19, and each branch's arrow.
@@ -444,7 +444,7 @@ Expand all opens every branch, Collapse all closes every branch, and a branch's 
 ## Test 30
 
 ### File residence:
-`js/tests/behaviour.js`, lines 361-366
+`js/tests/behaviour.js`, lines 387-392
 
 ### Purpose:
 Save clicks by opening a line of only children in one step.
@@ -455,7 +455,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour.js`, lines 374-378
+`js/tests/behaviour.js`, lines 400-404
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them and counts them.
@@ -466,7 +466,7 @@ Exactly the matches are highlighted in yellow and shown; the number shows on one
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour.js`, lines 382-383
+`js/tests/behaviour.js`, lines 408-409
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).

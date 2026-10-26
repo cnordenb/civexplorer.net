@@ -19,8 +19,9 @@ function collect(nodes, parent) {
   for (const node of nodes) {
     if (node.item && !(node.item in data.availability)) throw new Error(`no availability for ${node.item}`);
     const key = node.item ?? node.group;
+    const path = [parent?.path, ...(node.via ?? []), key].filter(Boolean).join("|");
     const item = {
-      i: items.length, key, path: parent ? `${parent.path}|${key}` : key, group: !node.item, lines: !!node.lines,
+      i: items.length, key, path, group: !node.item, lines: !!node.lines,
       set: node.item ? setOf(data.availability[node.item]) : ALL, self: null, kids: [], parent, original: null,
       excludes: node.excludes, rivals: [], opponents: [], replaces: node.replaces, alternatives: [], copy: !!node.copy,
     };
@@ -32,11 +33,15 @@ function collect(nodes, parent) {
 
 export const whole = (item) => (item.all ??= item.kids.reduce((s, kid) => s & whole(kid), item.set));
 
+const lift = (node, kids) => kids.filter((kid) => !kid.copy)
+  .map((kid) => ({ ...kid, via: [node.item, ...(kid.via ?? [])] }));
+
 function prune(nodes, every = false, regionals = true) {
   return nodes.flatMap((node) => {
     const reach = data.pictures[node.item]?.reach;
-    if ((!every && (node.unique || reach === "unique")) || (!regionals && reach === "regional")) return [];
+    if ((!every && node.unique) || (!regionals && reach === "regional")) return [];
     const kids = prune(node.kids ?? [], every, regionals);
+    if (!every && reach === "unique") return lift(node, kids);
     const rule = node.item && data.availability[node.item];
     const civs = rule ? size(setOf(rule)) : 0;
     if (!kids.length && (node.group || (!every && (civs === 1 || civs >= data.civs.length - 1)))) return [];
@@ -137,16 +142,18 @@ export const isUnitOrTech = (item) => {
 
 const descendants = (item) => item.kids.flatMap((kid) => [kid, ...descendants(kid)]);
 
+const covers = (above, item) => !(item.set & ~above.set);
+
 function prerequisites(item) {
   const above = [];
-  for (let p = item.parent; p && isUnitOrTech(p); p = p.parent) above.push(p);
+  for (let p = item.parent; p && isUnitOrTech(p) && covers(p, item); p = p.parent) above.push(p);
   return above;
 }
 
 function passedTo(item) {
   const line = [item];
   while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group) line.push(line.at(-1).kids[0]);
-  return line.filter((each) => size(each.set) === size(item.set));
+  return line.filter((each) => each.set === item.set);
 }
 
 const current = (item) => (isUnitOrTech(item) ? item.self : state(item));
@@ -154,7 +161,8 @@ const current = (item) => (isUnitOrTech(item) ? item.self : state(item));
 function put(item, kind) {
   if (!isUnitOrTech(item) || !kind) return setMark(item, kind);
   if (kind === "lacks") {
-    descendants(item).filter((each) => each.self === "has").forEach((each) => { each.self = null; });
+    descendants(item).filter((each) => each.self === "has" && prerequisites(each).includes(item))
+      .forEach((each) => { each.self = null; });
   }
   passedTo(item).forEach((each) => { each.self = kind; });
 }

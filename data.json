@@ -109,7 +109,8 @@
             {"item": "Long Swordsman", "kids": [
               {"item": "Two-Handed Swordsman", "kids": [
                 {"item": "Champion"}
-              ]}
+              ]},
+              {"item": "Legionary", "replaces": "Two-Handed Swordsman"}
             ]}
           ]}
         ]},
@@ -142,7 +143,6 @@
           {"item": "Elite Ibirapema Warrior"}
         ]},
         {"item": "Jian Swordsman"},
-        {"item": "Legionary"},
         {"item": "Temple Guard", "kids": [
           {"item": "Elite Temple Guard"}
         ]},
@@ -157,7 +157,9 @@
           ]}
         ]},
         {"item": "Skirmisher", "kids": [
-          {"item": "Elite Skirmisher"}
+          {"item": "Elite Skirmisher", "kids": [
+            {"item": "Imperial Skirmisher"}
+          ]}
         ]},
         {"item": "Cavalry Archer", "kids": [
           {"item": "Heavy Cavalry Archer"}
@@ -177,7 +179,6 @@
           {"item": "Elite Genitour"}
         ]},
         {"item": "Grenadier"},
-        {"item": "Imperial Skirmisher"},
         {"item": "Xianbei Raider"},
         {"item": "Thumb Ring"},
         {"item": "Parthian Tactics"},
@@ -187,16 +188,22 @@
         {"item": "Xolotl Warrior", "excludes": "Stable"},
         {"item": "Scout Cavalry", "kids": [
           {"item": "Light Cavalry", "kids": [
-            {"item": "Hussar"}
+            {"item": "Hussar"},
+            {"item": "Winged Hussar", "replaces": "Hussar"}
           ]}
         ]},
         {"item": "Knight", "kids": [
           {"item": "Cavalier", "kids": [
-            {"item": "Paladin"}
+            {"item": "Paladin"},
+            {"item": "Savar", "replaces": "Paladin"}
           ]}
         ]},
-        {"item": "Camel Rider", "kids": [
-          {"item": "Heavy Camel Rider"}
+        {"item": "Camel Scout", "kids": [
+          {"item": "Camel Rider", "kids": [
+            {"item": "Heavy Camel Rider", "kids": [
+              {"item": "Imperial Camel Rider"}
+            ]}
+          ]}
         ]},
         {"item": "Battle Elephant", "kids": [
           {"item": "Elite Battle Elephant"}
@@ -207,13 +214,9 @@
         {"item": "Steppe Lancer", "kids": [
           {"item": "Elite Steppe Lancer"}
         ]},
-        {"item": "Camel Scout"},
-        {"item": "Imperial Camel Rider"},
-        {"item": "Savar"},
         {"item": "Shrivamsha Rider", "kids": [
           {"item": "Elite Shrivamsha Rider"}
         ]},
-        {"item": "Winged Hussar"},
         {"item": "Bloodlines"},
         {"item": "Husbandry"}
       ]},

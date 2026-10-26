@@ -33,7 +33,7 @@
 31. A node will be expanded to if it is automatically assigned a value. This requirement may be flouted for building variant edge cases where the same node has to occur multiple times in several branches.
 32. Options window will contain a "Simple UI" checkbox.
 33. The page will not use any images upon the user enabling the Simple UI checkbox.
-34. A prerequisite node will be automatically enabled if a descendant node is enabled. This requirement does not apply to building nodes nor to root nodes.
+34. A prerequisite node will be automatically enabled if a descendant node is enabled. This requirement does not apply to building nodes nor to root nodes nor to unique node edge cases.
 35. Input panel or output panel will not resize upon user interaction - such as node being assigned value - other than resizing the window.
 36. A unique node will always have its own filter entry if enabled. This does not apply for lines where every individual node is unique (eg. Gbeto does not require its own filter entry while Elite Gbeto is enabled).
 37. Variant branches are mutually exclusive and when one of them is enabled, all alternative branches will be greyed out. Variant branches are for example: monastery variants (eg. Fortified Church), drop-off site variants (NB: such a variant can replace one (eg. Folwark) or more (eg. Settlement) drop-off sites), shock infantry (Eagle/Varangian/Fire), ram variants (eg. Armored Elephant), unique replacements (eg. Donjon over watch tower-line, Pasture over Farm). 

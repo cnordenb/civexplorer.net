@@ -64,11 +64,13 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
      [How marking works](#how-marking-works)).
    - A new unique unit goes straight into the building that trains it, after its other units and before its
      technologies, as the Grenadier is in the Archery Range; only the Castle keeps a Unique Units group. A new unique
-     technology goes into the Castle's Unique Technologies. Both keep the alphabetical order of the unique items around
-     them. A new unique building has no group: it goes straight into Economy or Military, next to the building it stands
-     in for (see `"replaces"` in [How marking works](#how-marking-works)), or under the building it belongs to, as the
-     Harbor is the first row under the Dock. A unit or technology that stands in for another, as the Fire Lancer does
-     for the Eagle Scout and Cranequins for Parthian Tactics, names it with `"replaces"` too.
+     technology goes into the Castle's Unique Technologies. Both keep the alphabetical order of the unique items
+     around them. A unique upgrade goes under the unit it upgrades instead, as the Imperial Skirmisher is under the
+     Elite Skirmisher. A new unique building has no group: it goes straight into Economy or Military, next to the
+     building it stands in for (see `"replaces"` in [How marking works](#how-marking-works)), or under the building it
+     belongs to, as the Harbor is the first row under the Dock. A unit or technology that stands in for another, as
+     the Fire Lancer does for the Eagle Scout, Cranequins for Parthian Tactics and the Legionary, under the Long
+     Swordsman, for the Two-Handed Swordsman, names it with `"replaces"` too.
    - Every entry in a list is followed by a comma, except the last one. Visual Studio Code underlines mistakes in red.
 
    Reload the `?update` page. The report should no longer mention those items.
@@ -300,17 +302,21 @@ item sits in the tree decides what else its mark reaches:
 - A group inside an item is only a **heading**, as the Castle's Unique Units, at its top, and Unique Technologies,
   between the Trebuchet and Hoardings, are. It has no checkbox and cannot be marked; a click on its name or its arrow
   opens and closes it, and the arrow keys stop on its arrow. Marking the Castle still marks everything in them.
-- An item under another item is a **unit or technology**, often the start of a line of upgrades. Its mark passes
-  down that line, until it forks, but only to the items that as many civilisations have (requirements 29 and 30):
-  marking Militia (52 civilisations) also marks Man-at-Arms (52), but not Long Swordsman (51).
+- An item under another item is a **unit or technology**, often the start of a line of upgrades. Its mark passes down
+  that line, until it forks, but only to the items that the same civilisations have (requirements 29 and 30): marking
+  Militia (52 civilisations) also marks Man-at-Arms (the same 52), but not Long Swordsman (51), and marking the Camel
+  Scout (the Gurjaras) does not mark the Imperial Camel Rider (the Hindustanis).
 - The items in a group marked `"lines": true` count as units and technologies too. That group is Fortifications,
   whose walls and towers are lines of upgrades (requirements 24, 25 and 30): marking the Watch Tower (55) does not
   mark the Guard Tower (51).
-- Must have also passes up, to every unit and technology above the item, which are its prerequisites, but never to
-  a building (requirement 34): marking Two-Man Saw marks Bow Saw and Double-Bit Axe too, but not the Lumber Camp,
-  and marking the Keep marks the Guard Tower and the Watch Tower. So Double-Bit Axe cannot lose must have while
-  Two-Man Saw keeps it: clearing it, or marking it must lack, clears Two-Man Saw too. Marking everything in a
-  building marks all in it but the building itself, which shows a dash. Must lack never passes up.
+- Must have also passes up, to every unit and technology above the item, which are its prerequisites, but never to a
+  building (requirement 34): marking Two-Man Saw marks Bow Saw and Double-Bit Axe too, but not the Lumber Camp, and
+  marking the Keep marks the Guard Tower and the Watch Tower. So Double-Bit Axe cannot lose must have while Two-Man
+  Saw keeps it: clearing it, or marking it must lack, clears Two-Man Saw too. It stops below an item that some
+  civilisations with the item lack, as that is no prerequisite for them (one of requirement 34's unique edge cases):
+  marking the Camel Rider does not mark the Camel Scout, which only the Gurjaras have, and marking the Camel Scout
+  must lack leaves the Camel Rider marked. Marking everything in a building marks all in it but the building itself,
+  which shows a dash. Must lack never passes up.
 - Marking opens the item down to its first fork, and every row the mark reached.
 - An item can name another item that no civilisation has together with it, as the Xolotl Warrior names the Stable:
   `{"item": "Xolotl Warrior", "excludes": "Stable"}`. While the Xolotl Warrior is marked must have, the Stable and
@@ -320,10 +326,11 @@ item sits in the tree decides what else its mark reaches:
   Otherwise the Xolotl Warrior is not part of the Stable: marking the Stable must lack leaves it alone, and "Full
   Stable" does not count it. It is the first row under the Stable, so that marking it opens only rows below it.
 - An item can name the items it stands in for, one by name or several in a list. The Fortified Church names the
-  Monastery, the Folwark the Mill, the Pasture the Farm, the Donjon the Watch Tower, the Mule Cart and the
-  Settlement the drop-off sites their civilisations lack, the Varangian Guard and the Fire Lancer the Eagle Scout,
-  the Dromon, the Catapult Galleon and the Lou Chuan the Cannon Galleon, the Champi Scout the Militia, the Armored
-  Elephant the Battering Ram, the Rocket Cart the Mangonel, and Cranequins Parthian Tactics:
+  Monastery, the Folwark the Mill, the Pasture the Farm, the Donjon the Watch Tower, the Mule Cart and the Settlement
+  the drop-off sites their civilisations lack, the Varangian Guard and the Fire Lancer the Eagle Scout, the Dromon,
+  the Catapult Galleon and the Lou Chuan the Cannon Galleon, the Champi Scout the Militia, the Legionary the
+  Two-Handed Swordsman, the Savar the Paladin, the Winged Hussar the Hussar, the Armored Elephant the Battering Ram,
+  the Rocket Cart the Mangonel, and Cranequins Parthian Tactics:
   `{"item": "Fortified Church", "replaces": "Monastery"}`
   `{"item": "Mule Cart", "replaces": ["Lumber Camp", "Mining Camp"]}`
   The page then also shows, under it, everything in those items but their unique items and unique groups, in the order
@@ -352,10 +359,11 @@ item sits in the tree decides what else its mark reaches:
   `reach` in `pictures`.
 
 Some items are left out of the tree unless the visitor ticks **Include Unique and Universal** in Options: the groups
-marked `"unique": true` (the Castle's Unique Units and Unique Technologies), the items aoe2techtree calls unique,
-such as the Harbor and the Grenadier, and the items that all civilisations, all but one, or only one has, such as
-the House, which only the Huns lack. The page works these out by itself, and keeps such an item when something
-under it is shown, such as the Watch Tower above the Guard Tower.
+marked `"unique": true` (the Castle's Unique Units and Unique Technologies), the items aoe2techtree calls unique, such
+as the Harbor and the Grenadier, and the items that all civilisations, all but one, or only one has, such as the
+House, which only the Huns lack. The page works these out by itself, and keeps such an item when something under it is
+shown, such as the Watch Tower above the Guard Tower. A unique unit that is left out leaves the rows under it in its
+place: without the Camel Scout, the Camel Rider is a row of the Stable.
 Unticking **Include Regionals** also leaves out the items aoe2techtree calls regional, such as the Eagle Scout.
 
 ### Simple UI and the pictures

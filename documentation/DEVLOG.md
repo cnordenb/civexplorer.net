@@ -2878,3 +2878,54 @@ Variants still to be resolved:
   with an arrow and no box.
 - **Documents.** `TESTS.md`: the new Test 54, the numbers after it, and the lines of Test 99 in `js/tests/run.js`.
   `MAINTAINER.md`: headings in "How marking works".
+
+## 2026-10-26: upgrades and variants moved into their lines
+
+### What changed
+
+- **Upgrades under what they upgrade.** In `data.json`, the Imperial Skirmisher is now under the Elite Skirmisher and
+  the Imperial Camel Rider under the Heavy Camel Rider, instead of being rows of their own in the Archery Range and
+  the Stable.
+- **Variants in their lines.** The Legionary is now under the Long Swordsman, the Savar under the Cavalier and the
+  Winged Hussar under the Light Cavalry, each naming with `"replaces"` the upgrade it stands in for: the Two-Handed
+  Swordsman, the Paladin and the Hussar. Must have on one greys out the other (requirement 37).
+- **The Camel Scout above the Camel Rider.** The Camel Scout, which only the Gurjaras have, is now the top of the
+  Camel Rider line. It is the first unit or technology above another that some civilisations with the one below lack.
+  Three changes in `js/model.js` keep the line working:
+  - Must have passes up only while the civilisations with the marked item all have the item above (`covers()` in
+    `prerequisites()`), so marking the Camel Rider lists its 13 civilisations, not only the Gurjaras. Requirement 34
+    was amended in this session to allow such unique edge cases. For the same reason, must lack on the Camel Scout no
+    longer clears must have on the Camel Rider.
+  - A mark passes down only to the items that the same civilisations have, not just as many (`passedTo()`). Otherwise
+    marking the Camel Scout (the Gurjaras) would also mark the Imperial Camel Rider (the Hindustanis), and list no
+    civilisation. In every other line an item's civilisations are among those of the item above, so the two rules
+    agree there.
+  - A unique item left out by default leaves the rows under it in its place (`lift()` in `prune()`), so the Camel
+    Rider line stays in the Stable while **Include Unique and Universal** is unticked. Such rows keep their full path
+    (`via`), so their marks and open state survive ticking and unticking the box.
+- **Test 22.** Marking the Legionary also marks the Militia line above it, which greys out the Champi Scout, as it
+  replaces the Militia. The test expected only the marked item's own alternatives; it now expects those of every item
+  marked must have. It compares only items that are variants, as the Xolotl Warrior also greys out when the Savar or
+  the Winged Hussar, in the Stable, is marked.
+- **Test 24.** It now also takes the first item whose civilisations the item above does not all have, the Camel
+  Rider, and checks that marking the item above marks only that, that must have on the item does not pass up, that
+  must lack above keeps it, and that with Include unticked the item stands in the place of the one above, still
+  marked. `sameCount` in `js/tests/behaviour.js` is now `sameCivs`, and compares civilisations.
+- **Mutation runs.** Test 24 fails, and no other test, with each of these: must have passing up to every item above;
+  must lack clearing every must have below; marks passing down by count; unique items taking the rows under them
+  away; lifted rows losing their path. Test 22 fails without the greying of variants.
+- **Checked.** All 99 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900.
+- **Documents.** `MAINTAINER.md`: where a unique upgrade goes, the Legionary, the Savar and the Winged Hussar among
+  the stand-ins, marks passing down to the same civilisations, where must have stops, and the rows a left-out unique
+  item leaves. `TESTS.md`: Tests 22 and 24, and the lines of Tests 22 to 32 in `js/tests/behaviour.js`.
+
+### Questions
+
+1. **Requirement 29.** It gives the same mark to items with an equal number of civilisations. Marks now pass down
+   only to items with the same civilisations, as in the Camel Scout line an equal number (one) means different
+   civilisations. Requirement 29 could say "of the same compatible civilisations" instead of "of equal number of
+   compatible civilisations".
+2. **Clearing the Camel Scout.** Clearing an item still clears everything under it, so clearing must have on the
+   Camel Scout also clears must have on the Camel Rider, which does not depend on it. Should clearing leave such
+   items alone, as must lack now does?

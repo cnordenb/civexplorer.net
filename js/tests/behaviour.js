@@ -5,13 +5,13 @@ import { isOpen, setOpen, shown } from "../nodetree.js";
 import { setInclude } from "../optionshandler.js";
 import {
   root, check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below, drawn, marks, yellow,
-  chainOf, fixtures, ownKeys, alternativesOf,
+  chainOf, fixtures, ownKeys, alternativesOf, byPath,
 } from "./helpers.js";
 
-const sameCount = (item) => {
+const sameCivs = (item) => {
   const line = [item];
   while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group) line.push(line.at(-1).kids[0]);
-  return line.filter((each) => size(each.set) === size(item.set));
+  return line.filter((each) => each.set === item.set);
 };
 
 const chipNames = () =>[...$("chips").querySelectorAll(".chip-name")].map((chip) => chip.textContent);
@@ -148,7 +148,7 @@ async function gestures({ third }) {
 function lineTops({ line }) {
   reset();
   const chain = lineOf(line);
-  const run = sameCount(line);
+  const run = sameCivs(line);
 
   const only = (kind) => chain.every((item) => item.self === (run.includes(item) ? kind : null));
 
@@ -280,7 +280,9 @@ function standIns(sample) {
   const exclusive = items.filter((each) => alternativesOf(each.key).length).every((each) => {
     $("clear").click();
     tap(each.node);
-    return same(greys(), alternativesOf(each.key));
+    const marked = items.filter((one) => one.self === "has").map((one) => one.key);
+    const barred = [...new Set(marked.flatMap(alternativesOf))].filter((key) => !marked.includes(key)).sort();
+    return same(greys().filter((key) => alternativesOf(key).length), barred);
   });
   setInclude(false);
   Object.assign(sample, fixtures());
@@ -289,7 +291,26 @@ function standIns(sample) {
   reset();
 }
 
-function lines({ line, even, uneven }) {
+function beyond() {
+  setInclude(true);
+  const item = items.find((each) => each.parent && isUnitOrTech(each.parent) && size(each.set & ~each.parent.set));
+  const above = item?.parent;
+  if (!item) return setInclude(false) ?? [true, true];
+  for (let p = above; p; p = p.parent) setOpen(p, true);
+  tap(above.node);
+  const alone = items.filter((each) => each.self).length === 1;
+  $("clear").click();
+  tap(item.node);
+  keyDown(above.node, "x");
+  const kept = alone && item.self === "has" && above.self === "lacks"
+    && same(listed(), expected(item.set & ~above.set & ALL));
+  setInclude(false);
+  const lifted = byPath(above.path) || byPath(item.path)?.parent === byPath(above.parent.path);
+  return [kept, lifted && byPath(item.path)?.self === "has"];
+}
+
+function lines(sample) {
+  const { line, even, uneven } = sample;
   reset();
   for (let p = line.parent; p; p = p.parent) setOpen(p, true);
   const closed = !isOpen(line);
@@ -297,18 +318,23 @@ function lines({ line, even, uneven }) {
   check("marking: marking a unit or technology opens it to its first fork or its end, showing all marked with it",
     closed && lineOf(line).every((item) => shown(item) && (!item.twisty || isOpen(item))));
   $("clear").click();
-  const [run, lacking] = [sameCount(even), sameCount(uneven)];
+  const [run, lacking] = [sameCivs(even), sameCivs(uneven)];
   const before = lineOf(even).slice(0, lineOf(even).indexOf(even)).filter(isUnitOrTech);
   tap(even.node);
   const passed = run.length > 1 && before.length > 0 && [...before, ...run].every((item) => item.self === "has")
     && items.filter((item) => item.self && !item.original).length === before.length + run.length;
   $("clear").click();
   keyDown(uneven.node, "x");
-  check("marking: below the top of a line, a mark passes down only to items with as many civilisations, and only "
-    + "must have passes up, to every item before it",
-    passed && lacking.every((item) => item.self === "lacks")
+  const lacked = lacking.every((item) => item.self === "lacks")
     && items.filter((item) => item.self && !item.original).length === lacking.length
-    && same(listed(), expected(lacking.reduce((s, item) => s & ~item.set, ALL))), `${run.length} passed: ${passed}`);
+    && same(listed(), expected(lacking.reduce((s, item) => s & ~item.set, ALL)));
+  $("clear").click();
+  const [kept, lifted] = beyond();
+  Object.assign(sample, fixtures());
+  check("marking: below the top of a line, a mark passes down only to items with the same civilisations, and only "
+    + "must have passes up, to every item before it that all civilisations with it have, and must lack there keeps "
+    + "it; a unique item left out leaves the rows under it in its place", passed && lacked && kept && lifted,
+    `${run.length} passed: ${passed}, ${lacked}, ${kept}, ${lifted}`);
   $("clear").click();
 }
 
