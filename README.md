@@ -7,7 +7,8 @@
 
 # [civexplorer.net](https://civexplorer.net)
 
-<img width="1632" height="918" alt="image" src="https://github.com/user-attachments/assets/b7559b3f-e651-42e7-8e4c-b4c919772f06" />
+<img width="2896" height="1840" alt="image" src="https://github.com/user-attachments/assets/4a2f58a3-84ec-4f4f-891f-640422f9e7e4" />
+
 
 
 
@@ -16,11 +17,6 @@
 Explore Age of Empires II civilisations by technology availability: mark the buildings, units and technologies a
 civilisation must have or must lack, and see which civilisations fit. The page is available in the same 17 languages
 as [aoe2techtree.net](https://aoe2techtree.net/), where its data comes from.
-
-## Installation
-
-civexplorer.net requires a server to run and cannot run locally from file due to using .json for data.
-However, it is runnable offline (English only) with the html file (simple UI only) aoe2civexplorer.html available in [releases](https://github.com/cnordenb/civexplorer.net/releases).
 
 ## Usage
 
