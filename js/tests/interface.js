@@ -260,9 +260,9 @@ function filterFocus({ other, third }) {
     && document.activeElement === $("chips").querySelector(".chip")
     && Number(document.activeElement.dataset.i) === left.i);
   document.activeElement.click();
-  check("filters: clearing the last filter moves focus to the civilisations heading and shows the hint",
-    left.self === null && document.activeElement === $("civTitle") && !listed().length && !$("none").hidden
-    && $("none").textContent === words.ui.start && $("ticked").hidden);
+  check("filters: clearing the last filter moves focus to the civilisations heading and lists every civilisation",
+    left.self === null && document.activeElement === $("civTitle") && same(listed(), expected(ALL))
+    && $("none").hidden && $("ticked").hidden);
   reset();
 }
 

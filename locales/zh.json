@@ -20,7 +20,6 @@
       "compatible": {"other": "{n} 个符合条件的文明"},
       "filters": "筛选条件：",
       "noMatch": "没有文明符合所有筛选条件。",
-      "start": "点击树中的项目，列出拥有它们的文明。",
       "civCount": {"other": "{n} 个文明"},
       "range": "{own}–{all}",
       "civRange": "{own}，其中 {all} 拥有其下全部项目",

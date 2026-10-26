@@ -30,7 +30,6 @@
       },
       "filters": "Filtry:",
       "noMatch": "Żadna cywilizacja nie spełnia wszystkich filtrów.",
-      "start": "Kliknij elementy drzewa, aby wyświetlić cywilizacje, które je mają.",
       "civCount": {"one": "{n} cywilizacja", "few": "{n} cywilizacje", "many": "{n} cywilizacji", "other": "{n} cywilizacji"},
       "range": "{own}–{all}",
       "civRange": "{own}, w tym {all} ze wszystkim, co poniżej",

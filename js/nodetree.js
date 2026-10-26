@@ -89,6 +89,11 @@ function plant() {
 function count(item) {
   const own = size(matching & (item.group ? item.all : item.set));
   const all = size(matching & item.all);
+  if (!item.parent && !own) {
+    item.count.textContent = "";
+    item.civCount.textContent = "";
+    return;
+  }
   if (item.group || !item.kids.length || isOpen(item)) {
     item.count.textContent = numbers.format(own);
     item.civCount.textContent = plural("civCount", own);
@@ -125,10 +130,10 @@ function paint() {
 }
 
 export function update() {
-  const marked = fit();
+  fit();
   items.filter(locked).forEach((item) => setOpen(item, false));
   paint();
-  listCivs(marked.length > 0);
+  listCivs();
   items.forEach(count);
   listFilters();
 }

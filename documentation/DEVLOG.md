@@ -1301,7 +1301,7 @@ All of this applies with the pictures on. Simple UI is unchanged.
   works out to the list's full height, so the pane could never shrink. It was meant to keep the header, the filters
   and a 44-pixel list in view, as the entry of 2026-10-21 on pinned filters says. No test caught it, as none filled
   the list in a phone-sized window.
-- **The fix.** As asked, with everything open and the civilisations listed, the two panes now take about half the
+- **The fix.** With everything open and the civilisations listed, the two panes now take about half the
   window each, and each list scrolls inside its pane. In windows narrower than 720 pixels and at least 640 tall,
   `.panes` is a grid of five rows, the tree's header and list and the civilisations' header, filters and list, and
   each pane spans its rows as a subgrid, keeping its frame. Headers are as tall as their contents and always show
@@ -1317,7 +1317,7 @@ All of this applies with the pictures on. Simple UI is unchanged.
   lists are 141 and 141 pixels at 390 by 844, and 169 and 169 at 412 by 915. With the pictures on they are 97 and 69
   at 390 by 844; the civilisations' frame is 28 pixels thicker than the tree's. Screenshots checked at 360 by 640,
   360 by 780, 390 by 844 and 412 by 915, with a phone's touch screen emulated.
-- **Test 15 replaced.** As asked, "Clear clears everything" made way for a test of this bug. Clear is still pressed
+- **Test 15 replaced.** "Clear clears everything" made way for a test of this bug. Clear is still pressed
   before nearly every test, by `reset()`. The new Test 15 opens the whole tree and marks the item most civilisations
   have, then checks, in every test window, that the page does not scroll, that both headers sit inside their panes,
   that the panes do not overlap, that the list scrolls inside its pane, and that stacked lists share the height
@@ -1358,7 +1358,7 @@ All of this applies with the pictures on. Simple UI is unchanged.
 
 ### What changed
 
-- **The GitHub check names failed tests by number.** As asked, the log no longer prints each failed test's long name
+- **The GitHub check names failed tests by number.** The log no longer prints each failed test's long name
   and details. For each window size it prints the summary, such as "3 of 100 tests failed in light colours, in
   windows of 500 by 749, 320 by 256, 360 by 640, and 390 by 844 pixels.", and then one line per failed test, such as
   "Test 42 failed". The number is the test's number in `TESTS.md`. A window that never finished says so.
@@ -1424,7 +1424,7 @@ All of this applies with the pictures on. Simple UI is unchanged.
   WCAG's reflow criterion asks for, and Rule 3 and Rule 4 rely on it for Simple UI. The 322 by 480 and 352 by 480
   windows seen in a report are not set by the tests; the first window in a report is always the browser window the
   tests ran in. On GitHub, the 500 by 900 run still tries the phone layout.
-- **Tests 49, 50 and 52 removed.** As asked. Nothing checks these things any more:
+- **Tests 49, 50 and 52 removed.** Nothing checks these things any more:
   - Test 49: the title "Civ Explorer" in bold Georgia in its frame, and the Options window's title in the frame of
     its parchment.
   - Test 50: the text buttons' picture with unstretched ends, and their bold Georgia lettering and shadow.
@@ -1450,7 +1450,7 @@ All of this applies with the pictures on. Simple UI is unchanged.
   `.test-frame` rules in `style.css`, and `frameTitle` in `data.json`. The report now says "in a window of …
   pixels". Nothing now checks the page at 400% zoom, which WCAG's reflow criterion asks for with Simple UI; try it by
   hand after bigger changes, as the end of `MAINTAINER.md` says.
-- **Test 82 checks Rules 23, 24 and 25.** As asked, it now checks `index.html`, `style.css` and every script for
+- **Test 82 checks Rules 23, 24 and 25.** It now checks `index.html`, `style.css` and every script for
   files over 400 lines of code (Rule 25), functions over 60 lines of code (Rule 23) and lines over 120 characters
   (Rule 24). Blank lines are not lines of code. Before, it only checked that no script had over 400 lines of code.
   `data.json`, the language files and the documents are data and text, not code, so they are not checked.
@@ -1482,7 +1482,7 @@ Currently: big refactor time, focussing on getting project compliant with rules 
 
 ## 2026-10-22: compliance with RULES.md and REQUIREMENTS.md, and js/ui.js split in three
 
-As asked: make the project compliant with `RULES.md` and `REQUIREMENTS.md`, with every test passing, without stopping
+Goal: make the project compliant with `RULES.md` and `REQUIREMENTS.md`, with every test passing, without stopping
 for questions, and with `js/ui.js` split into `js/nodetree.js`, `js/stringbuilder.js` and `js/optionshandler.js`.
 Nothing was committed. Questions are at the end of this entry.
 
@@ -1796,7 +1796,7 @@ Decided, and recorded before any work on it:
   800 by 1100 and 500 by 900. No script breaks Rules 23 to 26.
 - **Documents.** `TESTS.md`: the wording of Tests 11, 17, 20 and 22, and the lines of every test in
   `js/tests/behaviour.js`. `code_docu.pdf` rebuilt (258 functions).
-- **`MAINTAINER.md` was not edited, as asked, so it is now out of date.** Step 4 still says that marking the top of
+- **`MAINTAINER.md` was not edited, so it is now out of date.** Step 4 still says that marking the top of
   a line marks the whole line whatever the counts (requirement 27), with Militia marking up to Champion, and that
   the first item of a line is the one that marks the whole line. Both need rewriting to requirements 29 and 30
   when the guide may be edited again.
@@ -1806,7 +1806,7 @@ Decided, and recorded before any work on it:
 Requested, following the new Rule 27: `MAINTAINER.md` had grown to 873 lines, and the update
 guide only started halfway down. It is rewritten from scratch, at 369 lines, 104 of them the UML diagram.
 
-- **Two chapters, as asked.** "Updating Civ Explorer after a game patch" comes first, with a short description and
+- **Two chapters.** "Updating Civ Explorer after a game patch" comes first, with a short description and
   eight steps, and no subchapters. Fixing a wrong name and adding a new civilisation's icon are now part of step 4,
   where the report asks for them. "How the code works" has eight subchapters: Files and folders, UML diagram, The
   data, How marking works, Simple UI and the pictures, Assets, Tests, and Rules for changing the code. Changing the
@@ -2235,7 +2235,7 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 
 ### What changed
 
-- **The Monastery and its whole branch moved,** as asked. They left the Economy group and are
+- **The Monastery and its whole branch moved.** They left the Economy group and are
   now a top-level row between Blacksmith and University, the order aoe2techtree.net uses. The Fortified Church, the
   Monastery of the Armenians and the Georgians, stays in Economy.
 - **How.** As with the Dock, the JSON writer in `js/datahandler.js` made the move, after confirming that it
@@ -2247,7 +2247,7 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 
 ### What changed
 
-- **The Fortified Church moved,** as asked. It left the Economy group and is now a top-level
+- **The Fortified Church moved.** It left the Economy group and is now a top-level
   row right after the Monastery, which the Armenians and the Georgians have instead. The JSON writer in
   `js/datahandler.js` made the move, as for the Dock and the Monastery.
 - **Marking either hides the other.** While the Monastery is marked must have, the Fortified Church is hidden, and
@@ -2277,7 +2277,7 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 
 ### What changed
 
-- **The Fortified Church is a Monastery.** As asked, everything under the Monastery outside
+- **The Fortified Church is a Monastery.** Everything under the Monastery outside
   its unique groups is now also under the Fortified Church: the Monk, Devotion and Faith, Redemption, Atonement,
   Herbal Medicine, Heresy, Sanctity, Fervor, Illumination, Block Printing and Theocracy. The Missionary, in the
   Monastery's Unique Units, is not; the Warrior Priest stays the Fortified Church's own, first under it, and is
@@ -2324,7 +2324,7 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 
 ### What changed
 
-- **Greyed out, not hidden.** As asked, while the Monastery is marked must have the Fortified
+- **Greyed out, not hidden.** While the Monastery is marked must have the Fortified
   Church is greyed out instead of hidden, and the other way round. If it was open, it closes. A greyed-out row cannot
   be marked or opened, by a click, a key or a long press, until the mark on the other is cleared. **Expand all**
   leaves it closed, and **Find** does not open it to reach what is inside it, but finds the row itself.
@@ -2338,7 +2338,7 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
   `update()` closes barred rows, `toggle()` and `expand()` ignore them, `paint()` sets the class `barred` and
   `aria-disabled`, and `shown()` is as it was. `style.css`: `.tree .barred > .row`, and the grey icon.
 - **Rule 18.** Closing an open Monastery above the Fortified Church, when the Fortified Church is marked, moves the
-  Fortified Church and the rows below it up, as asked. A closed Monastery, as after **Collapse all**, moves nothing.
+  Fortified Church and the rows below it up. A closed Monastery, as after **Collapse all**, moves nothing.
 - **Tests.** Test 22 now checks that marking either building greys out and closes the other, that the other cannot
   then be marked by a click or X, nor opened by its arrow, and that clearing the mark lifts all this. It fails
   without the closing, and without the block on marking.
@@ -2351,7 +2351,7 @@ out of the tree with the unique and universal ones, unless **Include Unique and 
 
 ### What changed
 
-- **New rule for the Xolotl Warrior,** as asked. Marking the Xolotl Warrior must have now
+- **New rule for the Xolotl Warrior.** Marking the Xolotl Warrior must have now
   clears the Stable and everything in it, instead of marking them must lack, and marking the whole Stable must have
   ("Full Stable") clears the Xolotl Warrior, instead of marking it must lack. Neither is greyed out or blocked: the
   cleared one can be marked again at once, which in turn clears the first. Must lack on either still leaves the
@@ -2597,7 +2597,7 @@ Variants still to be resolved:
   unit lends nothing, so no item gained a row: the Champi Scout still holds only its own line, down to the Elite
   Champi Warrior. Marking a row lower down, such as the Siege Ram, passes must have up to the Battering Ram, and so
   greys out the Armored Elephant.
-- **The Harbor is in the Dock.** As asked, the Harbor is no longer a variant of the Dock. It is
+- **The Harbor is in the Dock.** The Harbor is no longer a variant of the Dock. It is
   the first row under the Dock and holds nothing. This settles question 2 of 2026-10-25: the Malay have both, and
   neither greys out the other now. With Include ticked, a full Dock needs the Harbor too, which only the Malay
   have.
@@ -2650,7 +2650,7 @@ Variants still to be resolved:
 
 ### What changed
 
-- **Requirement 37.** As asked, in `data.json` the Dromon, the Catapult Galleon and the Lou
+- **Requirement 37.** In `data.json` the Dromon, the Catapult Galleon and the Lou
   Chuan now replace the Cannon Galleon. No civilisation has two of the four. While one of them is marked must
   have, the other three are greyed out. Marking the Elite Cannon Galleon passes must have up to the Cannon
   Galleon, and so greys out the other three as well. They stay where they were, right after the Cannon Galleon.
@@ -2666,7 +2666,7 @@ Variants still to be resolved:
 
 ### What changed
 
-- **Requirement 37.** As asked, in `data.json` the Rocket Cart now replaces the Mangonel. The
+- **Requirement 37.** In `data.json` the Rocket Cart now replaces the Mangonel. The
   Chinese, the Jurchens, the Khitans and the Koreans have the Rocket Cart, and exactly they lack the Mangonel.
   While one of the two is marked must have, the other is greyed out. Marking a row lower down, such as the Siege
   Onager or the Heavy Rocket Cart, passes must have up, and so greys out the other unit as well. A unit lends
@@ -2683,7 +2683,7 @@ Variants still to be resolved:
 
 ### What changed
 
-- **Greying out, not clearing.** As asked, the Xolotl Warrior and the Stable now use the
+- **Greying out, not clearing.** The Xolotl Warrior and the Stable now use the
   greying out of the variants. While the Xolotl Warrior is marked must have, the Stable and every row in it but the
   Xolotl Warrior are greyed out and cannot be marked. While the Stable, or any row in it, such as the Paladin or
   Husbandry, is marked must have, the Xolotl Warrior is greyed out. Before, must have on either cleared the other,
@@ -2718,7 +2718,7 @@ Variants still to be resolved:
 
 ### What changed
 
-- **No Close button.** As asked, the Options window no longer has **Close**. With Simple UI it
+- **No Close button.** The Options window no longer has **Close**. With Simple UI it
   now has **Cancel** and **OK** on the right, as it already had without Simple UI. The `close` text of the window is
   gone from `data.json` and every language file; the report window's **Close** is a different text and stays.
 - **What Cancel and OK do with Simple UI.** Every change still takes effect at once, as requirements 11 and 15 ask:
@@ -2762,7 +2762,7 @@ Variants still to be resolved:
 
 ### What changed
 
-- **Changes wait for OK with Simple UI too.** As asked, the Options window now works the same
+- **Changes wait for OK with Simple UI too.** The Options window now works the same
   with or without Simple UI. Ticking or unticking a box, by a click or with Space, and choosing a language only show
   in the window. **OK** applies them and closes it; **Cancel**, Escape and closing the window in any other way drop
   them, and the window opens again showing what applies. This replaces what the previous entry describes: **Cancel**
@@ -2808,7 +2808,7 @@ Variants still to be resolved:
 ### Questions
 
 1. **Requirements 11 and 15.** Requirement 11 says the page changes to the language the user clicks, and requirement
-   15 that the box's effect is true when the box shows its tick. Both now wait for **OK**, as asked. Requirement 11
+   15 that the box's effect is true when the box shows its tick. Both now wait for **OK**. Requirement 11
    could end with "once the user clicks OK", and requirement 15 could say "after the user clicks OK".
 2. **The earlier questions.** Question 1 of the previous entry, about requirements 8 and 16 and the **Close** button,
    still stands. Its question 2, about **Cancel** not bringing back marks, no longer applies: **Cancel** now never
@@ -2816,15 +2816,15 @@ Variants still to be resolved:
 
 ## 2026-10-26: with Simple UI, Cancel and OK are the same size
 
-- As asked, with Simple UI the **OK** button is now the same size as **Cancel**: both take the
+- With Simple UI the **OK** button is now the same size as **Cancel**: both take the
   width of the wider one, in every language, and stay on the right, 8 pixels apart. One new rule in `style.css` lays
-  them out as a grid of equal columns. Without Simple UI nothing changed. No tests or other documents changed, as
-  asked. All 99 tests pass in Chrome, in light and dark colours, at 1920 by 1080, 1280 by 800, 800 by 1100 and 500 by
+  them out as a grid of equal columns. Without Simple UI nothing changed. No tests or other documents changed.
+  All 99 tests pass in Chrome, in light and dark colours, at 1920 by 1080, 1280 by 800, 800 by 1100 and 500 by
   900, and both buttons were measured in all 17 languages.
 
 ## 2026-10-26: the focus outline test is gone
 
-- As asked, Test 76 ("focus shows a thick outline with a contrast of at least 3:1, which nothing
+- Test 76 ("focus shows a thick outline with a contrast of at least 3:1, which nothing
   cuts off") is deleted as a false positive, together with its check for cut-off outlines in `js/tests/audit.js`.
   The outlines of the Options window stay drawn inside their edges. Tests 77 to 99 are now Tests 76 to 98, and
   `TESTS.md` is renumbered to match; `MAINTAINER.md` no longer says the audit checks outlines.
@@ -2833,7 +2833,7 @@ Variants still to be resolved:
 
 ### What changed
 
-- **No more Unique Units groups, except the Castle's.** As asked, the Unique Units groups of the Barracks, the
+- **No more Unique Units groups, except the Castle's.** The Unique Units groups of the Barracks, the
   Archery Range, the Stable, the Siege Workshop, the Dock, the Monastery and the Fortified Church are gone from
   `data.json`. Their units moved up one level, in the same place and order: the Grenadier's parent is now the Archery
   Range, the Missionary's the Monastery, and the Warrior Priest's the Fortified Church. The Castle keeps its Unique
@@ -2856,7 +2856,7 @@ Variants still to be resolved:
 
 ### What changed
 
-- **New order in the Castle.** As asked, the Castle's Unique Units group is now its first row, and its Unique
+- **New order in the Castle.** The Castle's Unique Units group is now its first row, and its Unique
   Technologies group sits between the Trebuchet and Hoardings: Unique Units, Petard, Trebuchet, Unique
   Technologies, Hoardings, Conscription, Sappers, Spies/Treason. Only the order in `data.json` changed.
 - **Headings, not checkboxes.** A group inside an item, which now means only these two, opens and closes but has
@@ -2929,3 +2929,23 @@ Variants still to be resolved:
 2. **Clearing the Camel Scout.** Clearing an item still clears everything under it, so clearing must have on the
    Camel Scout also clears must have on the Camel Rider, which does not depend on it. Should clearing leave such
    items alone, as must lack now does?
+
+## 2026-10-26: no count on empty roots, and every civilisation listed without filters
+
+### What changed
+
+- **No count on a root at 0.** A top-level row, such as Economy, Military or Fortifications, no longer shows its
+  number when no civilisation fits it, as no civilisation has everything in Economy or Military even by default.
+  `count()` in `js/nodetree.js` empties both the number and the text for screen readers. Rows inside the tree still
+  show 0.
+- **Every civilisation without filters.** With nothing marked, the Civilisations pane now lists all civilisations and
+  says so in its heading, instead of none and a hint. `listCivs()` in `js/stringbuilder.js` always lists the
+  civilisations that fit the marks, which are all of them when nothing is marked. The hint text `start` is gone from
+  `data.json` and every language file; `noMatch` still shows when the marks fit no civilisation.
+- **Tests.** Tests 25, 27 and 28 expect no number on a root at 0. Test 57 expects every civilisation to be listed,
+  and no hint, once the last filter is cleared.
+- **Mutation runs.** With roots at 0 showing their number, Tests 25, 27 and 28 fail, and no other test. With nothing
+  listed while nothing is marked, Test 57 fails, and no other test.
+- **Checked.** All 99 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900.
+- **Documents.** `TESTS.md`: Tests 25 and 57, and the lines of Tests 25 to 32 in `js/tests/behaviour.js`.

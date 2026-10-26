@@ -44,8 +44,8 @@ const civIcon = (civ) => Object.assign(clone("civIconTemplate"), {
   src: `${data.icons.folder}${data.icons.names[civ] ?? civ.toLowerCase()}.png`,
 });
 
-export function listCivs(marked) {
-  const civs = (marked ? civsOf(matching) : []).map((civ) => [civName(civ), civ]);
+export function listCivs() {
+  const civs = civsOf(matching).map((civ) => [civName(civ), civ]);
   $("count").textContent = plural("compatible", civs.length);
   $("civs").replaceChildren(...civs.sort(([a], [b]) => collator.compare(a, b)).map(([name, civ]) => {
     const li = clone("civTemplate");
@@ -58,7 +58,7 @@ export function listCivs(marked) {
     return li;
   }));
   $("none").hidden = civs.length > 0;
-  $("none").textContent = marked ? words.ui.noMatch : words.ui.start;
+  $("none").textContent = words.ui.noMatch;
 }
 
 export function listFilters() {

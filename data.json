@@ -1683,7 +1683,6 @@
       "compatible": {"one": "{n} compatible civilisation", "other": "{n} compatible civilisations"},
       "filters": "Filters:",
       "noMatch": "No civilisation fits all of the filters.",
-      "start": "Click items in the tree to list the civilisations that have them.",
       "civCount": {"one": "{n} civilisation", "other": "{n} civilisations"},
       "range": "{own}–{all}",
       "civRange": "{own}, {all} with everything under it",

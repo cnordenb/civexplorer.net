@@ -20,7 +20,6 @@
       "compatible": {"other": "条件に合う文明：{n}"},
       "filters": "フィルター：",
       "noMatch": "すべてのフィルターに合う文明はありません。",
-      "start": "ツリーの項目をクリックすると、それを持つ文明が一覧表示されます。",
       "civCount": {"other": "{n} 文明"},
       "range": "{own}–{all}",
       "civRange": "{own}、うち {all} は下位の項目をすべて持つ",

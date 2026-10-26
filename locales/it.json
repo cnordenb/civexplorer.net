@@ -20,7 +20,6 @@
       "compatible": {"one": "{n} civiltà compatibile", "other": "{n} civiltà compatibili"},
       "filters": "Filtri:",
       "noMatch": "Nessuna civiltà soddisfa tutti i filtri.",
-      "start": "Fai clic sugli elementi dell’albero per elencare le civiltà che li possiedono.",
       "civCount": {"one": "{n} civiltà", "other": "{n} civiltà"},
       "range": "{own}–{all}",
       "civRange": "{own}, di cui {all} con tutto ciò che sta sotto",

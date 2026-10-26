@@ -75,7 +75,7 @@ Accessibility tests:
 
 - [Test 55](#test-55): Each language has a name and a valid tag
 - [Test 56](#test-56): A filter button clears its item and focus moves on
-- [Test 57](#test-57): Clearing the last filter moves focus and shows the hint
+- [Test 57](#test-57): Clearing the last filter moves focus and lists every civilisation
 - [Test 58](#test-58): Right opens a line all the way down
 - [Test 59](#test-59): Right and Left go into and out of branches
 - [Test 60](#test-60): Up, Down, Home and End move through the tree
@@ -389,18 +389,18 @@ Click marks same-civ items below and above; X marks nothing above nor clears bel
 ## Test 25
 
 ### File residence:
-`js/tests/behaviour.js`, line 362
+`js/tests/behaviour.js`, line 363
 
 ### Purpose:
 Verify each item's compatible civilisations count (Req. 3).
 
 ### Assertion expectation:
-Closed items with contents show "own–all" counts and other items their own count, on screen and to screen readers.
+Closed items with contents show "own–all", other items their own count, roots at 0 nothing; also to screen readers.
 
 ## Test 26
 
 ### File residence:
-`js/tests/behaviour.js`, lines 363-364
+`js/tests/behaviour.js`, lines 364-365
 
 ### Purpose:
 Verify that a closed upgrade line shows the range from its first item to its last upgrade.
@@ -411,7 +411,7 @@ The line's count reads its first item's civ count, then its last item's civ coun
 ## Test 27
 
 ### File residence:
-`js/tests/behaviour.js`, lines 365-366
+`js/tests/behaviour.js`, lines 366-367
 
 ### Purpose:
 Avoid a misleading range once an item's contents are visible.
@@ -422,7 +422,7 @@ After Expand all, every item shows only its own count.
 ## Test 28
 
 ### File residence:
-`js/tests/behaviour.js`, lines 367-372
+`js/tests/behaviour.js`, lines 368-373
 
 ### Purpose:
 Verify that the counts follow the active filters (Req. 3).
@@ -433,7 +433,7 @@ With a must-have and a must-lack mark, open and closed items count only the civs
 ## Test 29
 
 ### File residence:
-`js/tests/behaviour.js`, lines 385-386
+`js/tests/behaviour.js`, lines 386-387
 
 ### Purpose:
 Verify Req. 18 and 19, and each branch's arrow.
@@ -444,7 +444,7 @@ Expand all opens every branch, Collapse all closes every branch, and a branch's 
 ## Test 30
 
 ### File residence:
-`js/tests/behaviour.js`, lines 387-392
+`js/tests/behaviour.js`, lines 388-393
 
 ### Purpose:
 Save clicks by opening a line of only children in one step.
@@ -455,7 +455,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour.js`, lines 400-404
+`js/tests/behaviour.js`, lines 401-405
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them and counts them.
@@ -466,7 +466,7 @@ Exactly the matches are highlighted in yellow and shown; the number shows on one
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour.js`, lines 408-409
+`js/tests/behaviour.js`, lines 409-410
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).
@@ -744,10 +744,10 @@ Clicking the first filter button clears its item and moves focus to the next fil
 `js/tests/interface.js`, lines 263-265
 
 ### Purpose:
-Keep focus and guidance sensible once no filters remain (WCAG 2.4.3).
+Keep focus sensible, and list every civilisation, once no filters remain (WCAG 2.4.3).
 
 ### Assertion expectation:
-Focus is on the Civilisations heading, the list is empty, the start hint shows and the Filters list is hidden.
+Focus is on the Civilisations heading, every civilisation is listed, no hint shows and the Filters list is hidden.
 
 ## Test 58
 

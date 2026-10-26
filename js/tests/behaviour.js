@@ -349,6 +349,7 @@ function counts({ partial, other, upgraded }) {
   const counted = (item) => {
     const own = size(fits() & (item.group ? item.all : item.set));
     const all = size(fits() & item.all);
+    if (!item.parent && !own) return ["", ""];
     return !item.group && item.kids.length && !isOpen(item)
       ? [range(own, all), fill(words.ui.civRange, { own: plural("civCount", own), all: plural("civCount", all) })]
       : [numbers.format(own), plural("civCount", own)];

@@ -24,7 +24,6 @@
       "compatible": {"one": "{n} passendes Volk", "other": "{n} passende Völker"},
       "filters": "Filter:",
       "noMatch": "Kein Volk erfüllt alle Filter.",
-      "start": "Klicke auf Einträge im Baum, um die Völker aufzulisten, die sie haben.",
       "civCount": {"one": "{n} Volk", "other": "{n} Völker"},
       "range": "{own}–{all}",
       "civRange": "{own}, davon {all} mit allem darunter",
