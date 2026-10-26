@@ -9,6 +9,7 @@ import { scripts, sourceTests, textTests, tagTests, dataTests, updaterTests } fr
 import { behaviourTests } from "./behaviour.js";
 import {
   menuTests, languageTests, optionTests, keyboardTests, accessibilityTests, reportTests, uniqueFilterTests,
+  headingTests,
 } from "./interface.js";
 import { pictureTests } from "./pictures.js";
 
@@ -68,6 +69,7 @@ async function rounds() {
   optionTests();
   await pictureTests();
   uniqueFilterTests();
+  headingTests();
   tagTests();
   pick(codes()[0]);
   const fresh = fixtures();

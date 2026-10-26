@@ -2828,3 +2828,53 @@ Variants still to be resolved:
   cuts off") is deleted as a false positive, together with its check for cut-off outlines in `js/tests/audit.js`.
   The outlines of the Options window stay drawn inside their edges. Tests 77 to 99 are now Tests 76 to 98, and
   `TESTS.md` is renumbered to match; `MAINTAINER.md` no longer says the audit checks outlines.
+
+## 2026-10-26: unique units sit straight in their buildings, except at the Castle
+
+### What changed
+
+- **No more Unique Units groups, except the Castle's.** As asked, the Unique Units groups of the Barracks, the
+  Archery Range, the Stable, the Siege Workshop, the Dock, the Monastery and the Fortified Church are gone from
+  `data.json`. Their units moved up one level, in the same place and order: the Grenadier's parent is now the Archery
+  Range, the Missionary's the Monastery, and the Warrior Priest's the Fortified Church. The Castle keeps its Unique
+  Units group, and its Unique Technologies group is unchanged. The `uniqueUnits` text stays in every language, as
+  the Castle's group still uses it.
+- **Still left out by default.** All 33 moved units are unique in aoe2techtree's data (`reach` in `pictures`), so
+  without the group they are still left out until **Include Unique and Universal** is ticked.
+- **Not lent to stand-ins.** A stand-in shows what is in the building it replaces, except its unique groups and its
+  `"own"` rows. Out of its group, the Missionary would then have shown under the Fortified Church too. `common()` in
+  `js/model.js` now also leaves out unique items, so the Missionary stays the Monastery's. Test 22 already expected
+  this, as it counts only common and regional rows as lent.
+- **Mutation run.** Without the new check for unique items, Test 22 fails, and no other test.
+- **Checked.** All 98 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900. A script checked that `data.json` keeps every item and changes nothing outside the tree.
+- **Documents.** `MAINTAINER.md`: where a new unique unit goes, what a stand-in does not show, and which groups are
+  left out by default. `TESTS.md` and the name of Test 22 now say that a stand-in holds what it replaces but its
+  unique items and groups.
+
+## 2026-10-26: the Castle's unique groups are headings without checkboxes
+
+### What changed
+
+- **New order in the Castle.** As asked, the Castle's Unique Units group is now its first row, and its Unique
+  Technologies group sits between the Trebuchet and Hoardings: Unique Units, Petard, Trebuchet, Unique
+  Technologies, Hoardings, Conscription, Sappers, Spies/Treason. Only the order in `data.json` changed.
+- **Headings, not checkboxes.** A group inside an item, which now means only these two, opens and closes but has
+  no checkbox. `js/nodetree.js` builds its row without the checkbox role, the tab stop, the checked state and the
+  box. A click or a right-click on its row marks nothing, so the tooltip about marking no longer shows over it with
+  the pictures on, and a click on its name opens or closes it, as its arrow does. Its arrow is its only control: it
+  is a button named after the group that says whether the group is open, and the arrow keys and Enter in Find stop
+  on it. Marking the Castle still marks everything in both groups. Top-level groups, such as Economy, keep their
+  checkboxes.
+- **New Test 54.** It checks that such a group has no checkbox role, tab stop or box; that a click on its name or
+  its arrow opens and closes it; that a right-click marks nothing; and that Down from the row above reaches its
+  arrow. Tests 54 to 98 are now Tests 55 to 99.
+- **Mutation runs.** Test 54 fails, and no other test does, with each of these: the row keeping the checkbox role
+  and tab stop; its row marking again on a right-click; the arrow keys going to the row instead of its arrow; and a
+  click on its name doing nothing. A right-click sent only as a `contextmenu` event did not catch the second one,
+  as the page ignores that event for a moment after a touch; the test now sends pointer events, as Test 16 does.
+- **Checked.** All 99 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900. Screenshots of the opened Castle with Simple UI and with the pictures show both headings
+  with an arrow and no box.
+- **Documents.** `TESTS.md`: the new Test 54, the numbers after it, and the lines of Test 99 in `js/tests/run.js`.
+  `MAINTAINER.md`: headings in "How marking works".

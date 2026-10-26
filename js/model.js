@@ -44,9 +44,9 @@ function prune(nodes, every = false, regionals = true) {
   });
 }
 
-const common = (node) => ({
-  ...node, copy: true, kids: (node.kids ?? []).filter((kid) => !kid.unique && !kid.own).map(common),
-});
+const lent = (kid) => !kid.unique && !kid.own && data.pictures[kid.item]?.reach !== "unique";
+
+const common = (node) => ({ ...node, copy: true, kids: (node.kids ?? []).filter(lent).map(common) });
 
 function borrowed(nodes, key, line = false) {
   for (const node of nodes) {

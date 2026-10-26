@@ -15,7 +15,14 @@ export const shown = (item) => !item.parent || (isOpen(item.parent) && shown(ite
 
 const behind = (item) => !!item.parent && (locked(item.parent) || behind(item.parent));
 
-export const itemAt = (target) => items[target.closest?.(".node")?.dataset.i];
+const heading = (item) => item.group && !!item.parent;
+
+const focusOf = (item) => (heading(item) ? item.twisty : item.node);
+
+export const itemAt = (target) => {
+  const item = items[target.closest?.(".node")?.dataset.i];
+  return item && !heading(item) ? item : undefined;
+};
 
 export function dress(item) {
   const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
@@ -38,6 +45,10 @@ function build(list, ul) {
     item.civCount = li.querySelector(".civ-count");
     item.node.dataset.i = item.i;
     item.node.classList.toggle("group", item.group);
+    if (heading(item)) {
+      ["role", "tabindex", "aria-checked"].forEach((name) => item.node.removeAttribute(name));
+      item.node.querySelector(".box").remove();
+    }
     item.label.id = `t${item.i}`;
     if (item.kids.length) {
       li.querySelector(".gap").remove();
@@ -100,9 +111,10 @@ const expand = (item) => {
 
 function paint() {
   for (const item of items) {
-    const s = boxState(item);
+    const s = heading(item) ? null : boxState(item);
     item.node.dataset.state = s || "";
-    item.node.setAttribute("aria-checked", s === "has" ? "true" : s === "mixed" ? "mixed" : "false");
+    const checked = s === "has" ? "true" : s === "mixed" ? "mixed" : "false";
+    if (!heading(item)) item.node.setAttribute("aria-checked", checked);
     item.lacking.textContent = s === "lacks" ? words.ui.lacking : "";
     item.node.classList.toggle("self", !!item.self);
     const shut = barred(item);
@@ -174,7 +186,7 @@ function onKey(e) {
   else if (e.key === "ArrowLeft") isOpen(item) ? setOpen(item, false) : (to = item.parent);
   else return;
   e.preventDefault();
-  if (to) (e.target === item.twisty && to.twisty ? to.twisty : to.node).focus();
+  if (to) (e.target === item.twisty && to.twisty ? to.twisty : focusOf(to)).focus();
 }
 
 function onPress(e) {
@@ -208,8 +220,9 @@ function onMenu(e) {
 }
 
 function onClick(e) {
-  const branch = items[e.target.closest(".twisty")?.dataset.i];
-  if (branch) return isOpen(branch) ? setOpen(branch, false) : expand(branch);
+  const twisty = e.target.closest(".twisty");
+  const branch = items[(twisty ?? e.target.closest(".node"))?.dataset.i];
+  if (branch && (twisty || heading(branch))) return isOpen(branch) ? setOpen(branch, false) : expand(branch);
   const item = itemAt(e.target);
   if (item && !swallowClick) toggle(item, "has");
 }
@@ -239,7 +252,7 @@ function wireTools() {
   });
   $("find").addEventListener("input", find);
   $("find").addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && found.length) found[0].node.focus();
+    if (e.key === "Enter" && found.length) focusOf(found[0]).focus();
   });
   $("clearFind").addEventListener("click", () => {
     $("find").value = "";

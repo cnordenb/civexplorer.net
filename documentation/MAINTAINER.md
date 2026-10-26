@@ -62,12 +62,13 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
      or technology it upgrades, as Light Cavalry is under Scout Cavalry. Walls and towers in Fortifications are
      lines too, as the Keep is under the Guard Tower. Marking works along these lines (see
      [How marking works](#how-marking-works)).
-   - A new unique unit goes into the Unique Units group of the building that trains it, and a new unique technology
-     into the Castle's Unique Technologies, in alphabetical order. A new unique building has no group: it goes
-     straight into Economy or Military, next to the building it stands in for (see `"replaces"` in
-     [How marking works](#how-marking-works)), or under the building it belongs to, as the Harbor is the first row
-     under the Dock. A unit or technology that stands in for another, as the Fire Lancer does for the Eagle Scout
-     and Cranequins for Parthian Tactics, names it with `"replaces"` too.
+   - A new unique unit goes straight into the building that trains it, after its other units and before its
+     technologies, as the Grenadier is in the Archery Range; only the Castle keeps a Unique Units group. A new unique
+     technology goes into the Castle's Unique Technologies. Both keep the alphabetical order of the unique items around
+     them. A new unique building has no group: it goes straight into Economy or Military, next to the building it stands
+     in for (see `"replaces"` in [How marking works](#how-marking-works)), or under the building it belongs to, as the
+     Harbor is the first row under the Dock. A unit or technology that stands in for another, as the Fire Lancer does
+     for the Eagle Scout and Cranequins for Parthian Tactics, names it with `"replaces"` too.
    - Every entry in a list is followed by a comma, except the last one. Visual Studio Code underlines mistakes in red.
 
    Reload the `?update` page. The report should no longer mention those items.
@@ -296,6 +297,9 @@ item sits in the tree decides what else its mark reaches:
 
 - An item with no other item above it, only groups or nothing, is a **building**, such as the Barracks. Marking a
   building or a group marks everything in it, and opens it all.
+- A group inside an item is only a **heading**, as the Castle's Unique Units, at its top, and Unique Technologies,
+  between the Trebuchet and Hoardings, are. It has no checkbox and cannot be marked; a click on its name or its arrow
+  opens and closes it, and the arrow keys stop on its arrow. Marking the Castle still marks everything in them.
 - An item under another item is a **unit or technology**, often the start of a line of upgrades. Its mark passes
   down that line, until it forks, but only to the items that as many civilisations have (requirements 29 and 30):
   marking Militia (52 civilisations) also marks Man-at-Arms (52), but not Long Swordsman (51).
@@ -322,23 +326,22 @@ item sits in the tree decides what else its mark reaches:
   Elephant the Battering Ram, the Rocket Cart the Mangonel, and Cranequins Parthian Tactics:
   `{"item": "Fortified Church", "replaces": "Monastery"}`
   `{"item": "Mule Cart", "replaces": ["Lumber Camp", "Mining Camp"]}`
-  The page then also shows, under it, everything in those items outside their unique groups, in the order named,
-  so their technologies are listed only once in `data.json`, but the Missionary stays the Monastery's, and the
-  Warrior Priest the Fortified Church's. An item that counts as a unit or technology lends nothing, as its rows
-  are its own upgrades: the Donjon shows neither the Guard Tower nor the Keep, which the Sicilians lack, as they
-  lack the Watch Tower. Nor is a row marked `"own": true`, or anything under it. The Domestication line, which only
+  The page then also shows, under it, everything in those items but their unique items and unique groups, in the order
+  named, so their technologies are listed only once in `data.json`, but the Missionary, a unique unit, stays the
+  Monastery's, and the Warrior Priest the Fortified Church's. An item that counts as a unit or technology lends nothing,
+  as its rows are its own upgrades: the Donjon shows neither the Guard Tower nor the Keep, which the Sicilians lack, as
+  they lack the Watch Tower. Nor is a row marked `"own": true`, or anything under it. The Domestication line, which only
   the Khitans have, is marked so: `{"item": "Domestication", "own": true, "kids": [...]}`. The Folwark and the
-  Settlement thus show the Mill's Horse Collar line, but not its Domestication line. Such rows are the same items
-  in every place: marking Two-Man Saw under the Mule Cart marks it under the Lumber Camp and the Settlement too,
-  with one entry in **Filters**, and opens nothing elsewhere (requirement 31 allows this). While an item is marked
-  must have, its alternatives are greyed out and closed, and cannot be marked or opened until the mark is cleared
-  (requirement 37). They are the items it names, the items that name it, and the other items that name what it
-  names. Marking the Folwark greys out the Mill and the Settlement, which names the Mill too; marking the
-  Settlement greys out the Mill, the Lumber Camp, the Mining Camp, the Folwark and the Mule Cart; marking the Fire
-  Lancer greys out the Eagle Scout and the Varangian Guard. The Folwark and the Mule Cart name nothing in common,
-  so neither greys out the other. Greying never adds rows to an item. An item that is marked must have itself is
-  never greyed out: marking the Economy group marks the Lumber Camp and the Mule Cart alike, and either can still
-  be cleared.
+  Settlement thus show the Mill's Horse Collar line, but not its Domestication line. Such rows are the same items in
+  every place: marking Two-Man Saw under the Mule Cart marks it under the Lumber Camp and the Settlement too, with one
+  entry in **Filters**, and opens nothing elsewhere (requirement 31 allows this). While an item is marked must have, its
+  alternatives are greyed out and closed, and cannot be marked or opened until the mark is cleared (requirement 37).
+  They are the items it names, the items that name it, and the other items that name what it names. Marking the Folwark
+  greys out the Mill and the Settlement, which names the Mill too; marking the Settlement greys out the Mill, the Lumber
+  Camp, the Mining Camp, the Folwark and the Mule Cart; marking the Fire Lancer greys out the Eagle Scout and the
+  Varangian Guard. The Folwark and the Mule Cart name nothing in common, so neither greys out the other. Greying never
+  adds rows to an item. An item that is marked must have itself is never greyed out: marking the Economy group marks the
+  Lumber Camp and the Mule Cart alike, and either can still be cleared.
 - In **Filters**, a fully marked building or group with more than one row under it reads "Full", such as "Full
   Blacksmith" (requirement 24). A line is named after its deepest item marked must have, such as "Champion" or
   "Keep", and so is a building at the top of a single line: a fully marked Lumber Camp reads "Two-Man Saw".
@@ -349,10 +352,10 @@ item sits in the tree decides what else its mark reaches:
   `reach` in `pictures`.
 
 Some items are left out of the tree unless the visitor ticks **Include Unique and Universal** in Options: the groups
-marked `"unique": true` (Unique Units and Unique Technologies), the items aoe2techtree calls unique, such as the
-Harbor, and the items that all civilisations, all but one, or only one has, such as the House, which only the Huns
-lack. The page works these out by itself, and keeps such an item when something under it is shown, such as the
-Watch Tower above the Guard Tower.
+marked `"unique": true` (the Castle's Unique Units and Unique Technologies), the items aoe2techtree calls unique,
+such as the Harbor and the Grenadier, and the items that all civilisations, all but one, or only one has, such as
+the House, which only the Huns lack. The page works these out by itself, and keeps such an item when something
+under it is shown, such as the Watch Tower above the Guard Tower.
 Unticking **Include Regionals** also leaves out the items aoe2techtree calls regional, such as the Eagle Scout.
 
 ### Simple UI and the pictures

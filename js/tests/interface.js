@@ -3,7 +3,7 @@ import {
 } from "../datahandler.js";
 import { items, roots, lineOf, lineEnd } from "../model.js";
 import { $ } from "../stringbuilder.js";
-import { isOpen, setOpen } from "../nodetree.js";
+import { isOpen, setOpen, shown } from "../nodetree.js";
 import { options, setInclude, setSimple } from "../optionshandler.js";
 import { openReport, report } from "../report.js";
 import { audit } from "./audit.js";
@@ -389,6 +389,37 @@ export function uniqueFilterTests() {
   tap(lineEnd(whole).node);
   const exempt = same(names(), [nameOf(lineEnd(whole))]);
   check(name, both && first && second && grouped && exempt, `${both}, ${first}, ${second}, ${grouped}, ${exempt}`);
+  reset();
+  setInclude(false);
+}
+
+export function headingTests() {
+  reset();
+  setInclude(true);
+  const name = "tree: a group inside a building, such as the Castle's Unique Units, has no checkbox: a click on its "
+    + "name or arrow opens and closes it, a right-click marks nothing, and Down from the row above reaches its arrow";
+  const heading = items.find((item) => item.group && item.parent);
+  if (!heading) {
+    check(name, false, "no group inside a building");
+    setInclude(false);
+    return;
+  }
+  for (let p = heading.parent; p; p = p.parent) setOpen(p, true);
+  const bare = !heading.node.matches("[role], [tabindex], [aria-checked]") && !heading.node.querySelector(".box");
+  heading.label.click();
+  const opened = isOpen(heading);
+  heading.twisty.click();
+  const closed = !isOpen(heading);
+  const right = { bubbles: true, pointerId: 9, pointerType: "mouse", button: 2 };
+  ["pointerdown", "pointerup"].forEach((type) => heading.label.dispatchEvent(new PointerEvent(type, right)));
+  const rows = items.filter(shown);
+  const above = rows[rows.indexOf(heading) - 1];
+  above.node.focus();
+  keyDown(above.node, "ArrowDown");
+  const reached = document.activeElement === heading.twisty;
+  check(name, bare && opened && closed && reached && items.every((item) => item.self === null),
+    `${bare}, ${opened}, ${closed}, ${reached}`);
+  document.activeElement.blur();
   reset();
   setInclude(false);
 }

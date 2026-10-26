@@ -136,17 +136,15 @@
         {"item": "Fire Lancer", "replaces": "Eagle Scout", "kids": [
           {"item": "Elite Fire Lancer"}
         ]},
-        {"group": "uniqueUnits", "unique": true, "kids": [
-          {"item": "Condottiero"},
-          {"item": "Flemish Militia"},
-          {"item": "Ibirapema Warrior", "kids": [
-            {"item": "Elite Ibirapema Warrior"}
-          ]},
-          {"item": "Jian Swordsman"},
-          {"item": "Legionary"},
-          {"item": "Temple Guard", "kids": [
-            {"item": "Elite Temple Guard"}
-          ]}
+        {"item": "Condottiero"},
+        {"item": "Flemish Militia"},
+        {"item": "Ibirapema Warrior", "kids": [
+          {"item": "Elite Ibirapema Warrior"}
+        ]},
+        {"item": "Jian Swordsman"},
+        {"item": "Legionary"},
+        {"item": "Temple Guard", "kids": [
+          {"item": "Elite Temple Guard"}
         ]},
         {"item": "Arson"},
         {"item": "Gambesons"},
@@ -172,17 +170,15 @@
         ]},
         {"item": "Slinger"},
         {"item": "Hand Cannoneer"},
-        {"group": "uniqueUnits", "unique": true, "kids": [
-          {"item": "Bolas Rider", "kids": [
-            {"item": "Elite Bolas Rider"}
-          ]},
-          {"item": "Genitour", "kids": [
-            {"item": "Elite Genitour"}
-          ]},
-          {"item": "Grenadier"},
-          {"item": "Imperial Skirmisher"},
-          {"item": "Xianbei Raider"}
+        {"item": "Bolas Rider", "kids": [
+          {"item": "Elite Bolas Rider"}
         ]},
+        {"item": "Genitour", "kids": [
+          {"item": "Elite Genitour"}
+        ]},
+        {"item": "Grenadier"},
+        {"item": "Imperial Skirmisher"},
+        {"item": "Xianbei Raider"},
         {"item": "Thumb Ring"},
         {"item": "Parthian Tactics"},
         {"item": "Cranequins", "replaces": "Parthian Tactics"}
@@ -211,15 +207,13 @@
         {"item": "Steppe Lancer", "kids": [
           {"item": "Elite Steppe Lancer"}
         ]},
-        {"group": "uniqueUnits", "unique": true, "kids": [
-          {"item": "Camel Scout"},
-          {"item": "Imperial Camel Rider"},
-          {"item": "Savar"},
-          {"item": "Shrivamsha Rider", "kids": [
-            {"item": "Elite Shrivamsha Rider"}
-          ]},
-          {"item": "Winged Hussar"}
+        {"item": "Camel Scout"},
+        {"item": "Imperial Camel Rider"},
+        {"item": "Savar"},
+        {"item": "Shrivamsha Rider", "kids": [
+          {"item": "Elite Shrivamsha Rider"}
         ]},
+        {"item": "Winged Hussar"},
         {"item": "Bloodlines"},
         {"item": "Husbandry"}
       ]},
@@ -246,16 +240,12 @@
         {"item": "Siege Tower"},
         {"item": "Bombard Cannon"},
         {"item": "Traction Trebuchet"},
-        {"group": "uniqueUnits", "unique": true, "kids": [
-          {"item": "Flaming Camel"},
-          {"item": "Houfnice"},
-          {"item": "Mounted Trebuchet"},
-          {"item": "War Chariot"}
-        ]}
+        {"item": "Flaming Camel"},
+        {"item": "Houfnice"},
+        {"item": "Mounted Trebuchet"},
+        {"item": "War Chariot"}
       ]},
       {"item": "Castle", "kids": [
-        {"item": "Petard"},
-        {"item": "Trebuchet (Packed)"},
         {"group": "uniqueUnits", "unique": true, "kids": [
           {"item": "Arambai", "kids": [
             {"item": "Elite Arambai"}
@@ -428,10 +418,8 @@
             {"item": "Elite Woad Raider"}
           ]}
         ]},
-        {"item": "Hoardings"},
-        {"item": "Conscription"},
-        {"item": "Sappers"},
-        {"item": "Spies/Treason"},
+        {"item": "Petard"},
+        {"item": "Trebuchet (Packed)"},
         {"group": "uniqueTechnologies", "unique": true, "kids": [
           {"item": "Anarchy"},
           {"item": "Andean Sling"},
@@ -545,7 +533,11 @@
           {"item": "Wootz Steel"},
           {"item": "Yasama"},
           {"item": "Yeomen"}
-        ]}
+        ]},
+        {"item": "Hoardings"},
+        {"item": "Conscription"},
+        {"item": "Sappers"},
+        {"item": "Spies/Treason"}
       ]},
       {"item": "Donjon", "replaces": "Watch Tower"},
       {"item": "Krepost"}
@@ -586,15 +578,13 @@
       {"item": "Dromon", "replaces": "Cannon Galleon"},
       {"item": "Catapult Galleon", "replaces": "Cannon Galleon"},
       {"item": "Lou Chuan", "replaces": "Cannon Galleon"},
-      {"group": "uniqueUnits", "unique": true, "kids": [
-        {"item": "Caravel", "kids": [
-          {"item": "Elite Caravel"}
-        ]},
-        {"item": "Dragon Ship"},
-        {"item": "Thirisadai"},
-        {"item": "Turtle Ship", "kids": [
-          {"item": "Elite Turtle Ship"}
-        ]}
+      {"item": "Caravel", "kids": [
+        {"item": "Elite Caravel"}
+      ]},
+      {"item": "Dragon Ship"},
+      {"item": "Thirisadai"},
+      {"item": "Turtle Ship", "kids": [
+        {"item": "Elite Turtle Ship"}
       ]},
       {"item": "Fishing Lines", "kids": [
         {"item": "Gillnets"}
@@ -632,9 +622,7 @@
     ]},
     {"item": "Monastery", "kids": [
       {"item": "Monk"},
-      {"group": "uniqueUnits", "unique": true, "kids": [
-        {"item": "Missionary"}
-      ]},
+      {"item": "Missionary"},
       {"item": "Devotion", "kids": [
         {"item": "Faith"}
       ]},
@@ -649,9 +637,7 @@
       {"item": "Theocracy"}
     ]},
     {"item": "Fortified Church", "replaces": "Monastery", "kids": [
-      {"group": "uniqueUnits", "unique": true, "kids": [
-        {"item": "Warrior Priest"}
-      ]}
+      {"item": "Warrior Priest"}
     ]},
     {"item": "University", "kids": [
       {"item": "Masonry", "kids": [

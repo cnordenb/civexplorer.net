@@ -230,10 +230,10 @@ function rivals({ rival }) {
 
 function standIns(sample) {
   reset();
-  const name = "marking: an item that replaces others also holds everything in the buildings among them outside "
-    + "their unique groups, as the same items: marking one there marks both, with one filter, opening nothing in the "
-    + "other; must have on one greys out every alternative, what it replaces and the other variants of those, and "
-    + "closes it, and it cannot be marked or opened until cleared (Req. 37)";
+  const name = "marking: an item that replaces others also holds everything in the buildings among them but "
+    + "their unique items and groups, as the same items: marking one there marks both, with one filter, opening "
+    + "nothing in the other; must have on one greys out every alternative, what it replaces and the other variants "
+    + "of those, and closes it, and it cannot be marked or opened until cleared (Req. 37)";
   const item = items.find((each) => each.replaces && each.alternatives.length);
   const other = item?.alternatives[0];
   if (!other) {

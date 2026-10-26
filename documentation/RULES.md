@@ -1,3 +1,4 @@
+Rule 0: All commits must be made by humans. AI agents may not commit, per policy stated in CONTRIBUTING.md.
 Rule 1: Strict separation between data and code. All data will reside in data.json  
 Rule 2: Strict separation between JavaScript, CSS, and HTML. All JavaScript will be in script.js. All CSS will be in style.css. All html will be in index.html.  
 Rule 3: Must be compliant with WCAG 2.2 AAA.  
