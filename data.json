@@ -7,7 +7,7 @@
     "updated": "2026-10",
     "notice": "Age of Empires II © Microsoft Corporation. {project} was created under Microsoft's \"{rules}\" using assets from Age of Empires II: Definitive Edition, and it is not endorsed by or affiliated with Microsoft.",
     "rules": {"name": "Game Content Usage Rules", "url": "https://www.xbox.com/en-US/developers/rules"},
-    "project": {"name": "Civ Explorer", "url": "https://github.com/cnordenb/aoe2civexplorer"}
+    "project": {"name": "Civ Explorer", "url": "https://github.com/cnordenb/civexplorer.net"}
   },
   "languages": {
     "en": {"name": "English", "tag": "en", "spaces": true, "mergeHyphens": true},

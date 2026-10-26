@@ -6,7 +6,7 @@
 [![maintainable](https://img.shields.io/badge/maintainable-yes-00FF72)](https://github.com/cnordenb/aoe2civexplorer/blob/main/documentation/MAINTAINER.md)
 
 # aoe2civexplorer
-https://frcp.net/civexplorer
+https://civexplorer.net
 <img width="1632" height="918" alt="image" src="https://github.com/user-attachments/assets/b7559b3f-e651-42e7-8e4c-b4c919772f06" />
 
 
@@ -19,8 +19,8 @@ as [aoe2techtree.net](https://aoe2techtree.net/), where its data comes from.
 
 ## Installation
 
-aoe2civexplorer requires a server to run and cannot run locally from file due to using .json for data.
-However, it is runnable offline (English only) with the html file aoe2civexplorer.html available in [releases](https://github.com/cnordenb/aoe2civexplorer/releases).
+civexplorer.net requires a server to run and cannot run locally from file due to using .json for data.
+However, it is runnable offline (English only) with the html file (simple UI only) aoe2civexplorer.html available in [releases](https://github.com/cnordenb/aoe2civexplorer/releases).
 
 ## Usage
 
@@ -36,8 +36,8 @@ To keep the page up to date after a game patch, see [MAINTAINER.md](documentatio
 
 ## Acknowledgements
 
-Aoe2techtree © HSZemi. aoe2civpicker uses aoe2techtree for localisation and tech tree data, permissible under aoe2techtree's [MIT license](https://github.com/SiegeEngineers/aoe2techtree/blob/master/LICENSE).
+Aoe2techtree © HSZemi. civpicker.net uses aoe2techtree for localisation and tech tree data, permissible under aoe2techtree's [MIT license](https://github.com/SiegeEngineers/aoe2techtree/blob/master/LICENSE).
 
 Age of Empires II © Microsoft Corporation. aoe2civexplorer was created under Microsoft's "[Game Content Usage Rules](https://www.xbox.com/en-US/developers/rules)" using assets from Age of Empires II: The Age of Kings, Age of Empires II: HD Edition, and Age of Empires II: Definitive Edition, and it is not endorsed by or affiliated with Microsoft.
 
-Development of aoe2civpicker was accelerated with Claude Opus 5.5.
+Development of civpicker.net was accelerated with Claude Opus 5.5.
