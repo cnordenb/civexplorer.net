@@ -16,8 +16,8 @@ jobs:
       - name: Check that the repository holds only the allowed files
         run: |
           extra="$(git ls-files | grep -vxE \
-            -e 'index\.html|style\.css|script\.js|data\.json|README\.md|LICENSE|\.assetsignore|\.gitignore|\.github/.*' \
-            -e 'js/([a-z]+/)*[a-z]+\.js|locales/[a-z]+\.json|documentation/[A-Za-z_]+\.(md|pdf)' \
+            -e 'index\.html|style\.css|script\.js|data\.json|README\.md|LICENSE|\.assetsignore|\.gitignore|\.github/.*|\.github/.*' \
+            -e '\.well-known/discord|js/([a-z]+/)*[a-z]+\.js|locales/[a-z]+\.json|documentation/[A-Za-z_]+\.(md|pdf)' \
             -e 'assets/images/([a-z0-9]+/)*[a-z0-9_]+\.(webp|png|ico)|assets/images/icons/nodes/colour_key\.csv' \
             -e 'assets/fonts/[A-Za-z0-9-]+\.ttf' || true)"
           if [ -n "$extra" ]; then
