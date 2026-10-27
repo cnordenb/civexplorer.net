@@ -387,7 +387,10 @@ Under the Find box there are then two buttons instead of three: **Clear**, and *
 pane, whatever the language. Each shows the whole button picture in its own proportions, so in a narrow window the
 buttons and their text get smaller. Simple UI keeps the three buttons.
 
-The Options window then shows its **Cancel** and **OK** buttons as the whole button picture. With or without Simple
+The Options window then shows its **Cancel** and **OK** buttons as the whole button picture, on the parchment below
+the window's panel, in the parchment's bottom right corner: as far from its right edge as from its bottom edge. In a
+window less than 588 pixels high the parchment is left out, and the buttons stay at the bottom of the panel. No
+button's text has a shadow; only the civilisations' names on tiles have one. With or without Simple
 UI, a change made in the window, a new language included, only shows in the window until **OK** applies it;
 **Cancel**, Escape or closing the window in any other way drops it, and the window opens again showing what applies.
 With Simple UI, the window is 10 pixels larger on every side, and there are 5 more pixels between the rows from its

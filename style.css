@@ -106,7 +106,7 @@ html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
 }
 .pictures .tool:not(.icon, .report .tool) {
   position: relative; border: 0; border-radius: 0; color: #f2d2b6; font-family: "Civ Georgia", Georgia, serif; font-weight: 700;
-  text-shadow: 2px 2px 0 rgb(0 0 0 / 0.5); background: url("assets/images/ui/buttons/button_sd.webp") 0 0 / 100% 300% no-repeat;
+  background: url("assets/images/ui/buttons/button_sd.webp") 0 0 / 100% 300% no-repeat;
 }
 .pictures .tool:not(.icon, .report .tool)::before, .pictures .tool:not(.icon, .report .tool)::after { content: ""; position: absolute; top: 0; bottom: 0; aspect-ratio: 12 / 50; background: inherit; background-size: auto 300%; }
 .pictures .tool:not(.icon, .report .tool)::before { left: 0; background-position-x: 0; }
@@ -261,14 +261,16 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures .option:hover { background: rgb(255 255 255 / 0.25); }
 .pictures .language-list { border-color: #391c1b; background: none; }
 @media (height >= 588px) {
-  .pictures .options::before { grid-row-start: 2; }
+  .pictures .options { --drop: calc((var(--wd) + var(--lid) - var(--hd)) / 2 + var(--wi) * 0.00537); padding-block: calc(var(--hd) / 2 + var(--lid) + 36px - var(--wi) * 0.46166) calc(12rem * 50 / 290 + 32px - var(--drop)); }
+  .pictures .options::before { grid-row: 2 / 4; }
+  .pictures .options form { position: absolute; grid-area: auto; right: -1px; bottom: calc(-1px - var(--drop)); width: min(24rem + 8px, 100%); }
   .pictures .options::backdrop {
     background: var(--shade) url("assets/images/ui/backgrounds/options_sd.webp") 50% calc(50% - var(--wi) * 0.02224 + var(--lid) / 2) / var(--wi) auto
       no-repeat;
   }
   .pictures .options h2 {
-    justify-self: center; width: calc(var(--wi) * 0.3); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center;
-    translate: calc(var(--wi) * 0.0092) calc(var(--hd) / 2 - 13px - var(--wi) * 0.46166);
+    position: absolute; top: calc(var(--hd) / 2 + 3px - var(--wi) * 0.46166); grid-row: auto; justify-self: center; width: calc(var(--wi) * 0.3);
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; translate: calc(var(--wi) * 0.0092);
   }
 }
 @media (height >= 588px) and ((width > 1920px) or (height > 1080px) or (resolution > 1x)) {

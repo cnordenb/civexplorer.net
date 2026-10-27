@@ -24,7 +24,9 @@ Filter Age of Empires II civilisations by toggling technologies, units, or build
 
 ## Contributing
 
-Anyone is welcome to open an [issue](https://github.com/cnordenb/civexplorer.net/issues) to submit a bug report or suggest a new feature. Alternatively, you may fork or copy the repository and take it in any direction you wish.
+Anyone is welcome to open an [issue](https://github.com/cnordenb/civexplorer.net/issues) to submit a bug report or suggest a new feature. Alternatively, you may fork or copy the repository and take it in any direction you wish.  
+
+If you wish to contribute work into this repository, please consult [CONTRIBUTING.md](.github/CONTRIBUTING.md) before any commits or pull requests.
 
 ## Maintaining
 

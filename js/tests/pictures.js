@@ -24,7 +24,29 @@ const cut = (el) => !picture(getComputedStyle(el), `ui/buttons/button_${big()}`)
   || styles(el).slice(1, 3).some((style) => style.display !== "none")
   || Math.abs(box(el).width * 50 / 290 - box(el).height) > 1;
 
+const shaded = (el) => [el, ...el.querySelectorAll("*")].some((part) => getComputedStyle(part).textShadow !== "none");
+
 const checked = (id) => $(id).getAttribute("aria-checked") === "true";
+
+async function cornered(cancel, ok) {
+  const [look, panel] = [getComputedStyle($("options"), "::backdrop"), getComputedStyle($("options"), "::before")];
+  if (look.backgroundImage === "none") return [];
+  const sheet = new Image();
+  sheet.src = /url\("(.+)"\)/.exec(look.backgroundImage)[1];
+  await loaded([sheet]);
+  const width = parseFloat(look.backgroundSize);
+  const height = width * sheet.naturalHeight / sheet.naturalWidth;
+  const [, sign, shift] = /([+-]) ([\d.]+)px/.exec(look.backgroundPositionY) ?? [];
+  const bottom = (innerHeight + height) / 2 + Number(sign + shift);
+  const [across, down] = [(innerWidth + width) / 2 - ok.right, bottom - ok.bottom];
+  const top = box($("languageButton")).top + parseFloat(panel.marginTop);
+  const end = box($("settings")).bottom - parseFloat(panel.marginBottom);
+  return [
+    ...need(box($("optionsTitle")).bottom <= top && end <= cancel.top, "the panel is not between the title and Cancel"),
+    ...need(across > 0 && Math.abs(across - down) < 0.5,
+      `OK is ${Math.round(across)} from the parchment's right edge and ${Math.round(down)} from its bottom edge`),
+  ];
+}
 
 function offParchment(style) {
   const [left, top, right, bottom] = ["--left", "--top", "--right", "--bottom"]
@@ -209,7 +231,7 @@ function toolLooks() {
   return problems;
 }
 
-function confirming() {
+async function confirming() {
   const [start, other] = [language, codes().find((code) => code !== language)];
 
   const draft = () => {
@@ -235,7 +257,9 @@ function confirming() {
     ...need(same(buttons.map((el) => el.id), ["optionsCancel", "optionsOk"]), `${buttons.map(describe)} in the window`),
     ...need(Math.abs(ok.right - form.right) < 1 && cancel.right <= ok.left && Math.abs(cancel.top - ok.top) < 0.5
       && Math.abs(cancel.width - ok.width) < 0.5, "Cancel and OK are not side by side on the right"),
+    ...await cornered(cancel, ok),
     ...buttons.filter(cut).map((el) => `${describe(el)} is not the whole button picture`),
+    ...[...document.querySelectorAll("button")].filter(shaded).map((el) => `${describe(el)} has a text shadow`),
     ...need(draft() && !include && language === start, "changes took effect before OK"),
   ];
   $("optionsCancel").click();
@@ -309,8 +333,9 @@ export async function pictureTests() {
     + "branch is open, side by side as wide as the pane, each the whole button picture, the same in every language",
     toolLooks());
   reset();
-  expect("options: without Simple UI, Options has Cancel and OK on the right, each the whole button picture; "
-    + "changes wait for OK, and Cancel or closing the window throws them away", confirming());
+  expect("options: without Simple UI, Options has Cancel and OK side by side below its panel, as far from the "
+    + "parchment's right edge as from its bottom edge, each the whole button picture, and no button's text has a "
+    + "shadow; changes wait for OK, and Cancel or closing the window throws them away", await confirming());
   reset();
   expect("options: Simple UI takes away every image and civilisation link on OK, and unticking it gives them back on "
     + "OK, neither changing the page before OK nor moving its box", simpleSwitch());

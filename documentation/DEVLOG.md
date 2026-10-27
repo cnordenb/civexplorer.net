@@ -2949,3 +2949,49 @@ Variants still to be resolved:
 - **Checked.** All 99 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
   by 1100 and 500 by 900.
 - **Documents.** `TESTS.md`: Tests 25 and 57, and the lines of Tests 25 to 32 in `js/tests/behaviour.js`.
+
+## 2026-10-27: Cancel and OK in the corner of the Options parchment, and no shadow on button text
+
+### What changed
+
+- **No shadow on button text.** Without Simple UI, the text of the picture buttons (**Clear**, **Expand all**,
+  **Collapse all**, the language button and its languages, **Cancel** and **OK**) no longer has a shadow: the
+  `text-shadow` is gone from the `.pictures .tool` rule in `style.css`. The civilisations' names on tiles keep their
+  `drop-shadow`, the only shadow left on text.
+- **Cancel and OK on the parchment.** In a window at least 588 pixels high, where the Options window shows its
+  parchment, **Cancel** and **OK** are no longer inside the framed panel. They sit below it, in the parchment's bottom
+  right corner, with **OK** ending at the panel's right edge, and they are as far from the parchment picture's bottom
+  edge as from its right edge: 58 pixels in a full-HD window, about 43 from the torn paper itself. In the picture
+  (652 by 688) the paper starts 15 pixels in from the right edge and 14 from the bottom, so the buttons are also
+  equally far from the paper, to within a pixel. The form is `position: absolute`, and a new `--drop` in `style.css`
+  says how far below the window's box the buttons end, worked out from the picture's size and place on the backdrop.
+- **The panel moved up.** The panel and its contents moved up by about 21 pixels in a full-HD window and no longer
+  hold the row of buttons: the panel now starts 32 pixels below the title (about 8 of which the title's frame takes)
+  and ends 24 pixels above **Cancel** and **OK**. The window's top and bottom padding are worked out from the
+  parchment, so both gaps are the same at every window size and only the panel's height changes. Below about 550
+  pixels wide, where the parchment is relatively smaller, the panel is shorter (393 pixels instead of 445 at 500
+  wide) and starts 7 pixels lower than before. For this the title is now `position: absolute`, at the same place as
+  before, so that the top padding moves only the panel.
+- **Unchanged.** With Simple UI the window looks as before. In a window less than 588 pixels high, where the
+  parchment is left out, only the text shadow is gone. `style.css` has 396 lines of code.
+- **Test 51.** Wherever the parchment shows, it now also checks that the panel lies between the title and **Cancel**
+  and **OK**, and that **OK** is as far from the parchment picture's right edge as from its bottom edge, to half a
+  pixel. It reads the picture's size and place from the window's backdrop and loads the picture for its proportions,
+  so `confirming()` in `js/tests/pictures.js` is now `async`. It also checks that no button on the page has a text
+  shadow.
+- **Mutation runs.** Test 51 fails, and no other test does, with each of these: the text shadow back on the buttons;
+  **Cancel** and **OK** back in the panel; the buttons 10 pixels higher than their corner; and, at 500 by 900, the
+  panel reaching down to the bottom of the window, or up into the title. In a full-HD window the last two leave
+  enough room, so they fail only in the narrower window.
+- **Checked.** All 99 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900. Screenshots of the Options window were checked at those sizes and at 2560 by 1440, 1280 by
+  740 and 1280 by 700. Screenshots with Simple UI are the same, byte for byte, before and after.
+- **Documents.** `TESTS.md`: Test 51, and the lines of Tests 47 to 52 in `js/tests/pictures.js`. `MAINTAINER.md`:
+  where the Options window shows **Cancel** and **OK**, and which text has a shadow.
+
+### Questions
+
+1. **Low windows.** Below 588 pixels high the Options window has no parchment, so **Cancel** and **OK** stay at the
+   bottom of the panel. Should they also leave the panel there, for example just below it?
+2. **Civilisation names in the list.** Only the names on tiles have a shadow; the names in the list view have none.
+   Should the list's names get the same shadow?

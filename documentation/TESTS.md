@@ -66,7 +66,7 @@ Functional completeness & correctness tests:
 - [Test 48](#test-48): Every checkbox and radio button shows its picture from its sheet, and tree rows their outlined icons
 - [Test 49](#test-49): The Find box shows a search icon or a clearing cross; the tree and Include have tooltips unless turned off
 - [Test 50](#test-50): Without Simple UI, the tree has Clear and Expand all, which is Collapse all while a branch is open
-- [Test 51](#test-51): Without Simple UI, Options has Cancel and OK on the right; changes wait for OK, and Cancel or closing throws them away
+- [Test 51](#test-51): Without Simple UI, Cancel and OK sit in the parchment's corner, below the panel; changes wait for OK, Cancel drops them
 - [Test 52](#test-52): Ticking Simple UI takes away every image and the civ links on OK, unticking brings them back on OK, its box staying put
 - [Test 53](#test-53): A unique item marked must have has its own filter, unless its whole line is unique
 - [Test 54](#test-54): A group inside a building has no checkbox; a click opens and closes it, and Down reaches its arrow
@@ -631,7 +631,7 @@ Include unticked, Regionals ticked, only Cancel and OK; OK applies, Cancel or cl
 ## Test 47
 
 ### File residence:
-`js/tests/pictures.js`, lines 29-75
+`js/tests/pictures.js`, lines 51-97
 
 ### Purpose:
 Verify that without Simple UI the pictures and cursors suit the screen and everything sits on the parchment.
@@ -642,7 +642,7 @@ Right background; sword, pointing on links; Options (sd/4k, ring); tab icon; on 
 ## Test 48
 
 ### File residence:
-`js/tests/pictures.js`, lines 77-112 and 299-301
+`js/tests/pictures.js`, lines 99-134 and 323-325
 
 ### Purpose:
 Verify that without Simple UI boxes show their sheets, and tree rows their icons, outlined as colour_key.csv says.
@@ -653,7 +653,7 @@ Boxes and radios: row by state, no drawn marks but a black dash. Icons: right fi
 ## Test 49
 
 ### File residence:
-`js/tests/pictures.js`, lines 114-163 and 303-305
+`js/tests/pictures.js`, lines 136-185 and 327-329
 
 ### Purpose:
 Verify that without Simple UI Find clears with its cross, and tooltips show over the tree and Include unless turned off.
@@ -664,7 +664,7 @@ Verify that without Simple UI Find clears with its cross, and tooltips show over
 ## Test 50
 
 ### File residence:
-`js/tests/pictures.js`, lines 20-25, 165-210 and 307-310
+`js/tests/pictures.js`, lines 20-25, 187-232 and 331-334
 
 ### Purpose:
 Verify that without Simple UI Expand all turns into Collapse all in place while a branch is open, and hands focus on.
@@ -675,18 +675,18 @@ Clear and Expand all, or Collapse all with a top branch open; side by side, pane
 ## Test 51
 
 ### File residence:
-`js/tests/pictures.js`, lines 20-27, 212-252 and 312-313
+`js/tests/pictures.js`, lines 20-49, 234-276 and 336-338
 
 ### Purpose:
-Verify that without Simple UI the Options window applies its changes only on OK, and Cancel or closing it drops them.
+Verify that without Simple UI Cancel and OK sit in the parchment's corner and changes wait for OK, or Cancel drops them.
 
 ### Assertion expectation:
-Cancel and OK, no Close, side by side on the right, whole sprite; a box and a language change take effect only on OK.
+Side by side below the panel, as far from the parchment's right as its bottom; whole sprite; no text shadow; OK applies.
 
 ## Test 52
 
 ### File residence:
-`js/tests/pictures.js`, lines 254-287 and 315-316
+`js/tests/pictures.js`, lines 278-311 and 340-341
 
 ### Purpose:
 Verify Req. 2, 32 and 33, and Rules 18 and 22: Simple UI turns every image and civ link off and back on, each on OK.
