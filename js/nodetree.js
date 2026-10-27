@@ -1,8 +1,8 @@
-import { data, words, numbers, size, plural, fill, nameOf, plain, iconFile } from "./datahandler.js";
+import { data, words, numbers, size, plural, fill, nameOf, plain, cellOf } from "./datahandler.js";
 import {
   items, roots, matching, rebuild, setMark, boxState, mark, fit, unmarkLine, chainOf, barred, locked,
 } from "./model.js";
-import { $, clone, simple, compose, label, listCivs, listFilters } from "./stringbuilder.js";
+import { $, clone, simple, place, compose, label, listCivs, listFilters } from "./stringbuilder.js";
 
 let found = [];
 let press = null;
@@ -27,7 +27,7 @@ export const itemAt = (target) => {
 export function dress(item) {
   const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
   if (simple() || !own) return item.icon?.remove();
-  item.icon ??= Object.assign(clone("nodeIconTemplate"), { src: iconFile(own) });
+  item.icon ??= place(clone("nodeIconTemplate"), cellOf(data.icons.atlas[own.kind], own.picture));
   Object.assign(item.icon.dataset, own);
   item.label.before(item.icon);
 }

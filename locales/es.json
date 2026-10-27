@@ -39,7 +39,8 @@
       "viewTile": "Mosaico",
       "tooltips": "Descripciones emergentes",
       "cancel": "Cancelar",
-      "ok": "Aceptar"
+      "ok": "Aceptar",
+      "loading": "Cargando recursos de imagen..."
     },
     "groups": {
       "economy": "Economía",

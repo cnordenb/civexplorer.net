@@ -39,7 +39,8 @@
       "viewTile": "Jubin",
       "tooltips": "Petua alat",
       "cancel": "Batal",
-      "ok": "OK"
+      "ok": "OK",
+      "loading": "Memuatkan aset imej..."
     },
     "groups": {
       "economy": "Ekonomi",

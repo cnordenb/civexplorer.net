@@ -39,7 +39,8 @@
       "viewTile": "Blocos",
       "tooltips": "Dicas",
       "cancel": "Cancelar",
-      "ok": "OK"
+      "ok": "OK",
+      "loading": "Carregando recursos de imagem..."
     },
     "groups": {
       "economy": "Economia",

@@ -51,24 +51,17 @@ html.pictures, html.pictures * { cursor: url("assets/images/ui/cursors/cursor_no
 html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
   cursor: url("assets/images/ui/cursors/cursor_pointing_x1.webp") 0 0, pointer;
 }
-@media (width > 1920px), (height > 1080px) {
-  .pictures body { background-image: url("assets/images/ui/backgrounds/qhd.webp"); }
+.pictures[data-background="qhd"] body { background-image: url("assets/images/ui/backgrounds/qhd.webp"); }
+.pictures[data-background="uhd"] body { background-image: url("assets/images/ui/backgrounds/uhd.webp"); }
+.pictures[data-background="ultrawide"] body {
+  --ratio: 64 / 27; --left: 0.2325; --top: 0.031; --right: 0.7636; --bottom: 0.968;
+  background-image: url("assets/images/ui/backgrounds/ultrawide.webp");
 }
-@media (width > 2560px), (height > 1440px) {
-  .pictures body { background-image: url("assets/images/ui/backgrounds/uhd.webp"); }
-  html.pictures, html.pictures * { cursor: url("assets/images/ui/cursors/cursor_normal_x2.webp") 0 0, auto; }
-  html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
-    cursor: url("assets/images/ui/cursors/cursor_pointing_x2.webp") 0 0, pointer;
-  }
-  .pictures .tip { --reach: 48; }
+html.pictures[data-assets="4k"], html.pictures[data-assets="4k"] * { cursor: url("assets/images/ui/cursors/cursor_normal_x2.webp") 0 0, auto; }
+html.pictures[data-assets="4k"] :is(.civs a, .foot a), html.pictures[data-assets="4k"] :is(.civs a, .foot a) * {
+  cursor: url("assets/images/ui/cursors/cursor_pointing_x2.webp") 0 0, pointer;
 }
-@media (aspect-ratio > 16 / 9) {
-  .pictures body {
-    --ratio: 64 / 27; --left: 0.2325; --top: 0.031; --right: 0.7636; --bottom: 0.968;
-    background-image: url("assets/images/ui/backgrounds/ultrawide.webp");
-  }
-}
-.pictures .load-error { background: var(--bg); }
+.pictures[data-assets="4k"] .tip { --reach: 48; }
 .pictures .foot p, .pictures .foot a { color: #391c1b; }
 .pictures .top { display: grid; grid-template-columns: minmax(56px, 1fr) minmax(0, 784px) minmax(56px, 1fr); align-items: center; gap: 0; }
 .pictures h1 {
@@ -80,7 +73,7 @@ html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
 }
 .pictures .title-long { display: none; }
 .pictures .title-short { display: inline; font-size: max(12px, 5.2cqi); white-space: nowrap; }
-.pictures .load-error { width: fit-content; max-width: 100%; padding: 6px 12px; }
+.pictures .load-error { width: fit-content; max-width: 100%; padding: 6px 12px; background: var(--bg); }
 .pictures .foot { margin-top: 8px; padding: 6px 12px; }
 .pictures .foot p { margin: 0; }
 .pictures .tool.icon {
@@ -90,10 +83,8 @@ html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
 .pictures .tool.icon:hover { background-position: 50% 0; }
 .pictures .tool.icon:active { background-position: 100% 0; }
 .pictures .cog { display: none; }
-@media (width > 1920px), (height > 1080px), (resolution > 1x) {
-  .pictures .tool.icon { background-image: url("assets/images/ui/buttons/options_4k.webp"); }
-  .pictures h1 { background-image: url("assets/images/ui/backgrounds/title_frame_4k.webp"); }
-}
+.pictures[data-assets="4k"] .tool.icon { background-image: url("assets/images/ui/buttons/options_4k.webp"); }
+.pictures[data-assets="4k"] h1 { background-image: url("assets/images/ui/backgrounds/title_frame_4k.webp"); }
 @font-face {
   font-family: "Trajan Pro"; font-weight: 700; font-display: swap;
   src: local("Trajan Pro Bold"), local("TrajanPro-Bold"), url("assets/fonts/TrajanPro-Bold.ttf") format("truetype");
@@ -113,9 +104,7 @@ html.pictures :is(.civs a, .foot a), html.pictures :is(.civs a, .foot a) * {
 .pictures .tool:not(.icon, .report .tool)::after { right: 0; background-position-x: 100%; }
 .pictures .tool:not(.icon, .report .tool):hover { background-position: 0 50%; }
 .pictures .tool:not(.icon, .report .tool):active { background-position: 0 100%; }
-@media (width > 2560px), (height > 1440px) {
-  .pictures .tool:not(.icon, .report .tool) { background-image: url("assets/images/ui/buttons/button_4k.webp"); }
-}
+.pictures[data-assets="4k"] .tool:not(.icon, .report .tool) { background-image: url("assets/images/ui/buttons/button_4k.webp"); }
 a { color: var(--mark); }
 p, h1, h2 { max-width: 80ch; }
 :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
@@ -142,6 +131,10 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .language-option { width: 100%; text-align: left; }
 .language-option[aria-current="true"] { border-color: var(--mark); box-shadow: inset 4px 0 0 var(--mark); font-weight: 700; }
 .load-error { flex: none; margin: 0 0 12px; }
+.loading { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; max-width: none; margin: 0; padding: 16px; background: #595959; color: #fff; font: 700 1.25rem/1.5 "Civ Georgia", Georgia, serif; text-align: center; }
+.spinner { width: 96px; height: 96px; }
+@media (prefers-reduced-motion: no-preference) { .spinner { animation: spin 1s linear infinite; } }
+@keyframes spin { to { rotate: 1turn; } }
 
 .content { display: flex; flex: 1; flex-direction: column; min-height: 0; }
 .panes { display: grid; flex: 1; gap: 12px; min-height: 0; }
@@ -233,10 +226,8 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 }
 .pictures .view input:checked { background-position-y: 100%; }
 .pictures .view:hover input:not(:checked), .pictures .view input:checked:active, .pictures .view:active input:checked { background-position-x: 100%; }
-@media (width > 1920px), (height > 1080px), (resolution > 1x) {
-  .pictures .box { background-image: url("assets/images/ui/checkboxes/checkboxes_4k.webp"); }
-  .pictures .view input { background-image: url("assets/images/ui/checkboxes/radiobutton_4k.webp"); }
-}
+.pictures[data-assets="4k"] .box { background-image: url("assets/images/ui/checkboxes/checkboxes_4k.webp"); }
+.pictures[data-assets="4k"] .view input { background-image: url("assets/images/ui/checkboxes/radiobutton_4k.webp"); }
 .pictures .pane:first-child {
   border: 10px solid transparent; border-image: url("assets/images/ui/panels/nodes9slice.webp") 64 fill / 30px repeat;
   color: #391c1b; font-family: "Civ Georgia", Georgia, serif;
@@ -268,13 +259,11 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
     background: var(--shade) url("assets/images/ui/backgrounds/options_sd.webp") 50% calc(50% - var(--wi) * 0.02224 + var(--lid) / 2) / var(--wi) auto
       no-repeat;
   }
+  .pictures[data-assets="4k"] .options::backdrop { background-image: url("assets/images/ui/backgrounds/options_4k.webp"); }
   .pictures .options h2 {
     position: absolute; top: calc(var(--hd) / 2 + 3px - var(--wi) * 0.46166); grid-row: auto; justify-self: center; width: calc(var(--wi) * 0.3);
     overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; translate: calc(var(--wi) * 0.0092);
   }
-}
-@media (height >= 588px) and ((width > 1920px) or (height > 1080px) or (resolution > 1x)) {
-  .pictures .options::backdrop { background-image: url("assets/images/ui/backgrounds/options_4k.webp"); }
 }
 .pictures .pane-head { background: none; border-bottom-color: #391c1b; }
 .pictures .pane:last-child :is(.pane-head, .ticked) { border-bottom-color: #fda700; }
@@ -282,7 +271,12 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .pictures .tree ul { border-left-color: #391c1b; }
 .pictures .pane:first-child :is(.node:is(:hover, .pressed), .twisty:hover) { background: rgb(255 255 255 / 0.25); }
 .pictures .node.found { background: rgb(255 178 13 / 0.45); color: inherit; box-shadow: inset 4px 0 0 #391c1b; }
+.pictures :is(.node-icon, .civ-icon) { display: inline-block; background: no-repeat content-box; background-size: calc(var(--columns) * 100%) calc(var(--rows) * 100%); background-position: calc(var(--column) / max(var(--columns) - 1, 1) * 100%) calc(var(--row) / max(var(--rows) - 1, 1) * 100%); }
 .pictures .node-icon { flex: none; width: 44px; height: 44px; border: 2px solid transparent; }
+.pictures .node-icon[data-kind="building"] { background-image: url("assets/images/icons/nodes/building/atlas/buildingicon_atlas.webp"); }
+.pictures .node-icon[data-kind="misc"] { background-image: url("assets/images/icons/nodes/misc/atlas/miscicon_atlas.webp"); }
+.pictures .node-icon[data-kind="tech"] { background-image: url("assets/images/icons/nodes/tech/atlas/techicon_atlas.webp"); }
+.pictures .node-icon[data-kind="unit"] { background-image: url("assets/images/icons/nodes/unit/atlas/uniticon_atlas.webp"); }
 .pictures .barred > .row .node-icon { filter: grayscale(1); }
 .pictures .node-icon[data-kind="unit"][data-reach="common"] { border-color: #00739c; }
 .pictures .node-icon[data-kind="unit"][data-reach="regional"] { border-color: #515ae3; }
@@ -325,7 +319,8 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
   border: 1px solid #767676; background: #d7b394; color: #391c1b; box-shadow: 1px 1px 3px rgb(0 0 0 / 0.18);
   font: 12px/1.35 "Civ Georgia", Georgia, serif; white-space: pre-line; overflow-wrap: anywhere; pointer-events: none;
 }
-.pictures .civ-icon { width: 24px; height: 24px; margin-right: 8px; vertical-align: -6px; }
+.pictures .civ-icon { width: 24px; height: 24px; margin-right: 8px; vertical-align: -6px; background-image: url("assets/images/icons/civs/atlas/civicon_atlas_x1.webp"); }
+.pictures[data-assets="4k"] .civ-icon { background-image: url("assets/images/icons/civs/atlas/civicon_atlas_x2.webp"); }
 .pictures .civs.tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; columns: auto; }
 .pictures .civs.tiles li {
   position: relative; aspect-ratio: 1; padding: 0; container-type: inline-size;
@@ -339,9 +334,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
   background: linear-gradient(#fff, #f90); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   filter: drop-shadow(2px 2px 0 rgb(0 0 0 / 0.5));
 }
-@media (width > 1920px), (height > 1080px), (resolution > 1x) {
-  .pictures .civs.tiles li { background-image: url("assets/images/ui/panels/civ_box_4k.webp"); }
-}
+.pictures[data-assets="4k"] .civs.tiles li { background-image: url("assets/images/ui/panels/civ_box_4k.webp"); }
 .tree > li > .row .name, .node:is(.group, .self) .name { font-weight: 700; }
 .node .n { margin-left: auto; padding-left: 8px; white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; }
 :is(.twisty, .node, .option, .language-option):focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }

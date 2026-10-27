@@ -165,9 +165,16 @@ const MARKUP = [
   /\.(innerHTML|outerHTML|insertAdjacentHTML)\b/, /createElement\s*\(/, /document\.write/,
 ];
 const PAGE_FREE = ["script.js", "js/datahandler.js", "js/model.js"];
+const SPINNER = [
+  /@media \(prefers-reduced-motion: no-preference\) \{ \.spinner \{ animation: spin 1s linear infinite; \} \}/,
+  /@keyframes spin \{ to \{ rotate: 1turn; \} \}/,
+];
+
+const unspun = (sheet) => SPINNER.reduce((rest, turn) => rest.replace(turn, ""), sheet);
 
 function badImages(page, sheet) {
   const outside = page.replace(/<template\b[\s\S]*?<\/template>/gi, "");
+  const inside = page.match(/<template\b[\s\S]*?<\/template>/gi) ?? [];
 
   const misplaced = ([, selector, body]) => [...body.matchAll(/url\(\s*"?([^")]*)/gi)].some(([, src]) => (
     selector.trim() === "@font-face"
@@ -176,6 +183,7 @@ function badImages(page, sheet) {
         || !/^assets\/images\/([a-z0-9]+\/)*[a-z0-9_]+\.webp$/.test(src)));
 
   return /<(svg|canvas|picture|video|audio|object|embed)\b/i.test(page) || /<img\b/i.test(outside)
+    || inside.some((part) => /<img\b[^>]*\ssrc(set)?=/i.test(part))
     || !/<link rel="icon" href="data:,"/.test(page) || !data.icons.favicon.startsWith("assets/images/")
     || [...sheet.matchAll(/([^{}]*)\{([^{}]*)\}/g)].some(misplaced);
 }
@@ -213,10 +221,10 @@ export function sourceTests(page, sheet, files) {
       && /XMLHttpRequest|localStorage|\bfetch\s*\(/.test(file.code)),
   ]);
   expect("rules: images only from assets/images/, in templates or CSS, only without Simple UI, fonts only from "
-    + "assets/fonts/, and no sounds, animations or dependencies in the sources", failing({
+    + "assets/fonts/, and no sounds, animations but the loading spin, or dependencies in the sources", failing({
     images: badImages(page, sheet),
     sounds: files.some(({ code }) => /new\s+(Audio|AudioContext)\b/.test(code)),
-    animations: /@keyframes|\banimation|\btransition/i.test(sheet)
+    animations: /@keyframes|\banimation|\btransition/i.test(unspun(sheet))
       || files.some(({ code }) => /\.animate\s*\(/.test(code)),
     dependencies: files.some(({ code }) => /\brequire\s*\(/.test(code)) || /@import/i.test(sheet),
   }));

@@ -39,7 +39,8 @@
       "viewTile": "타일",
       "tooltips": "툴팁",
       "cancel": "취소",
-      "ok": "확인"
+      "ok": "확인",
+      "loading": "이미지 에셋을 불러오는 중..."
     },
     "groups": {
       "economy": "경제",

@@ -1,7 +1,7 @@
 import { data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language } from "../datahandler.js";
 import { items, whole, lineOf, lineEnd, shared } from "../model.js";
 import { $ } from "../stringbuilder.js";
-import { setMenu, options } from "../optionshandler.js";
+import { setMenu, options, screenPictures } from "../optionshandler.js";
 
 export const TAG = /^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i;
 export const root = document.documentElement;
@@ -53,6 +53,40 @@ export const styles = (el) => [null, "::before", "::after", "::marker"].map((par
 export const pictured = (el) => styles(el).some((style) => style.backgroundImage !== "none"
   || style.listStyleImage !== "none" || style.borderImageSource !== "none" || /url\(/.test(style.content)
   || /url\(/.test(style.cursor));
+
+export const GRADES = { fhd: "sd", qhd: "sd", uhd: "4k", ultrawide: "4k" };
+
+const SIZED = /\/backgrounds\/(fhd|qhd|uhd|ultrawide)\.webp$|_(sd|4k|x1|x2)\.webp$/;
+
+export const grade = () => root.dataset.assets;
+
+export const fitted = (width = screen.width, height = screen.height, ratio = devicePixelRatio) => {
+  const [wide, high] = [width, height].map((side) => Math.round(side * ratio));
+  if (width < 720 || height < 720) return "fhd";
+  if (wide / high > 2) return "ultrawide";
+  return wide > 2560 || high > 1440 ? "uhd" : wide > 1920 || high > 1080 ? "qhd" : "fhd";
+};
+
+const SCREENS = [
+  [1920, 1080, 1], [1536, 864, 1.25], [1366, 768, 1], [1920, 1200, 1], [2560, 1440, 1], [1920, 1080, 2],
+  [2560, 1080, 1], [3440, 1440, 1], [390, 844, 3], [844, 390, 3], [768, 1024, 2],
+];
+
+export const misjudged = () => SCREENS.filter((sizes) => {
+  const [{ background, assets }, wanted] = [screenPictures(...sizes), fitted(...sizes)];
+  return background !== wanted || assets !== GRADES[wanted];
+}).map(([wide, high, ratio]) => `a ${wide} by ${high} screen at ${ratio * 100}% is misjudged`);
+
+export const fitting = (src, background) => {
+  const [, board, sized] = SIZED.exec(src) ?? [];
+  const sizes = GRADES[background] === "4k" ? ["4k", "x2"] : ["sd", "x1"];
+  return board ? board === background : !sized || sizes.includes(sized);
+};
+
+const files = (value) => [...value.matchAll(/url\("([^"]+)"\)/g)].map(([, src]) => src);
+
+export const urlsOf = (style) => files([style.backgroundImage, style.borderImageSource, style.listStyleImage,
+  style.content, style.cursor].join(" "));
 
 export const tabIcons = () => [...document.querySelectorAll("link[rel~=icon]")]
   .filter((link) => link.getAttribute("href") !== "data:,");

@@ -57,7 +57,20 @@ export const nameOf = (item) => (item.group ? words.groups[item.key] : words.ite
 
 export const civName = (civ) => words.civs[civ] ?? civ;
 
-export const iconFile = ({ kind, picture }) => `${data.icons.nodes}${kind}/${picture}.png`;
+const iconFile = ({ kind, picture }) => `${data.icons.nodes}${kind}/${picture}.png`;
+
+export const civFile = (civ) => data.icons.names[civ] ?? civ.toLowerCase();
+
+const byFile = (a, b) => (`${a}.png` < `${b}.png` ? -1 : Number(`${a}.png` > `${b}.png`));
+
+const orders = new WeakMap();
+
+export function cellOf(names, name, file = String) {
+  if (!orders.has(names)) orders.set(names, names.map(file).sort(byFile));
+  const order = orders.get(names);
+  const [at, columns] = [order.indexOf(file(name)), Math.ceil(Math.sqrt(order.length))];
+  return { column: at % columns, row: Math.floor(at / columns), columns, rows: Math.ceil(order.length / columns) };
+}
 
 export const plural = (key, n) => {
   const forms = words.ui[key];
@@ -264,8 +277,6 @@ function compare(current, fresh, { keys, nodes, owners, say }) {
   keys.filter((key) => key in current.availability && differs(key, "availability"))
     .forEach((name) => say("changed", { name }));
   keys.filter((key) => !owners.get(key).size).forEach((name) => say("nobody", { name }));
-  keys.filter((key) => differs(key, "pictures"))
-    .forEach((name) => say("icon", { name, file: iconFile(fresh.pictures[name]) }));
   for (const [code, settings] of Object.entries(current.languages)) {
     for (const section of ["civs", "items"]) {
       for (const [key, name] of Object.entries(fresh.text[code][section])) {
@@ -277,6 +288,16 @@ function compare(current, fresh, { keys, nodes, owners, say }) {
   [...nodes.keys()].filter((name) => !keys.includes(name) && !current.ignore.includes(name)).sort()
     .forEach((name) => say("unplaced", { name }));
   missingText(fresh).forEach((problem) => say("missingText", problem));
+}
+
+function addIcons(fresh, say) {
+  for (const [name, own] of Object.entries(fresh.pictures)) {
+    const atlas = (fresh.icons.atlas[own.kind] ??= []);
+    if (atlas.includes(own.picture)) continue;
+    atlas.push(own.picture);
+    atlas.sort(byFile);
+    say("icon", { name, file: iconFile(own) });
+  }
 }
 
 function refresh(current, techtree, trees, strings) {
@@ -298,6 +319,7 @@ function refresh(current, techtree, trees, strings) {
   fresh.civs = civs;
   fresh.availability = Object.fromEntries(keys.map((key) => [key, availabilityOf(owners.get(key), civs)]));
   fresh.pictures = Object.fromEntries(keys.map((key) => [key, pictureOf(nodes.get(key), pictures.get(key))]));
+  addIcons(fresh, say);
   translate(current, fresh, { keys, nodes, techtree, strings });
   const now = new Date();
   fresh.source.updated = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;

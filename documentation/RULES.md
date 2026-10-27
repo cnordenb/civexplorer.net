@@ -9,7 +9,7 @@ Rule 7: No comments allowed in the code.
 Rule 8: Document development and changes in DEVLOG.md.  
 Rule 9: No images allowed.  
 Rule 10: No sounds allowed.  
-Rule 11: No animations allowed.  
+Rule 11: No animations allowed. This rule may be exceptionally flouted by a small loading icon upon loading the site.  
 Rule 12: No page scrolling allowed (landing page, all collapsed).  
 Rule 13: No build allowed.  
 Rule 14: No dependencies allowed.  

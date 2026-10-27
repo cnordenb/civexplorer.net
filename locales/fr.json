@@ -39,7 +39,8 @@
       "viewTile": "Vignettes",
       "tooltips": "Infobulles",
       "cancel": "Annuler",
-      "ok": "OK"
+      "ok": "OK",
+      "loading": "Chargement des ressources d'image..."
     },
     "groups": {
       "economy": "Économie",

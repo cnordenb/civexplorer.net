@@ -11,6 +11,7 @@
 <script type="module" src="script.js"></script>
 </head>
 <body>
+<div class="loading" id="loading" role="status" hidden><span data-text="loading">Loading image assets...</span></div>
 <header class="top" id="top" hidden>
   <h1><span class="title-long" data-text="title"></span><span class="title-short" data-text="titleShort"></span></h1>
   <button type="button" class="tool icon" id="optionsButton" aria-haspopup="dialog" aria-controls="options"><span class="cog" aria-hidden="true">⚙︎</span><span class="sr-only" data-text="options"></span></button>
@@ -84,8 +85,9 @@
 <template id="itemTemplate"><li><div class="row"><button type="button" class="twisty" aria-expanded="false"></button><span class="gap"></span><div class="node" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span class="name"></span><span class="sr-only lacking"></span><span class="n"><span class="count" aria-hidden="true"></span><span class="sr-only civ-count"></span></span></div></div><ul role="list" hidden></ul></li></template>
 <template id="chipTemplate"><li><button type="button" class="chip"><span class="box" aria-hidden="true"></span><span class="sr-only chip-label"></span><span class="chip-name" aria-hidden="true"></span><span aria-hidden="true">×</span></button></li></template>
 <template id="civTemplate"><li><a class="civ"><span class="civ-name"></span></a></li></template>
-<template id="civIconTemplate"><img class="civ-icon" alt=""></template>
-<template id="nodeIconTemplate"><img class="node-icon" alt="" draggable="false"></template>
+<template id="spinnerTemplate"><img class="spinner" data-src="assets/images/ui/loading.webp" alt=""></template>
+<template id="civIconTemplate"><span class="civ-icon"></span></template>
+<template id="nodeIconTemplate"><span class="node-icon"></span></template>
 <template id="languageTemplate"><li><button type="button" class="tool language-option"><span class="caption"></span></button></li></template>
 <template id="reportTemplate"><li></li></template>
 <template id="downloadTemplate"><li><a download></a></li></template>

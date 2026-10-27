@@ -1,4 +1,4 @@
-import { data, words, tag, collator, plural, fill, nameOf, civName, civsOf } from "./datahandler.js";
+import { data, words, tag, collator, plural, fill, nameOf, civName, civsOf, civFile, cellOf } from "./datahandler.js";
 import { items, matching, share, filtersOf, chipName } from "./model.js";
 
 export const $ = (id) => document.getElementById(id);
@@ -6,6 +6,14 @@ export const $ = (id) => document.getElementById(id);
 export const clone = (id) => $(id).content.firstElementChild.cloneNode(true);
 
 export const simple = () => !document.documentElement.classList.contains("pictures");
+
+export function place(icon, { column, row, columns, rows }) {
+  icon.style.setProperty("--column", column);
+  icon.style.setProperty("--row", row);
+  icon.style.setProperty("--columns", columns);
+  icon.style.setProperty("--rows", rows);
+  return icon;
+}
 
 export function compose(node, template, values) {
   node.replaceChildren(...template.split(/(\{\w+\})/).filter(Boolean).map((part) => {
@@ -40,9 +48,7 @@ export function label() {
   share();
 }
 
-const civIcon = (civ) => Object.assign(clone("civIconTemplate"), {
-  src: `${data.icons.folder}${data.icons.names[civ] ?? civ.toLowerCase()}.png`,
-});
+const civIcon = (civ) => place(clone("civIconTemplate"), cellOf(data.civs, civ, civFile));
 
 export function listCivs() {
   const civs = civsOf(matching).map((civ) => [civName(civ), civ]);
@@ -79,4 +85,15 @@ export function listFilters() {
 
 export function showLoadError(shown = true) {
   $("loadError").hidden = !shown;
+}
+
+let spinner = null;
+
+const spin = (img) => Object.assign(img, { src: img.dataset.src });
+
+export function showLoading(shown = true) {
+  if (shown) $("loading").append(spinner ??= spin(clone("spinnerTemplate")));
+  else spinner?.remove();
+  $("loading").hidden = !shown;
+  for (const id of ["top", "content"]) $(id).inert = shown;
 }

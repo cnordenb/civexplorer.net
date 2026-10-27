@@ -39,7 +39,8 @@
       "viewTile": "Ô",
       "tooltips": "Chú thích",
       "cancel": "Hủy",
-      "ok": "OK"
+      "ok": "OK",
+      "loading": "Đang tải tài nguyên hình ảnh..."
     },
     "groups": {
       "economy": "Kinh tế",

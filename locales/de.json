@@ -43,7 +43,8 @@
       "viewTile": "Kacheln",
       "tooltips": "Tooltips",
       "cancel": "Abbrechen",
-      "ok": "OK"
+      "ok": "OK",
+      "loading": "Bildressourcen werden geladen..."
     },
     "groups": {
       "economy": "Wirtschaft",

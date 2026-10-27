@@ -39,7 +39,8 @@
       "viewTile": "图块",
       "tooltips": "工具提示",
       "cancel": "取消",
-      "ok": "确定"
+      "ok": "确定",
+      "loading": "正在加载图片资源..."
     },
     "groups": {
       "economy": "经济",

@@ -34,11 +34,13 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
    - *No civilisation has: …* It was probably removed from the game. Consider removing it from the tree.
    - *In the source data now, so it can be taken out of extras: …* aoe2techtree.net now has an item that was added
      by hand. Delete its entry under `extras` in `data.json` (see [The data](#the-data)) and reload the `?update` page.
-   - *New icon for …: …* If the file it names is not in the project yet, copy it from the `img` folder of
+   - *New icon for …: …* Copy the file it names from the `img` folder of
      [aoe2techtree's repository](https://github.com/SiegeEngineers/aoe2techtree): `img/Unit/912.png` goes to
-     `assets/images/icons/nodes/unit/912.png`, and the same for `Building` and `Tech`.
+     `assets/images/icons/nodes/unit/912.png`, and the same for `Building` and `Tech`. Then build that folder's
+     atlas again (see [Assets](#assets)). The updater has already added the number to `atlas` in `data.json`.
    - *New civilisation: …* Its names are added for you. Add its icon to `assets/images/icons/civs/`, named after its
-     English name in lower case, such as `celts.png`.
+     English name in lower case, such as `celts.png`, and build the civilisations' atlas again (see
+     [Assets](#assets)).
    - *… has no text for: …* A language file is missing a sentence or a heading. Add it under `text` in that file (see
      [The data](#the-data)).
    - *New name in … for …: …* Nothing, unless the new name is wrong. Then add the right one to `overrides` in that
@@ -95,7 +97,7 @@ why a game update changes only those files, and sometimes adds an icon.
 
 | File or folder | What it holds |
 | --- | --- |
-| `index.html` | The structure of the page. It holds no text of its own. |
+| `index.html` | The structure of the page. Its only text is what shows before the data loads, such as the loading screen. |
 | `style.css` | How the page looks, for big and small screens, light and dark colours, with or without pictures. |
 | `script.js` | Where the page starts. The rest of the code is in `js/`. |
 | `js/` | The scripts; see [UML diagram](#uml-diagram). |
@@ -127,6 +129,10 @@ classDiagram
     +setInclude(on)
     +setRegional(on)
     +setSimple(on)
+    +savedSimple()
+    +screenPictures(width, height, ratio)
+    +finishLoading()
+    +pictureFiles()
     +tick(id, on)
     +choices
     -choose(code)
@@ -149,6 +155,8 @@ classDiagram
     +label()
     +listCivs(marked)
     +listFilters()
+    +showLoading(shown)
+    +place(icon, cell)
   }
   class model {
     <<module>>
@@ -167,6 +175,8 @@ classDiagram
     +preferredLanguage()
     +setOf(rule)
     +civsOf(set)
+    +cellOf(names, name, file)
+    +civFile(civ)
     +recall(key)
     +remember(key, value)
     +fetchUpdate()
@@ -220,8 +230,9 @@ classDiagram
   note for datahandler "reads data.json and locales/"
 ```
 
-- **`script.js`** turns Simple UI on or off as the visitor last chose, loads `data.json` and the visitor's language,
-  and starts the page. With `?test` it loads the tests, and with `?update` the updater.
+- **`script.js`** turns Simple UI on or off as the visitor last chose (off on a first visit), which puts up the
+  loading screen without it, loads `data.json` and the visitor's language, starts the page, and lets the loading
+  screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the updater.
 - **`js/datahandler.js`** looks after the data: loading `data.json` and the language files, the chosen language,
   which civilisations have what, the visitor's saved choices, and the updater's fetching and file writing.
 - **`js/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
@@ -231,8 +242,9 @@ classDiagram
   tree, the list of civilisations and **Filters**.
 - **`js/nodetree.js`** draws the tree and handles it: opening and closing, counts, marking by click, touch and key,
   **Find**, and the buttons above it.
-- **`js/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI. Each
-  setting is one of its `choices`; `js/pictures.js` adds the civilisations' view and Tooltips.
+- **`js/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI, with the
+  loading screen that comes with leaving Simple UI. Each setting is one of its `choices`; `js/pictures.js` adds the
+  civilisations' view and Tooltips.
 - **`js/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, and the tooltip.
 - **`js/report.js`** shows the report window of the updater and the tests. Its title, its summary and its **Close**
   button stay in view, and only the list between them scrolls. **Close** sits on the right and is the plain button
@@ -250,7 +262,8 @@ A script only uses the scripts below it in this order: `datahandler.js`, `model.
 - `languages`: the 17 languages, English first. Each has its `name`, its `tag` (such as `pt-BR`) and two settings the
   updater uses to tidy the game's names.
 - `civs`: the civilisations, by their English names.
-- `icons`: where the icons are, the tab icon, and the civilisations whose icon has another name than theirs.
+- `icons`: where the tree's icons are, the tab icon, the civilisations whose icon has another name than theirs, and
+  in `atlas` the pictures each atlas of the tree's icons holds. **The updater adds new pictures to `atlas`.**
 - `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true`, and an item
   can be marked `"own": true`, or name an item it `"excludes"`, or the items it `"replaces"` (see
   [How marking works](#how-marking-works)). **Edited by hand.**
@@ -289,7 +302,8 @@ To add an item that aoe2techtree.net gives to no civilisation, as the Xolotl War
    `picture`, its `reach` (`common`, `regional` or `unique`), the number of its name in aoe2techtree's
    [English names](https://aoe2techtree.net/data/locales/en/strings.json) as `nameId`, and the civilisations that
    have it as `has`.
-3. Save its icon, a 48 by 48 PNG, in `assets/images/icons/nodes/` under its kind, named after its picture number.
+3. Save its icon, a 48 by 48 PNG, in `assets/images/icons/nodes/` under its kind, named after its picture number,
+   and build that kind's atlas again (see [Assets](#assets)). The updater adds the number to `atlas` in step 4.
 4. Run the updater, download its files, and run the tests. The updater fills in its names in every language.
 
 ### How marking works
@@ -378,6 +392,46 @@ uses a picture or a font starts with `.pictures`, so none of them applies with S
 the list are only made while the class is there, and the tab icon in `index.html` is empty (`data:,`) until
 `js/optionshandler.js` sets it with Simple UI off.
 
+Which pictures the page uses depends on the screen, worked out once as the page opens (`screenPictures()` in
+`js/optionshandler.js`) from its resolution in device pixels: `screen.width` and `screen.height` times
+`devicePixelRatio`, so a 1920 by 1080 screen at 200 % counts as 3840 by 2160. `<html>` gets the answer in two
+attributes, set before the `pictures` class:
+
+- `data-background`, the parchment: `fhd` for a phone, a screen under 720 CSS pixels on its shorter side (where the
+  page turns to its narrow layout); otherwise `ultrawide` for a screen more than twice as wide as it is high, `uhd`
+  above 2560 by 1440, `qhd` above 1920 by 1080, and `fhd` for anything smaller.
+- `data-assets`, the size of every other picture: `4k` (and the `_x2` cursors) with `uhd` or `ultrawide`, and `sd`
+  (and the `_x1` cursors) with `fhd` or `qhd`.
+
+Resizing the window or zooming changes neither, so the page uses one background and one size of each picture for the
+whole visit. In `style.css`, each rule with a picture names the `_sd` one or `fhd.webp`, and a rule starting with
+`.pictures[data-assets="4k"]` or `.pictures[data-background="..."]` names the other; it is more specific, so it wins,
+and the browser downloads only the picture that wins.
+
+A first visit opens without Simple UI. The page then first shows a grey loading screen, "Loading image assets..."
+above the turning `assets/images/ui/loading.webp`, and keeps it until every picture in `style.css` that the screen
+uses has loaded, for every window size (Find's cross, the civilisation tiles and the Options parchment too), with
+every picture on the page and every font, so that the whole page shows at once and nothing comes in later. Leaving
+Simple UI shows the screen in the same way, unless all of them have loaded already; pictures that are only in the
+browser's disk cache, as on a new visit, still take a moment, and the screen shows for that moment. With Simple UI it
+never shows, and the loading picture is not on the page.
+
+`setSimple()` and `finishLoading()` in `js/optionshandler.js` run it. `setSimple()` puts the loading picture on the page
+before the `pictures` class, so it is the first picture the browser asks for. The template in `index.html` names it in
+`data-src`, not `src`, and `showLoading()` sets `src`: Firefox downloads the `src` of an `<img>` in a template before
+any script runs, which would download the picture with Simple UI too. `finishLoading()` finds the pictures through the
+style sheet's rules (`pictureFiles()`), leaving out, by their names, the backgrounds and sizes that `data-background`
+and `data-assets` do not choose. It reads no computed style, as that would make the browser ask for the page's pictures
+there and then, before the loading picture. It loads each picture into an `Image` and keeps it, as the browser soon
+forgets pictures nothing uses and would load them again, and lets the screen go before anything is drawn when every one
+is already complete. Each picture is to be asked for once: Firefox lists a picture again, from its cache, when something
+new starts using it after it has loaded. So `finishLoading()` leaves out the loading picture, which the screen does not
+wait for, and `setSimple()` makes the `Image` of each picture of `<html>` and `<body>`, the background and the cursor,
+with the `pictures` class, while the browser is still loading them. The text is in `index.html` in English, as it shows
+before the language files load, and then in the visitor's language (`loading` in the texts). The picture turns unless
+the visitor asks for reduced motion; its turn is the page's only animation, as Rule 11 allows, and the tests allow no
+other.
+
 With the pictures on, the page also looks a little different: the title is the short "Civ Explorer", the legend is
 hidden as the tooltip explains the same, the Find box comes first, Include's description shows as a tooltip, the
 civilisations can be shown as tiles and link to their pages on aoe2techtree.net, and the mouse cursor is a sword.
@@ -408,14 +462,16 @@ because the scrolling list around it would cut off an outline drawn outside.
 | `assets/images/ui/checkboxes/` | The checkboxes and the radio buttons. |
 | `assets/images/ui/cursors/` | The mouse cursors. |
 | `assets/images/ui/panels/` | The panes' frames and the box of a civilisation tile. |
-| `assets/images/icons/civs/` | The civilisations' icons. |
-| `assets/images/icons/nodes/` | The tree's icons, in `building/`, `unit/`, `tech/` and `misc/`, and `colour_key.csv`. |
+| `assets/images/ui/loading.webp` | The turning picture of the loading screen. |
+| `assets/images/icons/civs/` | The civilisations' icons, and in `atlas/` the atlas the page shows them from. |
+| `assets/images/icons/nodes/` | The tree's icons, in `building/`, `unit/`, `tech/` and `misc/`, each with its atlas in `atlas/`, and `colour_key.csv`. |
 | `assets/images/favicon.ico` | The tab icon. |
 | `assets/fonts/` | Georgia, Times New Roman Bold and Trajan Pro Bold, used only with the pictures. |
 
-- Most pictures come in two sizes: `_sd` for windows up to 1920 by 1080, and `_4k` for bigger windows and sharp
-  screens. The parchment comes as `fhd`, `qhd`, `uhd` and `ultrawide`, and the browser downloads only the one that
-  suits the window.
+- Most pictures come in two sizes, `_sd` and `_4k`, and the cursors and the civilisations' atlas in `_x1` and `_x2`; the
+  parchment comes as `fhd`, `qhd`, `uhd` and `ultrawide`. Which ones the page uses depends on the screen (see [Simple UI
+  and the pictures](#simple-ui-and-the-pictures)), and the browser downloads only those. A new picture that comes in
+  sizes needs those names, as the loading screen goes by them.
 - A picture with several states, such as a checkbox, holds them all in one sheet: rows for empty, ticked and
   crossed, and columns for normal, under the mouse and pressed. `style.css` shows the right part.
 - To replace a picture, save the new one under the same name, as WebP and with the same proportions. Names use only
@@ -430,6 +486,16 @@ because the scrolling list around it would cut off an outline drawn outside.
   together. The tests compare them.
 - The civilisations' icons are named after the civilisation in lower case. Where the file has another name, such as
   `inca.png`, `icons` in `data.json` says so.
+- The page shows the icons from atlases, one WebP per folder in its `atlas/` folder, such as
+  `nodes/unit/atlas/uniticon_atlas.webp`. An atlas holds every PNG of its folder in alphabetical order of file names,
+  `1.png`, `10.png`, `100.png` and so on to `11.png`, row by row, each 48 by 48 pixels, with as many columns as the
+  square root of their number, rounded up. The civilisations' atlas comes in two sizes, with the cells in the same
+  places: `civicon_atlas_x1.webp` with 60 by 60 pixels to a cell, and `civicon_atlas_x2.webp` with 104 by 104, the PNGs'
+  own size, for 4K screens. The PNGs stay, as the atlases are built from them: after adding one, build its folder's
+  atlas again from every PNG in the folder, both sizes for the civilisations. `cellOf()` in `js/datahandler.js` finds an
+  icon's cell from `atlas` in `data.json` (for the civilisations, from `civs` and `icons`), and `style.css` shows that
+  cell. Test 48 checks each icon's cell and each atlas's size, but it cannot see what an atlas shows: look at the page
+  after building one.
 
 ### Tests
 

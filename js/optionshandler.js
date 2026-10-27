@@ -2,7 +2,7 @@ import {
   data, attempt, recall, remember, preferredLanguage, loadLanguage, useLanguage,
 } from "./datahandler.js";
 import { items, include, regional, setIncluded, setRegionals } from "./model.js";
-import { $, clone, simple, writeFixed, writeTexts, label, showLoadError } from "./stringbuilder.js";
+import { $, clone, simple, writeFixed, writeTexts, label, showLoadError, showLoading } from "./stringbuilder.js";
 import { dress, update, find, replant, startTree } from "./nodetree.js";
 
 let chosen = null;
@@ -65,13 +65,79 @@ const showIcon = () => {
   if (data) $("icon").href = simple() ? "data:," : data.icons.favicon;
 };
 
+export const savedSimple = () => recall("simple") === "true";
+
+export function screenPictures(width = screen.width, height = screen.height, ratio = devicePixelRatio) {
+  const [wide, high] = [width, height].map((side) => Math.round(side * ratio));
+  const background = Math.min(width, height) < 720 ? "fhd" : wide > high * 2 ? "ultrawide"
+    : wide > 2560 || high > 1440 ? "uhd" : wide > 1920 || high > 1080 ? "qhd" : "fhd";
+  return { background, assets: background === "uhd" || background === "ultrawide" ? "4k" : "sd" };
+}
+
+export let opening = Promise.resolve();
+
+let round = 0;
+
+const LINK = /url\("([^"]+)"\)/g;
+
+const SIZED = /\/backgrounds\/(fhd|qhd|uhd|ultrawide)\.webp$|_(sd|4k|x1|x2)\.webp$/;
+
+const GRADES = { sd: ["sd", "x1"], "4k": ["4k", "x2"] };
+
+const rulesIn = (rules) => [...rules].flatMap((rule) => [rule, ...rulesIn(rule.cssRules ?? [])]);
+
+const linksIn = (text, base) => [...text.matchAll(LINK)].map(([, src]) => new URL(src, base).href);
+
+const filesOf = (sheet, use) => rulesIn(sheet.cssRules).filter((rule) => rule.selectorText && use(rule.selectorText))
+  .flatMap((rule) => linksIn(rule.cssText, sheet.href));
+
+const rooted = (selector) => [document.documentElement, document.body]
+  .some((el) => attempt(() => el.matches(selector)));
+
+const fits = (src) => {
+  const [, board, grade] = SIZED.exec(src) ?? [];
+  const { background, assets } = document.documentElement.dataset;
+  return board ? board === background : !grade || !!GRADES[assets]?.includes(grade);
+};
+
+export const pictureFiles = (use = () => true) => [...new Set([...document.styleSheets]
+  .flatMap((sheet) => attempt(() => filesOf(sheet, use)) ?? []))].filter(fits);
+
+const kept = new Map();
+
+const copy = (src) => kept.get(src) ?? kept.set(src, Object.assign(new Image(), { src })).get(src);
+
+const onPage = () => [...document.images].filter((img) => !$("loading").contains(img)).map((img) => img.src);
+
+const done = (img) => img.decode().catch(() => null);
+
+const ready = (pictures, fonts) => pictures.every((img) => img.complete)
+  && fonts.every((face) => /loaded|error/.test(face.status));
+
+export function finishLoading() {
+  if (simple()) return opening;
+  const pictures = [...new Set(onPage().concat(pictureFiles()))].map(copy);
+  const fonts = [...document.fonts];
+  if (ready(pictures, fonts)) showLoading(false);
+  if ($("loading").hidden) return opening;
+  const mine = ++round;
+  opening = Promise.all([...pictures.map(done), ...fonts.map((face) => face.load().catch(() => null))])
+    .then(() => mine === round && showLoading(false));
+  return opening;
+}
+
 export function setSimple(on) {
+  const coming = !on && simple();
   remember("simple", String(on));
   tick("simple", on);
+  if (!document.documentElement.dataset.assets) Object.assign(document.documentElement.dataset, screenPictures());
+  if (on || coming) showLoading(coming);
   document.documentElement.classList.toggle("pictures", !on);
+  if (coming) pictureFiles(rooted).forEach(copy);
   showIcon();
   items.forEach(dress);
   if (items.length) update();
+  if (coming && items.length) finishLoading();
 }
 
 const picked = () => options().find((option) => option.getAttribute("aria-current") === "true")?.dataset.language;

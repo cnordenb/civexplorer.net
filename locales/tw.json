@@ -39,7 +39,8 @@
       "viewTile": "圖塊",
       "tooltips": "工具提示",
       "cancel": "取消",
-      "ok": "確定"
+      "ok": "確定",
+      "loading": "正在載入圖片資源..."
     },
     "groups": {
       "economy": "經濟",

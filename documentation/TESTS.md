@@ -62,8 +62,8 @@ Functional completeness & correctness tests:
 - [Test 44](#test-44): On OK, ticking Include shows every item and unticking Include Regionals hides regional ones, keeping marks
 - [Test 45](#test-45): The Include and Include Regionals choices are remembered
 - [Test 46](#test-46): Options opens with Include unticked and Include Regionals ticked; changes wait for OK, Cancel or closing drops them
-- [Test 47](#test-47): The pictures, cursors and tab icon suit the screen, the page sits on the parchment, the footer spans it or is hidden on phones
-- [Test 48](#test-48): Every checkbox and radio button shows its picture from its sheet, and tree rows their outlined icons
+- [Test 47](#test-47): The pictures, cursors and tab icon suit the screen's resolution, one size of each, the page sits on the parchment, the footer spans it or is hidden on phones
+- [Test 48](#test-48): Every checkbox and radio button shows its picture from its sheet, tree rows their outlined icons and civilisations theirs, each from its atlas
 - [Test 49](#test-49): The Find box shows a search icon or a clearing cross; the tree and Include have tooltips unless turned off
 - [Test 50](#test-50): Without Simple UI, the tree has Clear and Expand all, which is Collapse all while a branch is open
 - [Test 51](#test-51): Without Simple UI, Cancel and OK sit in the parchment's corner, below the panel; changes wait for OK, Cancel drops them
@@ -107,7 +107,7 @@ Maintainability tests:
 - [Test 83](#test-83): script.js in the main folder, other scripts in js/, tests on demand
 - [Test 84](#test-84): No file over 400 lines of code, no function over 60, no line over 120 characters
 - [Test 85](#test-85): Page code stays out of script.js, datahandler.js and model.js, and data code is in datahandler.js
-- [Test 86](#test-86): Images and fonts only from assets/ and without Simple UI, a blank tab icon; no sounds, animations or dependencies
+- [Test 86](#test-86): Images and fonts only from assets/ and without Simple UI, a blank tab icon; no sounds, animations but the loading spin, or dependencies
 - [Test 87](#test-87): No game data in the scripts
 - [Test 88](#test-88): Each item is in the tree once
 - [Test 89](#test-89): The tree uses only known fields, and unique, lines, own, excludes and replaces are well placed
@@ -125,7 +125,7 @@ Maintainability tests:
 ## Test 1
 
 ### File residence:
-`js/tests/static.js`, lines 229-230
+`js/tests/static.js`, lines 237-238
 
 ### Purpose:
 Prevent missing interface text in any language.
@@ -136,7 +136,7 @@ Every language has every interface text English has, and a name for every group.
 ## Test 2
 
 ### File residence:
-`js/tests/static.js`, lines 231-234
+`js/tests/static.js`, lines 239-242
 
 ### Purpose:
 Prevent untranslated items and civilisations in the tree and the civ list.
@@ -631,29 +631,29 @@ Include unticked, Regionals ticked, only Cancel and OK; OK applies, Cancel or cl
 ## Test 47
 
 ### File residence:
-`js/tests/pictures.js`, lines 51-97
+`js/tests/pictures.js`, lines 47-110
 
 ### Purpose:
-Verify that without Simple UI the pictures and cursors suit the screen and everything sits on the parchment.
+Verify that without Simple UI the pictures and cursors suit the screen's resolution, one size of each, on the parchment.
 
 ### Assertion expectation:
-Right background; sword, pointing on links; Options (sd/4k, ring); tab icon; on the parchment; footer full, or hidden.
+Choice for 11 screens; all 4 shown right; sword, pointing on links; Options, ring; tab icon; on parchment; footer.
 
 ## Test 48
 
 ### File residence:
-`js/tests/pictures.js`, lines 99-134 and 323-325
+`js/tests/pictures.js`, lines 112-181 and 370-373
 
 ### Purpose:
-Verify that without Simple UI boxes show their sheets, and tree rows their icons, outlined as colour_key.csv says.
+Verify that without Simple UI boxes show their sheets, and rows and civilisations their icons, each from its atlas.
 
 ### Assertion expectation:
-Boxes and radios: row by state, no drawn marks but a black dash. Icons: right file, loaded, 44px, CSV outline.
+Boxes: row by state, no marks but a dash. Icons: cell by file name, atlas sized to match, 44px, CSV outline.
 
 ## Test 49
 
 ### File residence:
-`js/tests/pictures.js`, lines 136-185 and 327-329
+`js/tests/pictures.js`, lines 183-232 and 375-377
 
 ### Purpose:
 Verify that without Simple UI Find clears with its cross, and tooltips show over the tree and Include unless turned off.
@@ -664,7 +664,7 @@ Verify that without Simple UI Find clears with its cross, and tooltips show over
 ## Test 50
 
 ### File residence:
-`js/tests/pictures.js`, lines 20-25, 187-232 and 331-334
+`js/tests/pictures.js`, lines 18-23, 234-279 and 379-382
 
 ### Purpose:
 Verify that without Simple UI Expand all turns into Collapse all in place while a branch is open, and hands focus on.
@@ -675,7 +675,7 @@ Clear and Expand all, or Collapse all with a top branch open; side by side, pane
 ## Test 51
 
 ### File residence:
-`js/tests/pictures.js`, lines 20-49, 234-276 and 336-338
+`js/tests/pictures.js`, lines 18-45, 281-323 and 384-386
 
 ### Purpose:
 Verify that without Simple UI Cancel and OK sit in the parchment's corner and changes wait for OK, or Cancel drops them.
@@ -686,7 +686,7 @@ Side by side below the panel, as far from the parchment's right as its bottom; w
 ## Test 52
 
 ### File residence:
-`js/tests/pictures.js`, lines 278-311 and 340-341
+`js/tests/pictures.js`, lines 325-358 and 388-389
 
 ### Purpose:
 Verify Req. 2, 32 and 33, and Rules 18 and 22: Simple UI turns every image and civ link off and back on, each on OK.
@@ -719,7 +719,7 @@ No checkbox role, tab stop or box; its name and arrow open and close it; right-c
 ## Test 55
 
 ### File residence:
-`js/tests/static.js`, lines 238-239
+`js/tests/static.js`, lines 246-247
 
 ### Purpose:
 Keep the language menu and the page's lang attributes correct (WCAG 3.1.1, 3.1.2).
@@ -1005,7 +1005,7 @@ Space flips both boxes, the tree unchanged till OK, which applies them; flipping
 ## Test 81
 
 ### File residence:
-`js/tests/static.js`, lines 192-196
+`js/tests/static.js`, lines 200-204
 
 ### Purpose:
 Enforce Rule 7: no comments in the code.
@@ -1016,7 +1016,7 @@ index.html, style.css and every script hold no comment markers. The comment live
 ## Test 82
 
 ### File residence:
-`js/tests/static.js`, lines 197-198
+`js/tests/static.js`, lines 205-206
 
 ### Purpose:
 Enforce Rule 2: no CSS or HTML inside the JavaScript.
@@ -1027,7 +1027,7 @@ No inline styles but setProperty("--name", number); no HTML strings, createEleme
 ## Test 83
 
 ### File residence:
-`js/tests/static.js`, lines 199-205
+`js/tests/static.js`, lines 207-213
 
 ### Purpose:
 Enforce Rules 2 and 16, and keep the tests out of what visitors download.
@@ -1038,7 +1038,7 @@ script.js is in the main folder and every other script in js/; imports point int
 ## Test 84
 
 ### File residence:
-`js/tests/static.js`, lines 42-161 and 206-207
+`js/tests/static.js`, lines 42-161 and 214-215
 
 ### Purpose:
 Verify Rules 23, 24 and 25: functions, lines and files stay small enough to read. GitHub checks Rule 26.
@@ -1049,7 +1049,7 @@ index.html, style.css and every script: at most 400 lines of code, functions at 
 ## Test 85
 
 ### File residence:
-`js/tests/static.js`, lines 208-214
+`js/tests/static.js`, lines 216-222
 
 ### Purpose:
 Keep page code out of script.js, datahandler.js and model.js, and data loading and storage in datahandler.js.
@@ -1060,18 +1060,18 @@ script.js, datahandler.js and model.js never touch the page; only datahandler.js
 ## Test 86
 
 ### File residence:
-`js/tests/static.js`, lines 169-181 and 215-222
+`js/tests/static.js`, lines 168-189 and 223-230
 
 ### Purpose:
-Enforce Rules 9, 10, 11, 14 and 22 in the source files.
+Enforce Rules 9, 10, 11 (but for the loading spin), 14 and 22 in the source files.
 
 ### Assertion expectation:
-img only in templates; blank tab icon; url() to assets/images/ in .pictures rules, assets/fonts/ in @font-face; etc.
+img only in templates, no src; blank tab icon; url() to assets/images/ in .pictures, assets/fonts/ in @font-face; etc.
 
 ## Test 87
 
 ### File residence:
-`js/tests/static.js`, lines 223-224
+`js/tests/static.js`, lines 231-232
 
 ### Purpose:
 Enforce Rule 1: game data lives only in data.json.
@@ -1082,7 +1082,7 @@ No civilisation or item name from data.json appears as a quoted string in any sc
 ## Test 88
 
 ### File residence:
-`js/tests/static.js`, line 261
+`js/tests/static.js`, line 269
 
 ### Purpose:
 Prevent duplicate items in the tree, which would break counts and marking.
@@ -1093,7 +1093,7 @@ Every item appears exactly once in the tree in data.json.
 ## Test 89
 
 ### File residence:
-`js/tests/static.js`, lines 271-274
+`js/tests/static.js`, lines 279-282
 
 ### Purpose:
 Catch misspelt, stale or misplaced fields in the tree in data.json, such as the retired "optional" flag.
@@ -1104,7 +1104,7 @@ Only known fields; unique and lines are true on groups, own is true on items; ex
 ## Test 90
 
 ### File residence:
-`js/tests/static.js`, lines 246-258 and 275-282
+`js/tests/static.js`, lines 254-266 and 283-290
 
 ### Purpose:
 Ensure every item's availability names real civilisations and every item has an icon, as extras says for added items.
@@ -1115,7 +1115,7 @@ Availability is "all" or a has or lacks list of known civs; pictures gives kind,
 ## Test 91
 
 ### File residence:
-`js/tests/static.js`, lines 290-291
+`js/tests/static.js`, lines 298-299
 
 ### Purpose:
 Ensure counted texts have a fallback form for any number.
@@ -1126,7 +1126,7 @@ Every counted (plural) text in every language has an "other" form.
 ## Test 92
 
 ### File residence:
-`js/tests/static.js`, lines 292-294
+`js/tests/static.js`, lines 300-302
 
 ### Purpose:
 Prevent translations that lose or misspell placeholders such as {n}.
@@ -1137,7 +1137,7 @@ Each interface text has the same {placeholders} in every language as in English.
 ## Test 93
 
 ### File residence:
-`js/tests/static.js`, lines 295-297
+`js/tests/static.js`, lines 303-305
 
 ### Purpose:
 Catch stale or misspelt name corrections after a game update.
@@ -1148,7 +1148,7 @@ Every key in each language's overrides is a known item or civilisation.
 ## Test 94
 
 ### File residence:
-`js/tests/static.js`, lines 298-303
+`js/tests/static.js`, lines 306-311
 
 ### Purpose:
 Ensure the footer, the updater and the tests have the data they need (Req. 5).
@@ -1159,7 +1159,7 @@ source has name, url, data, an integer helpOffset and a YYYY-MM date; no tool te
 ## Test 95
 
 ### File residence:
-`js/tests/static.js`, lines 317-319
+`js/tests/static.js`, lines 325-327
 
 ### Purpose:
 Ensure the updater writes data.json and the locale files without losing or changing data.
@@ -1170,7 +1170,7 @@ Writer outputs data.json plus one locales/ file per other language; reading them
 ## Test 96
 
 ### File residence:
-`js/tests/static.js`, lines 323-324
+`js/tests/static.js`, lines 331-332
 
 ### Purpose:
 Keep data.json compact and identical to what the updater would write.
@@ -1181,7 +1181,7 @@ Each item's availability is "all", or whichever of the has or lacks lists is sho
 ## Test 97
 
 ### File residence:
-`js/tests/static.js`, lines 325-327
+`js/tests/static.js`, lines 333-335
 
 ### Purpose:
 Keep stored names identical to what the updater would write.

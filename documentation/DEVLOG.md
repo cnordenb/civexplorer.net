@@ -2995,3 +2995,385 @@ Variants still to be resolved:
    bottom of the panel. Should they also leave the panel there, for example just below it?
 2. **Civilisation names in the list.** Only the names on tiles have a shadow; the names in the list view have none.
    Should the list's names get the same shadow?
+
+## 2026-10-27: a loading screen without Simple UI
+
+### What changed
+
+- **Loading screen.** Without Simple UI, the page now opens on a grey screen (`#595959`) that says "Loading image
+  assets..." in white, above `assets/images/ui/loading.webp`, 96 pixels wide and turning once a second. It covers the
+  whole window, and the page under it is inert, so neither a click nor a key reaches it. It goes away once every
+  picture the page uses has loaded and been decoded, and the fonts too, so that the whole page shows at once.
+  - **Which pictures.** Every `<img>` on the page (the tree's and the civilisations' icons, 250 in a full-HD window)
+    and every picture the stylesheet gives any element, shown or not, at the current window size: backgrounds,
+    frames, buttons, checkboxes, cursors, and the Options window's parchment and radio buttons. `pictureFiles()` in
+    `js/pictures.js` reads them from the computed styles of every element, its `::before` and `::after`, and a
+    dialog's `::backdrop`. With 2,625 elements in a full-HD window, that takes about 120 milliseconds.
+  - **How long.** Opened from disk in a full-HD window, the screen shows 32 milliseconds after the page starts and
+    goes 439 milliseconds later, when all 250 icons are complete. Served over HTTP throttled to 250 kB/s with 150
+    milliseconds of latency, it shows after 0.67 seconds and goes after 14.5 seconds, as the last icon completes.
+    Until the scripts have run, the page is blank in its usual background, as before.
+  - **Never with Simple UI.** `script.js` shows the screen only without Simple UI, and turning Simple UI on hides it
+    (`setSimple()`), so the tests, which turn Simple UI on, run without it. If `data.json` cannot load, the screen goes
+    and the load error shows.
+  - **Its text** is in `index.html`, in English, with `lang="en"`, like the load error, as it shows before
+    `data.json` and the language files have loaded.
+- **First visits.** A first visit already opened without Simple UI, as no saved choice meant Simple UI off. The rule
+  now has a name, `savedSimple()` in `js/optionshandler.js`, which `script.js` uses and Test 53 checks.
+- **The one animation.** The picture turns with a CSS animation, `@keyframes spin`, which Rule 11, amended in this
+  session, allows for a small loading icon as the site loads. Test 87 (formerly 86) now allows exactly this one: the
+  `.pictures .loading::after` rule with `animation: spin`, and the `spin` keyframes. Any other animation or
+  transition in the stylesheet still fails it, and Test 77 still finds nothing moving on the page with Simple UI.
+- **Sizes.** `style.css` has 399 lines of code. `js/` already holds 7 files, so the new code is in `js/pictures.js`,
+  `js/stringbuilder.js` and `js/optionshandler.js`.
+- **Test 53 (new).** It checks that with no saved choice the page opens without Simple UI; that turning Simple UI on
+  hides the screen, which then does not show; that without Simple UI the screen covers the window in grey, with its
+  text above the turning picture, and leaves the page inert; that it waits for a picture added just before it is
+  told to finish (a fresh copy of an icon) and for every picture the stylesheet gives a shown element; and that it
+  then goes, gives the page back and leaves nothing moving. It is the last of the pictures tests, so Tests 53 to 99
+  are now Tests 54 to 100. There are 100 tests, the most Rule 17 allows.
+- **Mutation runs.** Test 53 fails, and no other test does, with each of these: the screen never shown; nothing
+  waited for; the screen shown with Simple UI; Simple UI on a first visit; the picture standing still; Simple UI
+  leaving the screen up; the page under it not inert. With the cursors left out of the pictures waited for, Test 53
+  fails, and so does Test 85, as that change joined two lines into one too long. Test 87 fails, and no other test,
+  with a transition added to the buttons.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900. A first visit and a visit with Simple UI saved were traced in Chrome: the first shows the
+  screen until every icon is complete, the second never shows it. Two screenshots of the screen a moment apart differ,
+  as the picture turns.
+- **Documents.** `TESTS.md`: the new Test 53, Tests 54 to 100 renumbered, Test 87, and the lines of Tests 47 to 53
+  in `js/tests/pictures.js` and of the tests in `js/tests/static.js`. `MAINTAINER.md`: the loading screen and first
+  visits in "Simple UI and the pictures", `index.html`, `script.js` and `js/pictures.js` in "How the code works",
+  the UML diagram, and `loading.webp` in Assets. `code_docu.pdf` was not rebuilt; it does not describe the new
+  functions.
+
+### Questions
+
+1. **Reduced motion.** Should the picture stand still for visitors whose system asks for less motion
+   (`prefers-reduced-motion`)? Windows asks for it when its animation effects are turned off.
+2. **Translation.** "Loading image assets..." is in English only, as it shows before any language file has loaded.
+   Should it switch to the visitor's language once that file is in? That adds a text to `data.json` and to every
+   language file.
+3. **Pictures for later.** Pictures the page does not use when it opens are not waited for: the cross that clears
+   **Find**, the box of a civilisation tile while the list view is chosen, and the pictures for other window sizes.
+   Should the screen wait for these too?
+4. **A picture that never comes.** The screen waits as long as a picture is on its way, with no time limit. Should
+   it give up after some seconds and show the page as it is?
+5. **Before the scripts run.** The screen is hidden in `index.html` and shown by the scripts, which only then know
+   whether Simple UI is on, so a slow connection shows a blank page first (0.67 seconds in the throttled trace).
+   Shown from `index.html` instead, it would come at once, but flash for a moment for visitors with Simple UI.
+
+## 2026-10-27: the loading picture first, the loading screen on leaving Simple UI, and every picture waited for
+
+### What changed
+
+- **Answers.** Of the questions in the entry before: the picture stands still with reduced motion (1); the text is
+  translated (2); every picture is waited for, the Options parchment's too (3); there is no time limit (4). Question
+  5 is put again below, more plainly.
+- **The loading picture first.** It was the third picture the browser asked for, after `cursor_normal_x1.webp` and
+  `ultrawide.webp`, as it was the background of a `.pictures .loading::after` rule, found with all the others. It is
+  now an `<img class="spinner">` in a template (`spinnerTemplate`). `showLoading()` puts it on the loading screen and
+  takes it off again, and `setSimple()` calls it before it sets the `pictures` class, so the browser asks for it
+  before any other picture. Traced over HTTP, `loading.webp` is now the first of 250 picture requests, both on a
+  first visit and on leaving Simple UI. With Simple UI it is not on the page at all.
+- **Leaving Simple UI.** Unticking Simple UI and pressing OK now also shows the loading screen until every picture
+  has loaded, unless all of them have loaded already: then the screen is shown and hidden again in the same task,
+  before anything is drawn, so it never shows. From a local HTTP server, unthrottled and with nothing cached, it
+  showed for 0.62 seconds; switching Simple UI off and on again after that, it did not show. With the pictures only
+  in the browser's disk cache (a new browser after a visit without Simple UI, the server sending `max-age=600`), it
+  showed for about 0.4 seconds, while the 250 pictures came from the disk.
+  - **Kept pictures.** Each picture loaded is kept in an `Image` (`kept` in `js/optionshandler.js`). Without that,
+    Chrome forgot pictures a few seconds after nothing on the page used them, as with Simple UI on, and the screen
+    showed again on the next switch. In the tests, which switch often, it then stayed up for 1.4 seconds during the
+    pictures tests, with the page inert under it.
+  - **Moved.** The loading code moved from `js/pictures.js` to `js/optionshandler.js`, as `setSimple()` needs it and
+    `js/optionshandler.js` may not import `js/pictures.js`. `startLoading()` is gone: `setSimple()` shows the screen
+    whenever Simple UI goes off, on opening too. `script.js` calls `finishLoading()` once the page has started.
+- **Every picture waited for.** `pictureFiles()` now reads the `url()` of every rule in `style.css`, inside media
+  queries too, from `document.styleSheets`, instead of the computed styles of the elements. So the screen also waits
+  for the pictures of every window size and screen, the 4K ones too, the cross of **Find**, the civilisation tiles'
+  box, and the Options parchment and radio buttons: 27 files, 3.2 MB in all, of which the four backgrounds are 2.8
+  MB and only one of them shows at a time. Every font in the stylesheet is loaded too.
+- **Reduced motion.** The picture turns only in `@media (prefers-reduced-motion: no-preference)`, so it stands still
+  for visitors whose system asks for less motion. Test 87 now allows the animation only inside that media query.
+- **Translation.** The text is now `loading` in the texts of `data.json` and of every language file, in a
+  `<span data-text="loading">`, so it shows in the visitor's language once that file has loaded, and in English until
+  then. It no longer has `lang="en"`, as it follows the page's language. In German it is "Bildressourcen werden
+  geladen...", in French "Chargement des ressources d'image...", in Japanese "画像アセットを読み込み中...".
+- **Sizes.** `style.css` stays at 399 lines of code: its two `.pictures .load-error` rules are now one.
+- **Test 53** now also checks that the loading picture is the first picture put on the page, before the `pictures`
+  class; that leaving Simple UI with every picture loaded leaves the screen hidden; that leaving it with a new picture
+  on the page shows the screen until that picture is in; that the text changes with the language; that the picture
+  turns unless reduced motion is asked for; that every picture named in `style.css` is waited for, and every font;
+  and that the loading picture is off the page with Simple UI and once the screen has gone.
+- **Mutation runs.** Test 53 fails with each of these: the `pictures` class set before the loading picture; the text
+  not translated; only the top-level rules read, so the pictures in media queries are left out; the loading picture
+  never put on the screen; reduced motion turned round (Test 87 fails too); the screen not let go at once when every
+  picture has loaded (Test 52 fails too); and `finishLoading()` not called on leaving Simple UI (Test 52 fails too).
+  The loading picture left on the page with Simple UI fails Tests 52, 53 and 77. An animation outside the media query
+  fails Test 87 alone.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900, and with reduced motion forced at 1280 by 800. Over a throttled connection, the screen
+  showed the German text above the turning picture, and with reduced motion forced, the Japanese text above the
+  picture with no animation running.
+- **Documents.** `TESTS.md`: Test 53, the lines of Tests 47 to 53 in `js/tests/pictures.js` and of the tests in
+  `js/tests/static.js`, and Tests 47 to 53 (not 52) turning Simple UI off. `MAINTAINER.md`: the loading screen in
+  "Simple UI and the pictures", `script.js`, `js/optionshandler.js` and `js/pictures.js` in "How the code works", and
+  the UML diagram.
+
+### Questions
+
+1. **Disk cache.** Pictures that are only in the browser's disk cache take a moment to load, so the screen shows for
+   that moment (about 0.4 seconds) on opening and on leaving Simple UI. Should the screen wait a fraction of a
+   second before it shows, so that a load that quick shows none? Meanwhile the page would stay blank on opening, or
+   keep Simple UI's look on leaving it.
+2. **Before the scripts run.** Until the scripts have run, the page cannot know whether Simple UI is on, so on a slow
+   connection it is blank for a moment before the screen comes (0.67 seconds in the throttled trace). Should the
+   screen be up from the very start instead, in `index.html`? Then it would come at once, but visitors with Simple UI
+   would see it flash before their page.
+3. **Download size.** Waiting for every picture means that every visit without Simple UI downloads all 27 pictures,
+   3.2 MB, the backgrounds and 4K pictures of other screens too. Should only those of the current screen be waited
+   for, with the rest still loaded, just not waited for?
+4. **Translations.** The 16 translations of "Loading image assets..." have not been read by native speakers.
+
+## 2026-10-27: one background only
+
+### What changed
+
+- **One background.** The loading screen waited for all four backgrounds, `fhd.webp`, `qhd.webp`, `uhd.webp` and
+  `ultrawide.webp`, so every visit without Simple UI downloaded all four, 2.8 MB. Only one is loaded now.
+  `pictureFiles()` leaves out the pictures of `body` rules, which are the backgrounds and nothing else, and takes the
+  one that `body` shows, from its computed style. `style.css` is unchanged and still picks the background by the
+  window's inner size in CSS pixels: `ultrawide.webp` when it is wider than 16:9, otherwise `uhd.webp` above 2560 by
+  1440, `qhd.webp` above 1920 by 1080, and `fhd.webp` for anything smaller. Traced over HTTP, a 1920 by 1080 window
+  downloads `ultrawide.webp` and no other background, and a 1600 by 1200 window `fhd.webp` alone, on a first visit
+  and on leaving Simple UI: 247 picture requests instead of 250. The other pictures are all still waited for, 0.44
+  MB with every size of each.
+- **The loading picture still first.** Reading the computed style of `body` makes the browser work out the page's
+  styles there and then, and it asks for their pictures, the cursor and the background, at once, while the loading
+  picture's request waits for a microtask. The trace showed it on leaving Simple UI, with `cursor_normal_x1.webp`
+  first. `finishLoading()` now notes the pictures on the page at once and does the rest one microtask later, and the
+  loading picture is first again in both traces. With every picture loaded already, the screen still never shows, as
+  microtasks run before anything is drawn.
+  - **Why at once.** The pictures tests turn Include on straight after leaving Simple UI, which adds icons that were
+    never loaded. Looked for a microtask later, those were waited for too, and the screen stayed up, with the page
+    inert, under Tests 49 and 50.
+- **Resizing.** A window resized across one of the limits still gets the other background, as the media queries pick
+  it while the page is open; the loading screen does not show for that.
+- **Tests.** Test 53 now checks that, of the four backgrounds, only the one `body` shows is waited for, and every other
+  picture in `style.css` still is. Test 52 waits for the loading screen before it checks that every picture came
+  back, as the screen now goes a microtask after OK. Which picture the browser asks for first cannot be seen from a
+  page opened from disk, so that was checked in the trace; Test 53 checks that the loading picture is put on the page
+  before the `pictures` class.
+- **Mutation runs.** Test 53 fails, and no other test, with all four backgrounds waited for, and with the one shown
+  left out.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900, and with reduced motion forced at 1280 by 800.
+- **Documents.** `TESTS.md`: Test 53, and the lines of Tests 48 to 53. `MAINTAINER.md`: the loading screen in "Simple
+  UI and the pictures", and the backgrounds in Assets.
+
+### Questions
+
+1. **What picks the background.** It is the window's inner size in CSS pixels, through media queries, as set on
+   2026-10-21. Other measures a script can read on opening:
+   - **The screen's resolution**, in device pixels (`screen.width` and `screen.height` times `devicePixelRatio`).
+     It does not change when the window is resized or maximised, so one background serves the whole visit, and a
+     sharp screen gets a sharp picture: a 4K screen at 200 % scaling is 1920 by 1080 in CSS pixels, so it now gets
+     `fhd.webp` at half its sharpness, unless the window is wider than 16:9. A small window on a big screen would
+     download the big picture.
+   - **The inner size in device pixels** (CSS pixels times `devicePixelRatio`): sharp on sharp screens, but it still
+     changes as the window is resized.
+   - **The window's outer size**, which counts the tabs and toolbars, so it says less about what the background has to
+     cover than the inner size does.
+
+   Which should it be? On a full-HD screen, a maximised browser's inner size is wider than 16:9 because of its tabs
+   and address bar, so it now gets `ultrawide.webp`, 5120 by 2160 and 1.27 MB, the largest; by the screen's shape it
+   would get `fhd.webp`, 0.2 MB.
+
+## 2026-10-27: pictures by the screen's resolution, one size of each
+
+### What changed
+
+- **The screen's resolution.** The background, and with it every other picture's size, now goes by the screen's
+  resolution in device pixels, `screen.width` and `screen.height` times `devicePixelRatio`, which answers Question 1
+  of the entry before. `screenPictures()` in `js/optionshandler.js` works it out once, as Simple UI is first set on
+  opening, and puts it on `<html>` as `data-background` (`fhd`, `qhd`, `uhd` or `ultrawide`) and `data-assets` (`sd`
+  or `4k`). The limits are those the media queries had: `ultrawide` for a screen wider than 16:9, otherwise `uhd`
+  above 2560 by 1440, `qhd` above 1920 by 1080, and `fhd` for anything smaller. A maximised browser on a full-HD
+  screen now gets `fhd.webp`, 0.2 MB, where its inner size got `ultrawide.webp`, 1.27 MB.
+- **One size of each picture.** `_4k` pictures and `_x2` cursors come only with `uhd` or `ultrawide`, and `_sd` and
+  `_x1` ones with `fhd` or `qhd`, so a page never downloads both sizes of one picture. Before, the sizes went by
+  the window, with two limits: the Options button, the title's frame, the boxes and the tiles turned 4K above 1920
+  by 1080 or on a sharp screen, and the cursors and the tree's buttons only above 2560 by 1440. A visit without
+  Simple UI now downloads 16 interface pictures: 0.31 MB on a full-HD screen, 0.49 MB on a QHD one, 1.27 MB on a 4K
+  one and 1.59 MB on an ultrawide one, the loading picture included; the entry before downloaded every size of each,
+  0.44 MB besides the background.
+- **`style.css`.** Every media query that picked a picture by the window's size is now a rule starting with
+  `.pictures[data-background="..."]` or `.pictures[data-assets="4k"]`; the plain rules still name `fhd.webp` and the
+  `_sd` and `_x1` pictures. The tooltip's reach, 48 pixels with the larger cursor, follows `data-assets` too. The
+  file went from 399 to 383 lines.
+- **Resizing.** Resizing the window or zooming changes neither attribute, so the page keeps one background and one
+  size of each picture for the whole visit, and the loading screen has nothing to wait for then.
+- **The loader.** `pictureFiles()` now leaves out the backgrounds and sizes that the two attributes do not choose,
+  by the pictures' names, and reads no computed style. The microtask in `finishLoading()` from the entry before is
+  gone with it, as is the wait for the loading screen in Test 52; the loading picture is still the first picture
+  asked for.
+- **Tests.** Headless Chrome reports an 800 by 600 screen, whatever the window, so a run only ever sees `fhd` and
+  `sd` by itself. Test 47 therefore checks the choice for eight screens through `screenPictures()`, among them
+  1536 by 864 at 125 %, 1920 by 1080 at 200 %, 2560 by 1080 and a phone, against a separate working-out in
+  `js/tests/helpers.js`; then it sets each of the four choices on `<html>` in turn and checks that every picture
+  shown, the Options parchment's too, is of that background and size, and that `body` shows that background. The
+  Options button, tree buttons, checkboxes, cursors and tooltip tests go by `data-assets` instead of the window's
+  size. Test 53 checks, for all four choices, that the loader waits for exactly the pictures in `style.css` of that
+  background and size.
+- **Traced.** Over HTTP with the screen emulated, 1920 by 1080, and 1536 by 864 at 125 %, get `fhd` and `sd`; 2560
+  by 1440 gets `qhd` and `sd`; 1920 by 1080 at 200 % gets `uhd` and `4k`; 2560 by 1080 and 3440 by 1440 get
+  `ultrawide` and `4k`. Each asks for `loading.webp` first, then exactly one background and one size of each
+  picture.
+- **Mutation runs.** Test 47 fails with the ratio left out of the resolution, with QHD counted as 4K, and with the
+  4K checkbox rule removed; Test 53 with every picture waited for again; Tests 47, 48, 50 and 51 with the attributes
+  never set.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900, and with reduced motion forced at 1280 by 800. With QHD, 4K and ultrawide screens emulated
+  over the debugging protocol, all pass but Test 34, which fails there with the plain full-HD screen too, as a page
+  driven that way has no window focus for the language menu.
+- **Documents.** `TESTS.md`: Tests 47 and 53, and the lines of Tests 47 to 53. `MAINTAINER.md`: the screen's
+  choice and the loader in "Simple UI and the pictures", `screenPictures()` and `pictureFiles()` in the diagram, and
+  the sizes in Assets.
+
+### Questions
+
+1. **Phones.** A phone's screen is small in CSS pixels but sharp: 390 by 844 at 300 % is 1170 by 2532, taller than
+   1440, so it gets `uhd.webp` and the 4K pictures, 1.27 MB. Should phones count the longer side against the longer
+   limit, or go by width alone, so that they get `qhd.webp` or `fhd.webp` instead?
+
+## 2026-10-27: phones on the full-HD pictures, and each picture asked for once
+
+### What changed
+
+- **Phones.** A phone now gets `fhd.webp` with the `_sd` pictures and `_x1` cursors, which answers Question 1 of the
+  entry before. A phone is a screen under 720 CSS pixels on its shorter side, in either orientation, the width below
+  which the page turns to its narrow layout. A 390 by 844 phone at 300 % got `uhd.webp` and the 4K pictures, 1.27 MB,
+  and now gets 0.31 MB. A tablet of 768 by 1024 at 200 % is not a phone, and still gets `uhd`.
+- **16:9 laptops.** Headless Firefox reports a 1366 by 768 screen, a common laptop screen, which is a hair wider than
+  16:9 (1.779 against 1.778), so it got `ultrawide.webp` and the 4K pictures, 1.59 MB. `ultrawide` now takes a screen
+  more than twice as wide as it is high: 21:9 screens such as 2560 by 1080 and 3440 by 1440 are 2.37 and 2.39 and
+  still get it, and 1366 by 768 gets `fhd`.
+- **The loading picture in Firefox.** Firefox listed `loading.webp` twice on every visit without Simple UI, once
+  downloaded and once from its cache with 0 bytes; Chrome listed it once. Traces of headless Firefox over WebDriver
+  BiDi showed two causes:
+  - Firefox's HTML parser downloads the `src` of an `<img>` inside a `<template>` before any script runs, as a test
+    page holding nothing but the template showed, and the spinner then took the picture from the cache. That download
+    came with Simple UI too, which never shows the picture. The template now names the picture in `data-src`, and
+    `showLoading()` sets `src` as it makes the spinner.
+  - `finishLoading()` loaded every picture on the page into an `Image`, the spinner's too, and Firefox lists a picture
+    again when something new starts using it after it has loaded. The loading picture is left out now, as the screen
+    has no reason to wait for its own picture. With the template changed alone, Firefox still listed it twice.
+- **The background and the cursor in Firefox.** For the same reason, Firefox at times listed `fhd.webp` and
+  `cursor_normal_x1.webp` twice, when they had loaded before `data.json` and the loader's `Image`s came after.
+  `setSimple()` now makes the `Image`s of the pictures in rules for `<html>` and `<body>` as it puts on the `pictures`
+  class, while the browser is still loading them: `pictureFiles()` takes a test for the rules' selectors, and
+  `Element.matches()` picks those rules without reading any computed style, so the loading picture is still the first
+  picture asked for. Making every `Image` that early was tried and was worse: Firefox then listed most pictures twice,
+  as the page starts using them only once `data.json` has loaded and they have too.
+- **Traced.** Headless Firefox over HTTP, with and without cache headers, three times each: 16 requests on a visit
+  without Simple UI, each picture once and `loading.webp` first; none on a visit with Simple UI; and 16 on leaving it,
+  `loading.webp` first. Headless Chrome, with the cache on and off, and on leaving Simple UI: the same. With screens
+  emulated in Chrome, 390 by 844 and 844 by 390 at 300 % and 1366 by 768 get `fhd`, 768 by 1024 and 1920 by 1080 at
+  200 % get `uhd`, and 2560 by 1080 gets `ultrawide`.
+- **Tests.** Test 47 checks the choice for 11 screens, with 1366 by 768, a phone both ways round and a tablet added.
+  Test 87 fails if an `<img>` in a template has a `src` or `srcset`. That each picture is asked for once cannot be
+  seen from inside the page, and Chrome never asked twice, so the traces checked that.
+- **Mutation runs.** Test 47 fails, and no other test, with phones not stepped down, and with `ultrawide` back at
+  wider than 16:9; Test 87 alone with `src` back in the spinner's template.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900, and with reduced motion forced at 1280 by 800.
+- **Documents.** `TESTS.md`: Tests 47 and 87, and the lines of Tests 1, 2, 56 and 82 to 98. `MAINTAINER.md`: the
+  phone and ultrawide limits, and the template and the loader's `Image`s, in "Simple UI and the pictures".
+
+## 2026-10-27: Test 53 removed
+
+### What changed
+
+- **Test 53.** The loading screen's test, Test 53 in `js/tests/pictures.js`, is removed as a false positive, with the
+  code only it used: `added()`, `spinnerFirst()`, `screenLooks()` and `loadingLooks()` in `js/tests/pictures.js`, and
+  `unwaited()` in `js/tests/helpers.js`, with the imports that went with them. The suite has 99 tests now.
+- **Numbers.** Tests 54 to 100 are now Tests 53 to 99, as a test's number is its place in the order.
+- **Checked.** All 99 tests pass in Chrome on Windows, in light colours, at 1280 by 800.
+- **Documents.** `TESTS.md`: Test 53 gone, the tests after it renumbered, "Tests 47 to 52" for the tests that turn
+  Simple UI off, and the lines of Tests 47 to 52.
+
+## 2026-10-27: icons from atlases
+
+### What changed
+
+- **Atlases.** The tree's icons and the civilisations' icons now come from five WebP atlases, one per folder:
+  `icons/civs/atlas/civicon_atlas.webp` and `icons/nodes/{building,misc,tech,unit}/atlas/{kind}icon_atlas.webp`.
+  Each holds every PNG of its folder in alphabetical order of file names, row by row. Matching every PNG against
+  every cell in Chrome showed that the order is that of the file names as text (`0`, `10`, `100`, `101` … `11`), not
+  as numbers, and that each PNG has a cell of its own: 48 by 48 pixels in the tree's atlases and 60 by 60 in the
+  civilisations', 8 by 7 cells for 56 civilisations and 51 buildings, 2 by 2 for 3 groups, 11 by 11 for 121
+  technologies and 18 by 18 for 316 units. That is as many columns as the square root of the number, rounded up,
+  and as many rows as that needs; the page works the grid out the same way, so a bigger atlas needs no change.
+- **Downloads.** A visit without Simple UI downloads 5 atlases, 0.59 MB, where it downloaded 419 PNGs, 2.01 MB.
+  The atlases hold the pictures no item uses as well.
+- **The page.** An icon is now an empty `<span>` in its template instead of an `<img>`. `cellOf()` in
+  `js/datahandler.js` finds its column and row, and `place()` in `js/stringbuilder.js` gives them to the span as
+  `--column`, `--row`, `--columns` and `--rows`, the one kind of style a script may set. In `style.css`, a rule per
+  kind names the atlas, and one rule for both kinds of icon sizes it to the grid and moves it to the cell, inside the
+  outline (`content-box`). `iconFile()` is now only for the updater's messages.
+- **The data.** An atlas holds pictures that no item uses (237 of 316 units are used), so a cell cannot be worked out
+  from `pictures`. `icons.atlas` in `data.json` lists the pictures in each atlas of the tree, taken from the folders.
+  The civilisations' atlas goes by `civs` and the names in `icons`, as it holds every civilisation and nothing else.
+  `icons.folder`, the civilisations' folder, was only used for their PNGs, and is gone.
+- **The updater.** It adds a picture that an item now uses to `icons.atlas`, and says "New icon for …" only then;
+  before, it said so whenever an item's picture entry changed, its reach too.
+- **The PNGs.** They stay, as the atlases are built from them; the page no longer uses them.
+- **Tests.** Test 48 checks each icon in the tree and in the civilisation list: its atlas, its size and position in
+  the grid, worked out again from the file names, and `content-box`; and that each atlas is as large as its grid. It
+  cannot see what a cell shows, as the tests cannot read a picture's pixels in a page opened from disk; that was
+  checked with screenshots in Chrome and Firefox, of the tree expanded, the list and the tiles.
+- **Traced.** Firefox asks for each atlas once on opening, with 21 pictures in all. The first time the tree is
+  expanded, it lists the technologies' and the units' atlases again, from its cache with 0 bytes: the loader loads
+  them on opening, and only then does an icon use them, which Firefox lists (see the entry on each picture asked for
+  once). The PNGs, as `<img>`s, loaded even in closed branches, so they were not listed again.
+- **Mutation runs.** Test 48 fails with the atlases' order by number instead of by file name, with a column too
+  many, without `content-box`, and with the units' atlas named for the technologies.
+- **Checked.** All 99 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900, and with reduced motion forced at 1280 by 800.
+- **Documents.** `TESTS.md`: Test 48, and the lines of Tests 49 to 52. `MAINTAINER.md`: new icons and civilisations
+  in the update guide, `icons` in the data, the extras' icons, the atlases in Assets, and the diagram.
+
+### Questions
+
+1. **The civilisations' cells.** The tiles show a civilisation's icon at 72.5 pixels in a 1600 by 1000 window, and
+   larger in larger windows, with twice as many device pixels on a 4K screen; the atlas has 60 by 60 pixels per cell,
+   and the PNGs had 104. Should the civilisations' atlas have larger cells, or a `_4k` one?
+2. **The PNGs.** 566 PNGs stay in the repository as the atlases' sources. Should they go, with the atlases built
+   from elsewhere? Then a new icon would have to be put into an atlas without them.
+3. **Firefox's second listing.** Should the technologies' and units' atlases be used from the start, so that Firefox
+   does not list them again when the tree is first expanded? The Options window's parchment is listed again in the
+   same way when the window is first opened.
+4. **Unused PNGs.** `assets/images/icons/nodes/` holds 19 PNGs of 100 by 100 pixels, such as `barracks.png` and
+   `paladin.png`, that nothing uses and no atlas holds. Are they still needed?
+
+## 2026-10-27: the civilisations' atlas in two sizes
+
+### What changed
+
+- **Two sizes.** The civilisations' atlas now comes as `civicon_atlas_x1.webp`, 480 by 420 with 60 by 60 pixels to a
+  cell, and `civicon_atlas_x2.webp`, 832 by 728 with 104 by 104, the PNGs' own size; the old atlas is the `_x1` one
+  renamed. This answers Question 1 of the entry before. `style.css` names `_x1` in `.pictures .civ-icon`, and
+  `_x2` in a `.pictures[data-assets="4k"]` rule, so a 4K or ultrawide screen gets `_x2`, as with the cursors, and
+  any other screen `_x1`. The loader goes by the `_x1` and `_x2` names, so it waits for the one the screen uses.
+- **Same cells.** Matching every PNG against every cell in Chrome found the same 8 by 7 grid in the same order in
+  both.
+- **Traced.** Over HTTP with the screen emulated in Chrome, 1920 by 1080 and 2560 by 1440 ask for
+  `civicon_atlas_x1.webp` and 1920 by 1080 at 200 % and 3440 by 1440 for `civicon_atlas_x2.webp`, never both.
+- **Tests.** Test 48 takes the atlas and the cell size by `data-assets`. Test 47, which shows every picture under
+  each of the four choices, now covers the civilisations' atlas too.
+- **Mutation run.** Test 47 fails, and no other test, with the `_x2` rule taken out.
+- **Checked.** All 99 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900, and with reduced motion forced at 1280 by 800. With a 4K screen emulated over the
+  debugging protocol, all pass but Test 34, which fails there with any screen, as such a page has no window focus.
+- **Documents.** `TESTS.md`: the lines of Tests 48 to 52. `MAINTAINER.md`: the two sizes in Assets.

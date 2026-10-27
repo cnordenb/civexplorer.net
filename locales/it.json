@@ -39,7 +39,8 @@
       "viewTile": "Riquadri",
       "tooltips": "Suggerimenti",
       "cancel": "Annulla",
-      "ok": "OK"
+      "ok": "OK",
+      "loading": "Caricamento delle risorse grafiche..."
     },
     "groups": {
       "economy": "Economia",

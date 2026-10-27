@@ -49,7 +49,8 @@
       "viewTile": "Kafelki",
       "tooltips": "Podpowiedzi",
       "cancel": "Anuluj",
-      "ok": "OK"
+      "ok": "OK",
+      "loading": "Wczytywanie zasobów graficznych..."
     },
     "groups": {
       "economy": "Gospodarka",

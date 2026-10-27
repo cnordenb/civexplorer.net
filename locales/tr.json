@@ -39,7 +39,8 @@
       "viewTile": "Döşeme",
       "tooltips": "İpuçları",
       "cancel": "İptal",
-      "ok": "Tamam"
+      "ok": "Tamam",
+      "loading": "Görsel varlıklar yükleniyor..."
     },
     "groups": {
       "economy": "Ekonomi",

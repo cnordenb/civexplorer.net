@@ -1,4 +1,4 @@
-import { data, size, attempt, recall, nameOf, iconFile, language } from "../datahandler.js";
+import { data, size, attempt, recall, nameOf, civFile, language } from "../datahandler.js";
 import { items, include } from "../model.js";
 import { $ } from "../stringbuilder.js";
 import { setOpen } from "../nodetree.js";
@@ -6,20 +6,16 @@ import { options, setInclude, setSimple } from "../optionshandler.js";
 import {
   root, check, expect, loaded, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges,
   spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, tabIcons, drawn, ui, box, fixtures, codes,
-  pick,
+  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged,
 } from "./helpers.js";
 
 const rows = { has: 50, lacks: 100 };
-
-const sharp = () => (innerWidth > 1920 || innerHeight > 1080 || devicePixelRatio > 1 ? "4k" : "sd");
 
 const at = (url, path) => url.endsWith(`/assets/images/${path}.webp")`);
 
 const picture = (style, path) => at(style.backgroundImage, path);
 
-const big = () => (innerWidth > 2560 || innerHeight > 1440 ? "4k" : "sd");
-
-const cut = (el) => !picture(getComputedStyle(el), `ui/buttons/button_${big()}`)
+const cut = (el) => !picture(getComputedStyle(el), `ui/buttons/button_${grade()}`)
   || getComputedStyle(el).backgroundSize !== "100% 300%"
   || styles(el).slice(1, 3).some((style) => style.display !== "none")
   || Math.abs(box(el).width * 50 / 290 - box(el).height) > 1;
@@ -69,7 +65,7 @@ function offParchment(style) {
 }
 
 function strayCursors() {
-  const scale = innerWidth > 2560 || innerHeight > 1440 ? "x2" : "x1";
+  const scale = grade() === "4k" ? "x2" : "x1";
 
   const wanted = (el) => `ui/cursors/cursor_${el.closest(".civs a, .foot a") ? "pointing" : "normal"}_${scale}`;
 
@@ -77,17 +73,34 @@ function strayCursors() {
     .filter((el) => !getComputedStyle(el).cursor.includes(`/assets/images/${wanted(el)}.webp"`)).map(describe);
 }
 
+function wrongSizes() {
+  const [was, shown] = [{ ...root.dataset }, [root, document.body, ...everything()]
+    .filter((el) => styles(el).some((style) => urlsOf(style).length))];
+  const wrong = Object.entries(GRADES).flatMap(([background, assets]) => {
+    Object.assign(root.dataset, { background, assets });
+    const used = shown.flatMap(styles).concat(getComputedStyle($("options"), "::backdrop")).flatMap(urlsOf);
+    return [
+      ...used.filter((src) => !fitting(src, background)).map((src) => `${src.split("/").pop()} with ${background}`),
+      ...need(picture(getComputedStyle(document.body), `ui/backgrounds/${background}`), `no ${background}.webp`),
+    ];
+  });
+  Object.assign(root.dataset, { background: was.background, assets: was.assets });
+  return [...new Set(wrong)];
+}
+
 function pictureLooks() {
   const style = getComputedStyle(document.body);
-  const wanted = innerWidth / innerHeight > 16 / 9 ? "ultrawide"
-    : innerWidth > 2560 || innerHeight > 1440 ? "uhd" : innerWidth > 1920 || innerHeight > 1080 ? "qhd" : "fhd";
+  const [wanted, { background, assets }] = [fitted(), root.dataset];
   const button = getComputedStyle($("optionsButton"));
-  expect("options: without Simple UI, the pictures and cursors suit the screen, the Options button and the tab show "
-    + "theirs, and the page fits the parchment", [
+  expect("options: without Simple UI, the background, pictures and cursors suit the screen's resolution, each in one "
+    + "size, the Options button and the tab show theirs, and the page fits the parchment", [
+    ...need(background === wanted && assets === GRADES[wanted], `${background} and ${assets}, not ${wanted}`),
+    ...misjudged(),
     ...need(picture(style, `ui/backgrounds/${wanted}`), `${style.backgroundImage.split("/").pop()}, not ${wanted}`),
+    ...wrongSizes().slice(0, 3),
     ...offParchment(style).map((name) => `${name} is off the parchment`),
     ...strayCursors().slice(0, 3).map((name) => `${name} has the wrong cursor`),
-    ...need(picture(button, `ui/buttons/options_${sharp()}`), `${button.backgroundImage.split("/").pop()} on Options`),
+    ...need(picture(button, `ui/buttons/options_${grade()}`), `${button.backgroundImage.split("/").pop()} on Options`),
     ...need(button.backgroundPosition.split(" ").every((part) => parseFloat(part) === 0), "Options is not at rest"),
     ...need(button.boxShadow === "rgb(238, 157, 5) 0px 0px 0px 2px", "Options has no ring"),
     ...need(tabIcons().map((link) => link.getAttribute("href")).join() === data.icons.favicon, "the tab has no icon"),
@@ -100,13 +113,13 @@ function wrongBoxes() {
   const boxes = [...document.querySelectorAll(".box")].filter((el) => {
     const look = getComputedStyle(el);
     const state = el.parentElement.dataset.state;
-    return !picture(look, `ui/checkboxes/checkboxes_${sharp()}`) || look.backgroundSize !== "300% 300%"
+    return !picture(look, `ui/checkboxes/checkboxes_${grade()}`) || look.backgroundSize !== "300% 300%"
       || parseFloat(look.backgroundPositionX) !== 0 || parseFloat(look.backgroundPositionY) !== (rows[state] ?? 0)
       || drawn(el) !== (state === "mixed" ? "black dash" : "");
   });
   const radios = [...$("views").querySelectorAll("input")].filter((input) => {
     const look = getComputedStyle(input);
-    return !picture(look, `ui/checkboxes/radiobutton_${sharp()}`) || look.backgroundSize !== "200% 200%"
+    return !picture(look, `ui/checkboxes/radiobutton_${grade()}`) || look.backgroundSize !== "200% 200%"
       || parseFloat(look.backgroundPositionX) !== 0
       || parseFloat(look.backgroundPositionY) !== (input.checked ? 100 : 0);
   });
@@ -114,23 +127,57 @@ function wrongBoxes() {
   return [...boxes.map(describe), ...radios.map((input) => input.value), ...states.map((state) => `no ${state} box`)];
 }
 
+const cellIn = (names, name, side) => {
+  const order = names.map((one) => `${one}.png`).sort();
+  const [at, columns] = [order.indexOf(`${name}.png`), Math.ceil(Math.sqrt(order.length))];
+  const rows = Math.ceil(order.length / columns);
+  return { at, column: at % columns, row: Math.floor(at / columns), columns, rows, side };
+};
+
+const share = (part, of) => (of > 1 ? (part * 100) / (of - 1) : 0);
+
+function offCell(icon, cell, path, grids) {
+  const look = getComputedStyle(icon);
+  const [x, y] = [look.backgroundPositionX, look.backgroundPositionY].map(parseFloat);
+  grids.set(look.backgroundImage, cell);
+  return cell.at < 0 || !picture(look, path) || look.backgroundRepeat !== "no-repeat"
+    || look.backgroundOrigin !== "content-box" || look.backgroundClip !== "content-box"
+    || look.backgroundSize !== `${cell.columns * 100}% ${cell.rows * 100}%`
+    || Math.abs(x - share(cell.column, cell.columns)) > 0.01 || Math.abs(y - share(cell.row, cell.rows)) > 0.01;
+}
+
+const misfit = async (grids) => (await Promise.all([...grids].map(async ([url, { columns, rows, side }]) => {
+  const atlas = Object.assign(new Image(), { src: /url\("(.+)"\)/.exec(url)?.[1] ?? "" });
+  await atlas.decode().catch(() => null);
+  const [wide, high] = [atlas.naturalWidth, atlas.naturalHeight];
+  return wide === columns * side && high === rows * side ? [] : [`${url.split("/").pop()} is ${wide} by ${high}`];
+}))).flat();
+
 async function unpictured() {
   setInclude(true);
-  const outlines = await edges();
-  const icons = items.map((item) => item.node.querySelector(".node-icon"));
-  await loaded(icons.filter(Boolean));
-  const wrong = items.filter((item, i) => {
+  const [outlines, grids] = [await edges(), new Map()];
+  const wrong = items.filter((item) => {
     const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
-    const [img, look] = [icons[i], icons[i] && getComputedStyle(icons[i])];
-    if (!own) return !!img;
-    return !img || img.naturalWidth !== 48 || img.getAttribute("src") !== iconFile(own)
-      || img.previousElementSibling !== item.node.querySelector(".box") || img.nextElementSibling !== item.label
+    const icon = item.node.querySelector(".node-icon");
+    if (!own) return !!icon;
+    const [look, path] = [icon && getComputedStyle(icon), `icons/nodes/${own.kind}/atlas/${own.kind}icon_atlas`];
+    return !icon || offCell(icon, cellIn(data.icons.atlas[own.kind], own.picture, 48), path, grids)
+      || icon.previousElementSibling !== item.node.querySelector(".box") || icon.nextElementSibling !== item.label
       || look.width !== "44px" || look.height !== "44px" || Math.abs(parseFloat(look.borderTopWidth) - 2) >= 1
       || look.borderTopStyle !== "solid"
       || look.borderTopColor !== (item.group ? "rgba(0, 0, 0, 0)" : outlines.get(`${own.kind} ${own.reach}`));
   }).map((item) => item.key);
+  const links = [...$("civs").querySelectorAll("a")];
+  const [scale, side] = grade() === "4k" ? ["x2", 104] : ["x1", 60];
+  const civs = links.filter((link) => {
+    const icon = link.querySelector(".civ-icon");
+    return !icon || icon !== link.firstElementChild || offCell(icon, cellIn(data.civs.map(civFile),
+      civFile(link.hash.slice(1)), side), `icons/civs/atlas/civicon_atlas_${scale}`, grids);
+  }).map((link) => link.textContent);
+  const atlases = await misfit(grids);
   setInclude(false);
-  return outlines.size === 9 ? wrong : [...wrong, "colour_key.csv"];
+  return [...wrong, ...civs, ...need(links.length, "no civilisation"), ...atlases,
+    ...need(outlines.size === 9, "colour_key.csv")];
 }
 
 function findLooks() {
@@ -162,7 +209,7 @@ function tipLooks() {
   const [cx, cy] = [box(items[0].node).left + 5, box(items[0].node).top + 5];
   hover(items[0].node, cx, cy);
   const tip = box($("tip"));
-  const reach = innerWidth > 2560 || innerHeight > 1440 ? 48 : 32;
+  const reach = grade() === "4k" ? 48 : 32;
   const tipped = !$("tip").hidden && $("tip").textContent === ui().nodeTip
     && getComputedStyle($("tip")).backgroundColor === "rgb(215, 179, 148)"
     && tip.left >= 3.5 && tip.right <= innerWidth - 3.5
@@ -321,8 +368,9 @@ export async function pictureTests() {
   reset();
   const icons = await unpictured();
   check("options: without Simple UI, every checkbox and radio button shows its picture from its sheet, empty, ticked, "
-    + "crossed or chosen, and every item and top-level group its icon between its box and name, outlined as "
-    + "colour_key.csv says", !boxes.length && !icons.length, [...boxes, ...icons].join(", "));
+    + "crossed or chosen, every item and top-level group its icon between its box and name, outlined as "
+    + "colour_key.csv says, and every civilisation its icon, each icon its cell of its atlas, which holds its folder's "
+    + "pictures by file name, row by row", !boxes.length && !icons.length, [...boxes, ...icons].join(", "));
   const looks = { ...findLooks(), ...tipLooks() };
   check("options: without Simple UI, the Find box shows a search icon or a cross that clears it, and a tooltip "
     + "follows the mouse over the tree, and over Include with its description, unless Tooltips is unticked",
