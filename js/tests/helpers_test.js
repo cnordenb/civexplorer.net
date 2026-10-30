@@ -1,7 +1,7 @@
-import { data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language } from "../datahandler.js";
-import { items, whole, lineOf, lineEnd, shared } from "../model.js";
-import { $ } from "../stringbuilder.js";
-import { setMenu, options, screenPictures } from "../optionshandler.js";
+import { data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language } from "../model/datahandler.js";
+import { items, whole, lineOf, lineEnd, shared } from "../model/model.js";
+import { $ } from "../view/stringbuilder.js";
+import { setMenu, options, screenPictures } from "../controller/optionshandler.js";
 
 export const TAG = /^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i;
 export const root = document.documentElement;
@@ -230,6 +230,51 @@ export async function edges() {
   const [head, ...rows] = csv.trim().split(/\r?\n/).map((line) => line.trim().split(","));
   return new Map(rows.flatMap(([reach, ...colours]) => colours
     .map((code, i) => [`${KINDS[head[i + 1]]} ${reach}`, hex(code)])));
+}
+
+export const painted = () => new Promise((done) => requestAnimationFrame(() => setTimeout(done)));
+
+async function frameShape(el, columns, rows) {
+  const sheet = Object.assign(new Image(), { src: urlsOf(getComputedStyle(el))[0] });
+  await loaded([sheet]);
+  return (sheet.naturalHeight / rows) / (sheet.naturalWidth / columns);
+}
+
+const sprite = (el) => {
+  const style = getComputedStyle(el);
+  return [urlsOf(style)[0]?.split("/").pop(), style.backgroundSize, style.backgroundRepeat, style.backgroundPosition]
+    .join(" ");
+};
+
+export async function barProblems(bar, list) {
+  const [up, track, down] = bar.children;
+  const knob = track.firstElementChild;
+  const [name, scale, style] = [describe(list), grade() === "4k" ? "x2" : "x1", getComputedStyle(list)];
+  const [outer, inner] = [box(bar), box(list)];
+  const edge = inner.right - parseFloat(style.borderRightWidth);
+  const wanted = [
+    [up, `scrollbarendings_${scale}.webp 300% 200% no-repeat 0px 0px`],
+    [track, "scrollbar.webp 100% auto repeat-y 0px 0px"],
+    [knob, `scrollbarknob_${scale}.webp 300% 100% no-repeat 0px 0px`],
+    [down, `scrollbarendings_${scale}.webp 300% 200% no-repeat 0px 100%`],
+  ];
+  const [ends, grip] = [await frameShape(up, 3, 2), await frameShape(knob, 3, 1)];
+  const at = box(track).top + (box(track).height - box(knob).height) * list.scrollTop
+    / (list.scrollHeight - list.clientHeight);
+
+  const shape = (el) => box(el).height / box(el).width;
+
+  return [
+    ...need(Math.abs(outer.right - edge) < 0.5 && outer.left > edge - parseFloat(style.paddingRight) - 0.5
+      && Math.abs(outer.top - inner.top - list.clientTop) < 0.5 && Math.abs(outer.height - list.clientHeight) < 1,
+    `${name}'s bar is not along its right edge, in the room kept for it`),
+    ...wanted.filter(([el, look]) => sprite(el) !== look).map(([el]) => `${name}'s ${el.className} is ${sprite(el)}`),
+    ...need([up, track, down, knob].every((el) => el.hidden || Math.abs(box(el).width - outer.width) < 0.01),
+      `${name}'s arrows, body and knob are not equally wide`),
+    ...need([up, down].every((el) => Math.abs(shape(el) - ends) < 0.005)
+      && (knob.hidden || Math.abs(shape(knob) - grip) < 0.005), `${name}'s arrows or knob are out of proportion`),
+    ...need(knob.hidden || Math.abs(box(knob).top - at) < 1, `${name}'s knob is not where it is scrolled to`),
+  ];
 }
 
 export const shownKeys = () => [...new Set(items.filter((item) => !item.group).map((item) => item.key))];

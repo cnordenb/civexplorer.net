@@ -1,4 +1,4 @@
-import { data, fill, fetchUpdate } from "./datahandler.js";
+import { data, fill, fetchUpdate } from "../model/datahandler.js";
 import { $, clone } from "./stringbuilder.js";
 
 export function openReport(title, status) {

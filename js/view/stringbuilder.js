@@ -1,5 +1,7 @@
-import { data, words, tag, collator, plural, fill, nameOf, civName, civsOf, civFile, cellOf } from "./datahandler.js";
-import { items, matching, share, filtersOf, chipName } from "./model.js";
+import {
+  data, words, tag, collator, plural, fill, nameOf, civName, civsOf, civFile, cellOf,
+} from "../model/datahandler.js";
+import { items, matching, share, filtersOf, chipName } from "../model/model.js";
 
 export const $ = (id) => document.getElementById(id);
 

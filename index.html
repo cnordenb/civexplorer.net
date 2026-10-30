@@ -6,9 +6,10 @@
 <meta name="color-scheme" content="light dark">
 <title>AoE2 Civ Explorer</title>
 <meta name="description" content="Find the Age of Empires II civilisations that have, or lack, the buildings, units and technologies you choose.">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/pictures.css">
 <link rel="icon" href="data:," id="icon">
-<script type="module" src="script.js"></script>
+<script type="module" src="js/script.js"></script>
 </head>
 <body>
 <div class="loading" id="loading" role="status" hidden><span data-text="loading">Loading image assets...</span></div>
@@ -91,6 +92,7 @@
 <template id="languageTemplate"><li><button type="button" class="tool language-option"><span class="caption"></span></button></li></template>
 <template id="reportTemplate"><li></li></template>
 <template id="downloadTemplate"><li><a download></a></li></template>
+<template id="barTemplate"><div class="bar" aria-hidden="true" hidden><span class="bar-up"></span><span class="bar-track"><span class="bar-knob"></span></span><span class="bar-down"></span></div></template>
 <div class="tip" id="tip" role="tooltip" hidden></div>
 </body>
 </html>

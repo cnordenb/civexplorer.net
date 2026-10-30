@@ -98,9 +98,12 @@ why a game update changes only those files, and sometimes adds an icon.
 | File or folder | What it holds |
 | --- | --- |
 | `index.html` | The structure of the page. Its only text is what shows before the data loads, such as the loading screen. |
-| `style.css` | How the page looks, for big and small screens, light and dark colours, with or without pictures. |
-| `script.js` | Where the page starts. The rest of the code is in `js/`. |
-| `js/` | The scripts; see [UML diagram](#uml-diagram). |
+| `css/base.css` | How the page looks with Simple UI, and its layout either way: big and small screens, light and dark colours. |
+| `css/pictures.css` | How the page looks without Simple UI: every rule with a picture or a font, the loading screen, the tooltip and the scroll bars. |
+| `js/script.js` | Where the page starts. |
+| `js/model/` | The data and the tree's rules: `datahandler.js` and `model.js`. |
+| `js/view/` | What the page shows: `stringbuilder.js`, `pictures.js`, `scrollbars.js` and `report.js`. |
+| `js/controller/` | What the visitor does: `nodetree.js` (the tree) and `optionshandler.js` (Options). |
 | `js/tests/` | The tests, loaded only when the address ends in `?test`; see [Tests](#tests). |
 | `data.json` | The data and the English text; see [The data](#the-data). |
 | `locales/` | One file per other language, such as `de.json` for German. |
@@ -109,7 +112,9 @@ why a game update changes only those files, and sometimes adds an icon.
 | `README.md` | Introduces the project. |
 | `.github/workflows/tests.yml` | Tells GitHub to run the tests on every push. |
 
-`code_docu.pdf` describes every function in the code, one by one.
+`code_docu.pdf` describes every file and every function in the code, one by one: the folder of each file, the lines
+of each function, the functions that call it and those it calls, with every name linked to its section. It also holds
+the UML diagram, a page on how `data.json` is laid out, and an index.
 
 ### UML diagram
 
@@ -192,6 +197,13 @@ classDiagram
     +startPictures()
     -wireTip()
   }
+  class scrollbars {
+    <<module>>
+    +bars
+    +startBars()
+    +fit(bar, box)
+    -wire(bar, box)
+  }
   class report {
     <<module>>
     +runUpdate()
@@ -217,6 +229,9 @@ classDiagram
   pictures ..> nodetree
   pictures ..> stringbuilder
   pictures ..> datahandler
+  pictures ..> scrollbars
+  scrollbars ..> stringbuilder
+  scrollbars ..> datahandler
   report ..> stringbuilder
   report ..> datahandler
   model ..> datahandler
@@ -224,31 +239,38 @@ classDiagram
   tests ..> nodetree
   tests ..> stringbuilder
   tests ..> pictures
+  tests ..> scrollbars
   tests ..> report
   tests ..> model
   tests ..> datahandler
   note for datahandler "reads data.json and locales/"
 ```
 
-- **`script.js`** turns Simple UI on or off as the visitor last chose (off on a first visit), which puts up the
+The scripts are in three folders: `js/model/` holds the data and the rules, `js/view/` what the page shows, and
+`js/controller/` what happens when the visitor clicks, touches or types. `js/script.js` starts them.
+
+- **`js/script.js`** turns Simple UI on or off as the visitor last chose (off on a first visit), which puts up the
   loading screen without it, loads `data.json` and the visitor's language, starts the page, and lets the loading
   screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the updater.
-- **`js/datahandler.js`** looks after the data: loading `data.json` and the language files, the chosen language,
-  which civilisations have what, the visitor's saved choices, and the updater's fetching and file writing.
-- **`js/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
+- **`js/model/datahandler.js`** looks after the data: loading `data.json` and the language files, the chosen
+  language, which civilisations have what, the visitor's saved choices, and the updater's fetching and file writing.
+- **`js/model/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
   [How marking works](#how-marking-works)), which civilisations fit, and what **Filters** shows. It never touches the
   page.
-- **`js/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the names in the
-  tree, the list of civilisations and **Filters**.
-- **`js/nodetree.js`** draws the tree and handles it: opening and closing, counts, marking by click, touch and key,
-  **Find**, and the buttons above it.
-- **`js/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI, with the
-  loading screen that comes with leaving Simple UI. Each setting is one of its `choices`; `js/pictures.js` adds the
-  civilisations' view and Tooltips.
-- **`js/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, and the tooltip.
-- **`js/report.js`** shows the report window of the updater and the tests. Its title, its summary and its **Close**
-  button stay in view, and only the list between them scrolls. **Close** sits on the right and is the plain button
-  of Simple UI, even with the pictures on.
+- **`js/view/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the names in
+  the tree, the list of civilisations and **Filters**.
+- **`js/controller/nodetree.js`** draws the tree and handles it: opening and closing, counts, marking by click,
+  touch and key, **Find**, and the buttons above it.
+- **`js/controller/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI,
+  with the loading screen that comes with leaving Simple UI. Each setting is one of its `choices`;
+  `js/view/pictures.js` adds the civilisations' view and Tooltips.
+- **`js/view/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, and the
+  tooltip. It starts the scroll bars.
+- **`js/view/scrollbars.js`** draws the pictures' scroll bars (see [Simple UI and the
+  pictures](#simple-ui-and-the-pictures)).
+- **`js/view/report.js`** shows the report window of the updater and the tests. Its title, its summary and its
+  **Close** button stay in view, and only the list between them scrolls. **Close** sits on the right and is the plain
+  button of Simple UI, even with the pictures on.
 
 A script only uses the scripts below it in this order: `datahandler.js`, `model.js`, `stringbuilder.js`,
 `nodetree.js`, `optionshandler.js`. Keep it so, so that the arrows never go round in a circle.
@@ -387,13 +409,13 @@ the tab icon, and a visitor who chose it never downloads a picture or a font. Th
 rules are the ones `REQUIREMENTS.md` and WCAG 2.2 AAA ask for with Simple UI on (requirement 0, Rule 22); the way
 marking works is the same in both modes.
 
-It works through one class: with Simple UI off, `<html>` has the class `pictures`. Every rule in `style.css` that
-uses a picture or a font starts with `.pictures`, so none of them applies with Simple UI on. The icons in the tree and
-the list are only made while the class is there, and the tab icon in `index.html` is empty (`data:,`) until
-`js/optionshandler.js` sets it with Simple UI off.
+It works through one class: with Simple UI off, `<html>` has the class `pictures`. Every rule that uses a picture or a
+font is in `css/pictures.css` and starts with `.pictures`, so none of them applies with Simple UI on. The icons in the
+tree and the list are only made while the class is there, and the tab icon in `index.html` is empty (`data:,`) until
+`js/controller/optionshandler.js` sets it with Simple UI off.
 
 Which pictures the page uses depends on the screen, worked out once as the page opens (`screenPictures()` in
-`js/optionshandler.js`) from its resolution in device pixels: `screen.width` and `screen.height` times
+`js/controller/optionshandler.js`) from its resolution in device pixels: `screen.width` and `screen.height` times
 `devicePixelRatio`, so a 1920 by 1080 screen at 200 % counts as 3840 by 2160. `<html>` gets the answer in two
 attributes, set before the `pictures` class:
 
@@ -404,33 +426,33 @@ attributes, set before the `pictures` class:
   (and the `_x1` cursors) with `fhd` or `qhd`.
 
 Resizing the window or zooming changes neither, so the page uses one background and one size of each picture for the
-whole visit. In `style.css`, each rule with a picture names the `_sd` one or `fhd.webp`, and a rule starting with
+whole visit. In `css/pictures.css`, each rule with a picture names the `_sd` one or `fhd.webp`, and a rule starting with
 `.pictures[data-assets="4k"]` or `.pictures[data-background="..."]` names the other; it is more specific, so it wins,
 and the browser downloads only the picture that wins.
 
 A first visit opens without Simple UI. The page then first shows a grey loading screen, "Loading image assets..."
-above the turning `assets/images/ui/loading.webp`, and keeps it until every picture in `style.css` that the screen
+above the turning `assets/images/ui/loading.webp`, and keeps it until every picture in the style sheets that the screen
 uses has loaded, for every window size (Find's cross, the civilisation tiles and the Options parchment too), with
 every picture on the page and every font, so that the whole page shows at once and nothing comes in later. Leaving
 Simple UI shows the screen in the same way, unless all of them have loaded already; pictures that are only in the
 browser's disk cache, as on a new visit, still take a moment, and the screen shows for that moment. With Simple UI it
 never shows, and the loading picture is not on the page.
 
-`setSimple()` and `finishLoading()` in `js/optionshandler.js` run it. `setSimple()` puts the loading picture on the page
-before the `pictures` class, so it is the first picture the browser asks for. The template in `index.html` names it in
-`data-src`, not `src`, and `showLoading()` sets `src`: Firefox downloads the `src` of an `<img>` in a template before
-any script runs, which would download the picture with Simple UI too. `finishLoading()` finds the pictures through the
-style sheet's rules (`pictureFiles()`), leaving out, by their names, the backgrounds and sizes that `data-background`
-and `data-assets` do not choose. It reads no computed style, as that would make the browser ask for the page's pictures
-there and then, before the loading picture. It loads each picture into an `Image` and keeps it, as the browser soon
-forgets pictures nothing uses and would load them again, and lets the screen go before anything is drawn when every one
-is already complete. Each picture is to be asked for once: Firefox lists a picture again, from its cache, when something
-new starts using it after it has loaded. So `finishLoading()` leaves out the loading picture, which the screen does not
-wait for, and `setSimple()` makes the `Image` of each picture of `<html>` and `<body>`, the background and the cursor,
-with the `pictures` class, while the browser is still loading them. The text is in `index.html` in English, as it shows
-before the language files load, and then in the visitor's language (`loading` in the texts). The picture turns unless
-the visitor asks for reduced motion; its turn is the page's only animation, as Rule 11 allows, and the tests allow no
-other.
+`setSimple()` and `finishLoading()` in `js/controller/optionshandler.js` run it. `setSimple()` puts the loading picture
+on the page before the `pictures` class, so it is the first picture the browser asks for. The template in `index.html`
+names it in `data-src`, not `src`, and `showLoading()` sets `src`: Firefox downloads the `src` of an `<img>` in a
+template before any script runs, which would download the picture with Simple UI too. `finishLoading()` finds the
+pictures through the style sheet's rules (`pictureFiles()`), leaving out, by their names, the backgrounds and sizes that
+`data-background` and `data-assets` do not choose. It reads no computed style, as that would make the browser ask for
+the page's pictures there and then, before the loading picture. It loads each picture into an `Image` and keeps it, as
+the browser soon forgets pictures nothing uses and would load them again, and lets the screen go before anything is
+drawn when every one is already complete. Each picture is to be asked for once: Firefox lists a picture again, from its
+cache, when something new starts using it after it has loaded. So `finishLoading()` leaves out the loading picture,
+which the screen does not wait for, and `setSimple()` makes the `Image` of each picture of `<html>` and `<body>`, the
+background and the cursor, with the `pictures` class, while the browser is still loading them. The text is in
+`index.html` in English, as it shows before the language files load, and then in the visitor's language (`loading` in
+the texts). The picture turns unless the visitor asks for reduced motion; its turn is the page's only animation, as Rule
+11 allows, and the tests allow no other.
 
 With the pictures on, the page also looks a little different: the title is the short "Civ Explorer", the legend is
 hidden as the tooltip explains the same, the Find box comes first, Include's description shows as a tooltip, the
@@ -440,6 +462,18 @@ Under the Find box there are then two buttons instead of three: **Clear**, and *
 **Collapse all** in the same place while a branch at the top of the tree is open. Together they are as wide as the
 pane, whatever the language. Each shows the whole button picture in its own proportions, so in a narrow window the
 buttons and their text get smaller. Simple UI keeps the three buttons.
+
+A list that scrolls (the tree, the civilisations, **Filters**, the language list, the Options window's settings, and
+the whole content in a very short window) then has the game's scroll bar instead of the browser's: an arrow at each
+end and the knob, from `scrollbarendings_x1.webp` and `scrollbarknob_x1.webp` (`_x2` on a 4K screen), on a body of
+`scrollbar.webp` repeated from top to bottom. The three are equally wide, 20 pixels (`--bar` in `css/pictures.css`),
+and each keeps its own proportions: nothing is stretched. The bar shows whenever the list holds more than it shows,
+and only then; an arrow or the knob shows its second picture under the mouse and its third while pressed. An arrow
+scrolls by a line, and on while held; a click above or below the knob scrolls by a page; the knob can be dragged;
+and the mouse wheel over the bar scrolls the list. The list always keeps the bar's room on its right, so nothing in
+it moves when the bar comes or goes (Rule 18). `js/view/scrollbars.js` makes each bar from the template in
+`index.html`, puts it after its list, and gives CSS its place and the knob's as numbers; `css/pictures.css` hides the
+browser's own bar (`scrollbar-width: none`). With Simple UI the browser's own bars are back.
 
 The Options window then shows its **Cancel** and **OK** buttons as the whole button picture, on the parchment below
 the window's panel, in the parchment's bottom right corner: as far from its right edge as from its bottom edge. In a
@@ -458,7 +492,7 @@ because the scrolling list around it would cut off an outline drawn outside.
 | Folder | Holds |
 | --- | --- |
 | `assets/images/ui/backgrounds/` | The parchment behind the page in four sizes, the Options window's parchment and the title's frame. |
-| `assets/images/ui/buttons/` | The cogwheel, the text buttons, the Find box and its search and clear icons. |
+| `assets/images/ui/buttons/` | The cogwheel, the text buttons, the Find box and its search and clear icons, and the scroll bars. |
 | `assets/images/ui/checkboxes/` | The checkboxes and the radio buttons. |
 | `assets/images/ui/cursors/` | The mouse cursors. |
 | `assets/images/ui/panels/` | The panes' frames and the box of a civilisation tile. |
@@ -468,21 +502,26 @@ because the scrolling list around it would cut off an outline drawn outside.
 | `assets/images/favicon.ico` | The tab icon. |
 | `assets/fonts/` | Georgia, Times New Roman Bold and Trajan Pro Bold, used only with the pictures. |
 
-- Most pictures come in two sizes, `_sd` and `_4k`, and the cursors and the civilisations' atlas in `_x1` and `_x2`; the
-  parchment comes as `fhd`, `qhd`, `uhd` and `ultrawide`. Which ones the page uses depends on the screen (see [Simple UI
-  and the pictures](#simple-ui-and-the-pictures)), and the browser downloads only those. A new picture that comes in
-  sizes needs those names, as the loading screen goes by them.
+- Most pictures come in two sizes, `_sd` and `_4k`, and the cursors, the civilisations' atlas and the scroll bars'
+  arrows and knob in `_x1` and `_x2`; the parchment comes as `fhd`, `qhd`, `uhd` and `ultrawide`. Which ones the page
+  uses depends on the screen (see [Simple UI and the pictures](#simple-ui-and-the-pictures)), and the browser downloads
+  only those. A new picture that comes in sizes needs those names, as the loading screen goes by them.
 - A picture with several states, such as a checkbox, holds them all in one sheet: rows for empty, ticked and
-  crossed, and columns for normal, under the mouse and pressed. `style.css` shows the right part.
+  crossed, and columns for normal, under the mouse and pressed. `css/pictures.css` shows the right part. The scroll
+  bar's arrows are rows for up and down, and its knob one row; its body, `scrollbar.webp`, has one state.
+- The cursors are the sword, `cursor_normal`, and the pointing hand, `cursor_pointing`, over the civilisations and the
+  footer's links. The `_x1` ones, 32 by 32, are drawn at their own size; the `_x2` ones, 48 by 48, at two thirds of
+  that, 32 by 32 too, as `css/pictures.css` names them in `image-set(... 1.5x)`, so on a screen at 150 % they show
+  their own pixels. The tooltip starts at the cursor's bottom-right corner, 32 pixels from its point, `--reach` on
+  `.tip` in the same file: change it with them.
 - To replace a picture, save the new one under the same name, as WebP and with the same proportions. Names use only
-  lower-case letters, digits and underscores, and GitHub refuses other names and formats than WebP, PNG and ICO. If
-  the parchment's frame is in another place, change `--left`, `--right`, `--top` and `--bottom` in the
-  `.pictures body` rule of `style.css`: each is a position in the picture, divided by its width or height. Look at
-  the page to check.
+  lower-case letters, digits and underscores, and GitHub refuses other names and formats than WebP, PNG and ICO. If the
+  parchment's frame is in another place, change `--left`, `--right`, `--top` and `--bottom` in the `.pictures body` rule
+  of `css/pictures.css`: each is a position in the picture, divided by its width or height. Look at the page to check.
 - The tree's icons are copied from aoe2techtree's repository and keep its file numbers. `pictures` in `data.json`
   says which file each item uses. The Xolotl Warrior's, `unit/1570.png`, is not there: it is the game's icon from
   the Age of Empires wiki, made 48 by 48, and numbered after the unit. The colour of an icon's outline depends on the
-  item's kind and reach, as `colour_key.csv` says, and the same colours are copied into `style.css`: change both
+  item's kind and reach, as `colour_key.csv` says, and the same colours are copied into `css/pictures.css`: change both
   together. The tests compare them.
 - The civilisations' icons are named after the civilisation in lower case. Where the file has another name, such as
   `inca.png`, `icons` in `data.json` says so.
@@ -492,10 +531,10 @@ because the scrolling list around it would cut off an outline drawn outside.
   square root of their number, rounded up. The civilisations' atlas comes in two sizes, with the cells in the same
   places: `civicon_atlas_x1.webp` with 60 by 60 pixels to a cell, and `civicon_atlas_x2.webp` with 104 by 104, the PNGs'
   own size, for 4K screens. The PNGs stay, as the atlases are built from them: after adding one, build its folder's
-  atlas again from every PNG in the folder, both sizes for the civilisations. `cellOf()` in `js/datahandler.js` finds an
-  icon's cell from `atlas` in `data.json` (for the civilisations, from `civs` and `icons`), and `style.css` shows that
-  cell. Test 48 checks each icon's cell and each atlas's size, but it cannot see what an atlas shows: look at the page
-  after building one.
+  atlas again from every PNG in the folder, both sizes for the civilisations. `cellOf()` in `js/model/datahandler.js`
+  finds an icon's cell from `atlas` in `data.json` (for the civilisations, from `civs` and `icons`), and
+  `css/pictures.css` shows that cell. Test 48 checks each icon's cell and each atlas's size, but it cannot see what an
+  atlas shows: look at the page after building one.
 
 ### Tests
 
@@ -506,13 +545,13 @@ file names and that no folder holds too many files.
 
 | File in `js/tests/` | Tests |
 | --- | --- |
-| `run.js` | Runs the rounds, shows the report, and checks that there are at most 100 tests. |
-| `helpers.js` | No tests: shared helpers, and the sample items the tests use, picked from the data so that the tests survive game updates. |
-| `behaviour.js` | Marking, **Filters**, counts, opening and closing, and **Find**. |
-| `interface.js` | The keyboard, the language menu, every language, the Options window, the filters of unique items, and the runs of the accessibility audit. |
-| `pictures.js` | The pictures, with Simple UI off. |
-| `audit.js` | The accessibility audit (contrast, focus, sizes, names and more), which the other files run in many states. |
-| `static.js` | The files themselves: the rules for the code, and mistakes in `data.json` and the language files. |
+| `run_test.js` | Runs the rounds, shows the report, and checks that there are at most 100 tests. |
+| `helpers_test.js` | No tests: shared helpers, and the sample items the tests use, picked from the data so that the tests survive game updates. |
+| `behaviour_test.js` | Marking, **Filters**, counts, opening and closing, and **Find**. |
+| `interface_test.js` | The keyboard, the language menu, every language, the Options window, the filters of unique items, and the runs of the accessibility audit. |
+| `pictures_test.js` | The pictures, with Simple UI off. |
+| `audit_test.js` | The accessibility audit (contrast, focus, sizes, names and more), which the other files run in many states. |
+| `static_test.js` | The files themselves: the rules for the code, and mistakes in `data.json` and the language files. |
 
 There may be at most 100 tests. When you add, change or remove one, update `TESTS.md`. Tests cannot prove everything
 about accessibility, so after bigger changes also try the page with Simple UI on, with only a keyboard, at 400% zoom
@@ -522,11 +561,14 @@ and with a screen reader.
 
 `RULES.md` has the full list, and the tests check most of it.
 
-- HTML only in `index.html`, CSS only in `style.css`, JavaScript only in `script.js` and `js/`, and facts and text
+- HTML only in `index.html`, CSS only in `css/`, JavaScript only in `js/`, and facts and text
   only in `data.json` and `locales/`.
 - No file over 400 lines of code, no function over 60, and no line of a script over 120 characters. No folder over
-  7 files, except `assets/` and `locales/`; the main folder may hold 8. `js/` and `js/tests/` are full, so move code
-  into a script with room, merge two scripts, or start a folder inside `js/`.
+  7 files, except `assets/` and `locales/`; the main folder may hold 8. `js/tests/` is full, so move code into a
+  test file with room or merge two. A new script goes in `js/model/`, `js/view/` or `js/controller/`, by what it
+  does; the tests check that every script is in one of them, but for `js/script.js`.
+- No two files with the same name. Every file in `js/tests/` ends in `_test.js`, so that, for example,
+  `js/tests/pictures_test.js` and `js/view/pictures.js` stay apart.
 - No comments in the code, and a blank line before and after every function.
 - No pictures outside `assets/` and `.pictures` rules, and no sounds, animations, libraries, build steps or Python.
 - No button, box or other control may move on the screen while the visitor uses it, and the page itself never

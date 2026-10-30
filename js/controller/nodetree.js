@@ -1,8 +1,8 @@
-import { data, words, numbers, size, plural, fill, nameOf, plain, cellOf } from "./datahandler.js";
+import { data, words, numbers, size, plural, fill, nameOf, plain, cellOf } from "../model/datahandler.js";
 import {
   items, roots, matching, rebuild, setMark, boxState, mark, fit, unmarkLine, chainOf, barred, locked,
-} from "./model.js";
-import { $, clone, simple, place, compose, label, listCivs, listFilters } from "./stringbuilder.js";
+} from "../model/model.js";
+import { $, clone, simple, place, compose, label, listCivs, listFilters } from "../view/stringbuilder.js";
 
 let found = [];
 let press = null;

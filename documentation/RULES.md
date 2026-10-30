@@ -14,7 +14,7 @@ Rule 12: No page scrolling allowed (landing page, all collapsed).
 Rule 13: No build allowed.  
 Rule 14: No dependencies allowed.  
 Rule 15: No Python allowed.  
-Rule 16: Rule 2 regarding all javascript in script.js does not apply if developer decides to refactor the code into several .js files.  
+Rule 16: Rule 2 regarding all javascript in script.js does not apply if developer decides to refactor the code into several .js files. Same goes for CSS.  
 Rule 17: Maximum number of tests is 100. Rule 4 can be overlooked if for the sake of keeping this rule. However, a new test may replace an old test if deemed more valuable.  
 Rule 18: User-hostile UI behaviour is strictly forbidden: a UI element (such as a button or checkbox) is not allowed to move on the screen upon user interaction with any part of the page.  
 Rule 19: Tests will be documented, without excess clutter, text or story-telling, in TESTS.md.  
@@ -27,3 +27,4 @@ Rule 25: No file may exceed 400 LOC.
 Rule 26: No folder may exceed 7 files. This rule does not apply to assets or locales. Root may exceptionally contain up to 8 files.
 Rule 27: MAINTAINER.md should be beginner-friendly, stick to the essential stuff (don't clutter it with unnecessary details), and have a table of contents. The steps on how to update after game patch should always be the first chapter. Never insert content to before the game update guide.
 Rule 28: DEVLOG should never refer to any person(s), actor(s) or AI agent(s). Everything is described passively: something was decided, something was discovered, a question was posed. Never "the chief developer asked" or the like. Blame is already automatically logged with commits for designated responsibility, there is no need to mention anyone in DEVLOG. Obvious exceptions that this rule does not reply to: conceptual general actors ("the user"), a file name and not a person ("MAINTAINER.md").
+Rule 29: No two files in this project may have identical file name.

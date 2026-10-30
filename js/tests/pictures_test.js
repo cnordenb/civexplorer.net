@@ -1,13 +1,14 @@
-import { data, size, attempt, recall, nameOf, civFile, language } from "../datahandler.js";
-import { items, include } from "../model.js";
-import { $ } from "../stringbuilder.js";
-import { setOpen } from "../nodetree.js";
-import { options, setInclude, setSimple } from "../optionshandler.js";
+import { data, size, attempt, recall, nameOf, civFile, language } from "../model/datahandler.js";
+import { items, include } from "../model/model.js";
+import { $, simple } from "../view/stringbuilder.js";
+import { bars, LINE } from "../view/scrollbars.js";
+import { setOpen } from "../controller/nodetree.js";
+import { options, setInclude, setSimple, setMenu } from "../controller/optionshandler.js";
 import {
   root, check, expect, loaded, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges,
   spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, tabIcons, drawn, ui, box, fixtures, codes,
-  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged,
-} from "./helpers.js";
+  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, painted, barProblems,
+} from "./helpers_test.js";
 
 const rows = { has: 50, lacks: 100 };
 
@@ -65,12 +66,12 @@ function offParchment(style) {
 }
 
 function strayCursors() {
-  const scale = grade() === "4k" ? "x2" : "x1";
+  const [scale, density] = grade() === "4k" ? ["x2", " 1.5"] : ["x1", ""];
 
   const wanted = (el) => `ui/cursors/cursor_${el.closest(".civs a, .foot a") ? "pointing" : "normal"}_${scale}`;
 
-  return [root, document.body, ...everything()]
-    .filter((el) => !getComputedStyle(el).cursor.includes(`/assets/images/${wanted(el)}.webp"`)).map(describe);
+  return [root, document.body, ...everything()].filter((el) => !getComputedStyle(el).cursor
+    .includes(`/assets/images/${wanted(el)}.webp")${density}`)).map(describe);
 }
 
 function wrongSizes() {
@@ -209,7 +210,7 @@ function tipLooks() {
   const [cx, cy] = [box(items[0].node).left + 5, box(items[0].node).top + 5];
   hover(items[0].node, cx, cy);
   const tip = box($("tip"));
-  const reach = grade() === "4k" ? 48 : 32;
+  const reach = 32;
   const tipped = !$("tip").hidden && $("tip").textContent === ui().nodeTip
     && getComputedStyle($("tip")).backgroundColor === "rgb(215, 179, 148)"
     && tip.left >= 3.5 && tip.right <= innerWidth - 3.5
@@ -357,6 +358,48 @@ function simpleSwitch() {
   return problems;
 }
 
+async function strayBars(when) {
+  await painted();
+  const problems = [];
+  for (const [list, bar] of bars) {
+    const shows = !simple() && rendered(list) && list.scrollHeight - list.clientHeight >= 1;
+    problems.push(...need(bar.hidden !== shows, `${describe(list)} has ${shows ? "no" : "a"} bar ${when}`));
+    if (shows && !bar.hidden) problems.push(...await barProblems(bar, list));
+  }
+  return problems;
+}
+
+const ownBars = (width) => [...bars.keys()].filter((list) => getComputedStyle(list).scrollbarWidth !== width)
+  .map((list) => `${describe(list)} has scrollbar-width ${getComputedStyle(list).scrollbarWidth}`);
+
+async function barLooks() {
+  const list = $("tree").parentElement;
+  const [bar, wide] = [bars.get(list), box($("tree")).width];
+
+  const press = (kind) => bar.lastElementChild.dispatchEvent(new PointerEvent(kind, { bubbles: true, button: 0 }));
+
+  const problems = [...ownBars("none"), ...await strayBars("with every branch closed")];
+  $("expandAll").click();
+  tap(items.find((item) => !item.group).node);
+  problems.push(...await strayBars("with every branch open and a filter"), ...need(!bar.hidden, "the tree has no bar"),
+    ...need(box($("tree")).width === wide, "the tree got narrower as its bar came"));
+  list.scrollTop = list.scrollHeight;
+  problems.push(...await strayBars("scrolled to the end"));
+  list.scrollTop = 0;
+  press("pointerdown");
+  press("pointerup");
+  bar.dispatchEvent(new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: 100 }));
+  problems.push(...need(list.scrollTop === LINE + 100, `the down arrow and the wheel scrolled to ${list.scrollTop}`));
+  $("optionsButton").click();
+  problems.push(...await strayBars("in Options"));
+  setMenu(true);
+  problems.push(...await strayBars("with the language list open"));
+  reset();
+  setSimple(true);
+  problems.push(...ownBars("auto"), ...await strayBars("with Simple UI"));
+  return problems;
+}
+
 export async function pictureTests() {
   reset();
   setSimple(false);
@@ -387,6 +430,11 @@ export async function pictureTests() {
   reset();
   expect("options: Simple UI takes away every image and civilisation link on OK, and unticking it gives them back on "
     + "OK, neither changing the page before OK nor moving its box", simpleSwitch());
+  reset();
+  expect("options: without Simple UI, a list that scrolls has the pictures' scroll bar along its right edge, its "
+    + "arrows, body and knob equally wide and in their own proportions, the knob where the list is scrolled to; there "
+    + "is none where nothing scrolls or with Simple UI, its room is always kept, and its arrows and the wheel scroll",
+  await barLooks());
   reset();
   setSimple(true);
 }

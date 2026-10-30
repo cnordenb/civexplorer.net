@@ -1,7 +1,8 @@
-import { recall, remember, words } from "./datahandler.js";
+import { recall, remember, words } from "../model/datahandler.js";
 import { $, simple } from "./stringbuilder.js";
-import { itemAt } from "./nodetree.js";
-import { tick, choices } from "./optionshandler.js";
+import { itemAt } from "../controller/nodetree.js";
+import { tick, choices } from "../controller/optionshandler.js";
+import { startBars } from "./scrollbars.js";
 
 export let view = "list";
 
@@ -56,4 +57,5 @@ export function startPictures() {
   };
   choices.tooltips = { now: () => tips, set: setTips };
   wireTip();
+  startBars();
 }

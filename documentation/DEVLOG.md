@@ -3377,3 +3377,208 @@ Variants still to be resolved:
   by 1100 and 500 by 900, and with reduced motion forced at 1280 by 800. With a 4K screen emulated over the
   debugging protocol, all pass but Test 34, which fails there with any screen, as such a page has no window focus.
 - **Documents.** `TESTS.md`: the lines of Tests 48 to 52. `MAINTAINER.md`: the two sizes in Assets.
+
+## 2026-10-30: two style sheets in `css/`, the scripts in model, view and controller, and the game's scroll bars
+
+### What changed
+
+- **Two style sheets.** `style.css` is split into `css/base.css`, the page's layout and its look with Simple UI, and
+  `css/pictures.css`, its look without Simple UI: every rule with a picture or a font, the fonts, and the loading
+  screen and the tooltip, which only show without Simple UI. The seam was already in the file, as every rule with a
+  picture starts with `.pictures`. Of 389 lines of code, 194 went to `base.css` and 195 to `pictures.css`; with the
+  scroll bars `pictures.css` has 223. A script sorted the file's 218 rules by their selectors, each keeping its place
+  among the others of its sheet, and none mixed the two. `index.html` links `base.css` first.
+- **Addresses.** A style sheet's addresses go from its own folder, so the pictures and fonts in `pictures.css` start
+  with `../assets/`. The loader still finds them, as `pictureFiles()` reads every sheet against the sheet's address.
+- **Nothing looks different.** Every `.pictures` rule now comes after every other rule, which could have changed which
+  rule wins. Every element's computed style and box, pseudo-elements included, were compared between the last commit
+  and the split in Chrome, at 1280 by 800, 1920 by 1080 and 500 by 900, with and without Simple UI, with the tree
+  closed, with it open and a filter, and with Options open: all 18 were identical.
+- **The scripts.** `script.js` moved to `js/script.js`, and the other scripts into three folders by what they do:
+  `js/model/` holds `datahandler.js` and `model.js`; `js/view/` holds `stringbuilder.js`, `pictures.js`, `report.js`
+  and the new `scrollbars.js`; `js/controller/` holds `nodetree.js` and `optionshandler.js`. `nodetree.js` also draws
+  the tree, but most of it handles clicks, touches, keys and Find. Every import was rewritten from each script's old
+  and new place; apart from that the code is unchanged, but for one import in `stringbuilder.js`, split over three
+  lines as its new path made it 125 characters long. The main folder now holds 6 files instead of 8.
+- **The scroll bars.** Without Simple UI, every list that scrolls has the game's scroll bar instead of the browser's:
+  the tree, the civilisations, Filters, the language list, the Options window's settings, and the whole content in a
+  very short window. The report window of `?test` and `?update` keeps the browser's, as it keeps Simple UI's look.
+  - An arrow at each end, from `scrollbarendings_x1.webp` (20 by 20 pixels a picture) or `_x2` (40 by 40); between
+    them, `scrollbar.webp`, 5 by 15, repeated downwards; and the knob, from `scrollbarknob_x1.webp` or `_x2`. `_x1`
+    or `_x2` goes by `data-assets`, as for the other pictures. In each sheet the columns are normal, under the mouse
+    and pressed, and the arrows' rows are up and down.
+  - The three are drawn equally wide, 20 pixels, `--bar` in `css/pictures.css`: the arrows' own size in `_x1`, and
+    half their size in `_x2`, as for a 4K screen at 200 %. Nothing is stretched: the body is 20 by 60 pixels a
+    repeat, and the knob keeps its picture's proportions, 21⅓ by 21 in `_x1` (the sheet is 64 pixels wide for three)
+    and 43 by 43 in `_x2`, so it is 19.69 pixels high with `_x1` and 20 with `_x2`.
+  - The bar shows whenever its list holds more than it shows, whether or not the mouse is over it, and is hidden
+    otherwise; the mouse only turns an arrow or the knob to its second picture, and pressing it to its third, which
+    stays while the button is held. The browser's own bar was the Windows 11 kind, shown only under the mouse.
+  - The knob stays its own size and moves from the top of the body to its bottom as the list scrolls. An arrow
+    scrolls 40 pixels, and again every 50 milliseconds after 400 while held; a press above or below the knob scrolls
+    a page, less 40 pixels, and goes on while held until the knob reaches the pointer; the knob can be dragged; the
+    wheel over the bar scrolls the list. The scrolling is instant, as there are no animations (Rule 11).
+  - **Rule 18.** Each list keeps the bar's room on its right at all times, so nothing in it moves when the bar comes or
+    goes. The tree and the civilisations have the bar instead of their 8-pixel right padding, as their rows have
+    padding of their own; Filters and the language list keep theirs beside it. The tree's rows are thus 12 pixels
+    narrower than beside Windows 11's bar, which takes no room, and 3 pixels wider than beside headless Chrome's,
+    which takes 15.
+  - **How.** `index.html` has the bar's template, as the scripts make no HTML. `startBars()` in
+    `js/view/scrollbars.js` puts a bar after each list, so that a bar does not scroll with what it scrolls, and
+    `fit()` gives CSS its place, height and knob position as numbers, the only thing the scripts give CSS. Without
+    Simple UI the panes and `<body>` are positioned, so a bar is placed against them; the Options window already is.
+    A bar is fitted again when its list scrolls or changes size, when something in it does, when anything is added
+    to it or taken out, when Simple UI changes, and when the window does. `css/pictures.css` hides the browser's bar
+    with `scrollbar-width: none`; with Simple UI it is back, and the bars are hidden.
+  - The loading screen waits for the scroll bar's pictures too, as they are in a style sheet.
+- **GitHub.** The file check in `.github/workflows/tests.yml` allows `css/*.css`, and no longer `style.css` or
+  `script.js` in the main folder.
+- **Tests.**
+  - The new Test 53 opens the tree, marks an item and checks every bar: it is shown exactly when its list scrolls; it
+    lies along the list's right edge inside the room kept for it and is as tall as the list; its pictures are the
+    `_x1` or `_x2` ones of the screen, each the whole picture of its state, in its own proportions (taken from the
+    pictures' own sizes) and no part wider than another; and the knob sits where the list is scrolled to. It also
+    checks that the tree is as wide with its bar as without, that the down arrow and the wheel over the bar scroll,
+    that Options and the language list follow the same rules, and that with Simple UI no bar shows and the browser's
+    own bars are back. Tests 53 to 99 are now Tests 54 to 100: the suite has 100 tests, the most Rule 17 allows.
+  - Tests 82, 85 and 87 read every style sheet `index.html` links (`styles()` in `js/tests/static.js`) instead of
+    `style.css`, and Test 87 checks pictures' and fonts' addresses from the page's folder, so `../assets/` passes.
+    Test 84 checks that the style sheets are in `css/`, that the scripts start from `js/script.js`, and that every
+    other script is in `js/model/`, `js/view/`, `js/controller/` or `js/tests/`.
+- **Mutation runs.** Test 53 fails, and no other test, with the browser's bar not hidden, with no room kept, with the
+  `_x1` knob squared, with the body stretched instead of repeated, with a bar shown where nothing scrolls, with the
+  knob kept at the top, and with the down arrow doing nothing; with bars shown with Simple UI, Test 47 fails too.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800
+  by 1100 and 500 by 900. Over the debugging protocol in Chrome, and over WebDriver BiDi in headless Firefox, with a
+  real mouse: both arrows and the knob show their three pictures, a pressed one stays pressed when the pointer leaves
+  it, dragging the knob 100 pixels moves it 100 pixels, and the wheel over the bar scrolls the tree. Firefox hides
+  its own bar and puts the game's along the tree's edge.
+- **Documents.** `TESTS.md`: Test 53, the numbers of Tests 54 to 100, Tests 82, 84 and 85, and the lines of Tests 1,
+  2, 47 to 52, 56 and 82 to 98. `MAINTAINER.md`: the files and folders, the diagram and the scripts, the style sheets
+  in "Simple UI and the pictures", the scroll bars there and in Assets, and the rule on where a new script goes.
+  `code_docu.pdf` is not updated (Question 2).
+
+### Questions
+
+1. **Rule 2.** It says that all CSS is in `style.css`, and Rule 16 lifts only the part about JavaScript. The CSS is
+   now in two files in `css/`, and `script.js` is in `js/`. Should Rule 16 cover the CSS too, for example: "Rule 2
+   regarding all CSS in style.css and all JavaScript in script.js does not apply if the developer splits them into
+   several .css or .js files"?
+2. **`code_docu.pdf`.** It still names the old places of the scripts and does not describe `js/view/scrollbars.js`.
+   It cannot be edited here; should it be made again?
+3. **The report window.** The report of `?test` and `?update` keeps the browser's scroll bar, as it keeps Simple UI's
+   look. Should it have the game's too?
+4. **The bar's width.** 20 pixels is the `_x1` arrows' own size. Windows' own bars are 15 to 17 pixels, and the
+   bar's room is taken from the tree's width. Is 20 the width wanted?
+
+## 2026-10-30: the `_x2` cursors at half their size
+
+### What changed
+
+- **Answers.** Of the questions in the entry before: Rule 16 now lifts Rule 2 for the CSS too (1); `code_docu.pdf` is
+  not made again for now (2); the report window keeps the browser's scroll bar (3); the bar stays 20 pixels wide (4).
+- **The `_x2` cursors.** `cursor_normal_x2.webp` and `cursor_pointing_x2.webp` are 48 by 48 and were drawn at 48 CSS
+  pixels, which the browser enlarges by the screen's scale, so on a 1920 by 1080 screen at 200 % they came out 96 pixels
+  wide. `css/pictures.css` now names them in `image-set(url("...") 2x)`, so they are drawn at half their size, 24 by 24
+  CSS pixels: on a screen at 200 % that is the picture's own 48 pixels, and on a 3840 by 2160 screen at 100 % it is 24.
+  The scroll bar's `_x2` pictures are drawn at half their size the same way. The `_x1` cursors stay at their own 32 by
+  32, and every cursor keeps its point at `0 0`.
+- **The tooltip.** It starts at the cursor's bottom-right corner, so `--reach` on `.tip` is now 24 with the `_x2`
+  cursors instead of 48.
+- **Browsers.** Chrome and Firefox 159 both keep the rules and give them back as `image-set(url("...") 2dppx) 0 0,
+  auto`. A browser without `image-set()` in `cursor` drops the two declarations, and the `_x1` cursors are shown at 32
+  pixels instead.
+- **Tests.** Still 100. Test 47 now requires the `_x2` cursors in `image-set()` at 2x, and Test 49 the tooltip 24 pixels
+  from the pointer with them.
+- **Mutation runs.** With the `_x2` sword named in `url()` alone, Test 47 fails, naming `html.pictures`, `<body>` and
+  the header; with `--reach` back at 48, Test 49 fails. No other test fails in either.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800 by
+  1100 and 500 by 900, which use the `_x1` cursors. Over the debugging protocol, with the screen emulated as 3840 by
+  2160 at 100 % and as 1920 by 1080 at 200 %, which use the `_x2` ones, all 100 pass too once focus is emulated. Without
+  it, Test 34 fails, as the page never has focus there, and it fails the same with an emulated 1920 by 1080 screen at
+  100 % and the `_x1` cursors. A headless browser draws no cursor, so the size on screen was not seen; it follows from
+  `2x`.
+- **Documents.** `TESTS.md`: what Test 47 expects. `MAINTAINER.md`: the cursors and the tooltip's `--reach` in Assets.
+
+### Questions
+
+1. **A 4K screen at 100 %.** The `_x2` cursors are picked by the screen's size in device pixels, so a 3840 by 2160
+   screen at 100 % gets them too, and its cursor is now 24 pixels, smaller than the 32 of the `_x1` cursors on a 1920 by
+   1080 screen. On a screen at 200 % it is 48 pixels, the picture's own size. Is the smaller cursor at 100 % wanted, or
+   should such a screen keep the `_x2` cursors at their own size?
+
+## 2026-10-30: `code_docu.pdf` made again
+
+### What changed
+
+- **`code_docu.pdf`**, 64 pages, made again for the code as it now stands: 21 chapters, one per file, in the order
+  `index.html`, `css/base.css`, `css/pictures.css`, `js/script.js`, the scripts in `js/model/`, `js/view/`,
+  `js/controller/` and `js/tests/`, then `data.json` and `locales/de.json`; 356 functions and the object `choices`.
+  The descriptions of the old PDF were kept where they still held, and written anew where the code had changed.
+- **Chapters.** Each names the folder its file is in, its number of lines, and what it imports and what imports it.
+  `index.html` and both style sheets are described in parts, each with its lines.
+- **Subchapters.** Each function's gives the lines it takes up, whether it is exported, what it does, and two lists:
+  first the functions that call it, then the functions it calls, grouped by file. A function handed on to be called later
+  counts as called by the one that hands it on, and a script's top-level code is named where it is the caller.
+- **Links.** Every mention of a file or function outside its own heading links to its chapter or subchapter: in the
+  text, the lists, the contents, the UML diagram and the index, 3,340 links in all. Other files of the repository,
+  such as `RULES.md`, link to their page on GitHub.
+- **Page header.** Each page names its chapter at the top left, and gives its number at the bottom right.
+- **UML diagram.** On a page of its own between the contents and the first chapter. That page is A3, as on A4 its
+  names came out at about 5 points. Each box links to its chapter, and each name in it to its subchapter.
+- **`data.json`.** One page: how the file is laid out, and a table of its keys with their lines and what is there,
+  the parts of `icons` and `text` included. `locales/de.json` follows on a page of its own, for every file in
+  `locales/`.
+- **Contents and index.** The contents give each chapter's folder, its number of parts, functions or keys, and its
+  page. The index at the end lists every chapter and function in alphabetical order, one to a line, each with its
+  page and a link.
+- **How it was made.** Chrome printed it from a page built outside the project. The functions, their lines and the
+  calls between them were read from the scripts with a JavaScript parser, and the UML diagram was drawn from the one in
+  `MAINTAINER.md`. The page numbers were taken from a first printing and stayed the same in a second. The PDF's objects
+  were then packed into compressed streams, which took it from 4.0 MB to 1.3 MB without changing a page. It is tagged,
+  with a bookmark for every chapter. None of this is in the project, as Rules 13 to 15 and the CI check of allowed
+  files leave no room for it.
+- **Checked.** Every link leads to a named place in the PDF; every page from the first chapter to the index names the
+  chapter it is in; the page numbers in the contents and the index are those where each section starts; the
+  `data.json` chapter takes one page.
+- **Documents.** `MAINTAINER.md`: what `code_docu.pdf` holds.
+
+### Questions
+
+1. **The PDF's sources.** The page the PDF is printed from and the descriptions of the functions are not kept in the
+   project, so the next time it is made they have to be read back from the PDF or written again. Should they be kept
+   somewhere, such as outside the repository, or is making it again from the PDF each time wanted?
+2. **The A3 page.** The UML diagram is the only page that is not A4. Is that wanted, or should it be A4 with smaller
+   names, or spread over two pages?
+
+## 2026-10-30: the test scripts end in `_test.js`
+
+### What changed
+
+- **Rule 29.** `js/view/pictures.js` and `js/tests/pictures.js` had the same name. Every script in `js/tests/` now ends
+  in `_test.js`: `run_test.js`, `helpers_test.js`, `static_test.js`, `behaviour_test.js`, `interface_test.js`,
+  `pictures_test.js` and `audit_test.js`. Their imports of each other, and the two imports of `run_test.js` in
+  `js/script.js`, were changed to match. Nothing else in them changed but Test 84.
+- **Test 84** now also requires every script in `js/tests/` to end in `_test.js`, and no two of the files it reads,
+  the scripts and the style sheets, to share a name. Still 100 tests.
+- **CI.** The check of allowed files took scripts as `js/([a-z]+/)*[a-z]+\.js`, which has no room for `_`. It now
+  takes scripts of letters only in `js/`, `js/model/`, `js/view/` and `js/controller/`, and `js/tests/[a-z]+_test\.js`.
+- **Mutation runs.** With `pictures_test.js` named `pictures.js` again, Test 84 fails, naming `js/tests/pictures.js`
+  and two files named `pictures.js`. With `js/view/report.js` renamed to `js/view/model.js`, Test 84 fails, naming two
+  files named `model.js`. No other test fails in either.
+- **Checked.** All 100 tests pass in Chrome on Windows, in light and dark colours, at 1920 by 1080, 1280 by 800, 800 by
+  1100 and 500 by 900. The CI checks of allowed files and of files per folder pass on the files as they now are.
+- **Documents.** `TESTS.md`: the new names in every File residence, the lines of the tests in `static_test.js`, which
+  moved down by two or three, and the purpose and expectation of Test 84. `MAINTAINER.md`: the table of test files,
+  and a line on Rule 29 in Rules for changing the code. `code_docu.pdf` made again, with the new names and lines.
+  Older entries of this log keep the names of their time.
+
+### Questions
+
+1. **Rule 29 in `assets/`.** Outside `assets/`, no two files now share a name. Inside it, 85 names repeat: the tree's
+   icons are named by their number in each kind's folder, such as `1.png` in both `icons/nodes/building/` and
+   `icons/nodes/unit/`, and `options_sd.webp` and `options_4k.webp` are in both `ui/backgrounds/` and `ui/buttons/`.
+   Should Rule 29 hold for `assets/` too, as Rule 26 leaves it out? If so, the pictures need new names, and CI could
+   then check the whole repository for repeated names; such a check would fail until then.
+2. **Names that differ only in their ending.** `css/pictures.css` and `js/view/pictures.js` are taken as different
+   names under Rule 29, as their endings differ. Is that how the rule is meant?

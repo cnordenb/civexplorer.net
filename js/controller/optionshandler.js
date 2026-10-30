@@ -1,8 +1,8 @@
 import {
   data, attempt, recall, remember, preferredLanguage, loadLanguage, useLanguage,
-} from "./datahandler.js";
-import { items, include, regional, setIncluded, setRegionals } from "./model.js";
-import { $, clone, simple, writeFixed, writeTexts, label, showLoadError, showLoading } from "./stringbuilder.js";
+} from "../model/datahandler.js";
+import { items, include, regional, setIncluded, setRegionals } from "../model/model.js";
+import { $, clone, simple, writeFixed, writeTexts, label, showLoadError, showLoading } from "../view/stringbuilder.js";
 import { dress, update, find, replant, startTree } from "./nodetree.js";
 
 let chosen = null;

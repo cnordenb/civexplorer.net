@@ -1,17 +1,17 @@
 import {
   data, ALL, size, fill, attempt, recall, remember, params, language, nameOf, preferredLanguage, words, plain,
-} from "../datahandler.js";
-import { items, roots, lineOf, lineEnd } from "../model.js";
-import { $ } from "../stringbuilder.js";
-import { isOpen, setOpen, shown } from "../nodetree.js";
-import { options, setInclude, setSimple } from "../optionshandler.js";
-import { openReport, report } from "../report.js";
-import { audit } from "./audit.js";
+} from "../model/datahandler.js";
+import { items, roots, lineOf, lineEnd } from "../model/model.js";
+import { $ } from "../view/stringbuilder.js";
+import { isOpen, setOpen, shown } from "../controller/nodetree.js";
+import { options, setInclude, setSimple } from "../controller/optionshandler.js";
+import { openReport, report } from "../view/report.js";
+import { audit } from "./audit_test.js";
 import {
   root, check, expect, same, tidy, codes, keys, describe, everything, nameFor, visibleTexts, keyDown, tap, pick,
   reset, listed, expected, fixtures, shownKeys, uniqueKeys, regionalKeys, outside, keptPath, byPath, spans, ui, box,
   chainOf, type, rendered,
-} from "./helpers.js";
+} from "./helpers_test.js";
 
 function englishFirst() {
   const stored = recall("language");

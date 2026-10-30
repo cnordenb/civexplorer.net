@@ -1,12 +1,12 @@
-import { ALL, data, fill, size, words, numbers, nameOf, plural, plain } from "../datahandler.js";
-import { items, roots, state, lineOf, lineEnd, chipName, isUnitOrTech } from "../model.js";
-import { $ } from "../stringbuilder.js";
-import { isOpen, setOpen, shown } from "../nodetree.js";
-import { setInclude } from "../optionshandler.js";
+import { ALL, data, fill, size, words, numbers, nameOf, plural, plain } from "../model/datahandler.js";
+import { items, roots, state, lineOf, lineEnd, chipName, isUnitOrTech } from "../model/model.js";
+import { $ } from "../view/stringbuilder.js";
+import { isOpen, setOpen, shown } from "../controller/nodetree.js";
+import { setInclude } from "../controller/optionshandler.js";
 import {
   root, check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below, drawn, marks, yellow,
   chainOf, fixtures, ownKeys, alternativesOf, byPath,
-} from "./helpers.js";
+} from "./helpers_test.js";
 
 const sameCivs = (item) => {
   const line = [item];

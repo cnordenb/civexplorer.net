@@ -1,17 +1,17 @@
-import { data, load, fill, attempt, recall, remember, language } from "../datahandler.js";
-import { include, regional } from "../model.js";
-import { simple } from "../stringbuilder.js";
-import { setLanguage, setInclude, setRegional, setSimple } from "../optionshandler.js";
-import { view, setView, tips, setTips } from "../pictures.js";
-import { openReport, report } from "../report.js";
-import { root, results, check, codes, pick, reset, fixtures } from "./helpers.js";
-import { scripts, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static.js";
-import { behaviourTests } from "./behaviour.js";
+import { data, load, fill, attempt, recall, remember, language } from "../model/datahandler.js";
+import { include, regional } from "../model/model.js";
+import { simple } from "../view/stringbuilder.js";
+import { setLanguage, setInclude, setRegional, setSimple } from "../controller/optionshandler.js";
+import { view, setView, tips, setTips } from "../view/pictures.js";
+import { openReport, report } from "../view/report.js";
+import { root, results, check, codes, pick, reset, fixtures } from "./helpers_test.js";
+import { scripts, styles, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static_test.js";
+import { behaviourTests } from "./behaviour_test.js";
 import {
   menuTests, languageTests, optionTests, keyboardTests, accessibilityTests, reportTests, uniqueFilterTests,
   headingTests,
-} from "./interface.js";
-import { pictureTests } from "./pictures.js";
+} from "./interface_test.js";
+import { pictureTests } from "./pictures_test.js";
 
 const LIMIT = 100;
 const STORED = ["language", "include", "regional", "simple", "civView", "tooltips"];
@@ -59,7 +59,7 @@ function restore(before) {
 }
 
 async function rounds() {
-  const sources = await Promise.all([load("index.html"), load("style.css"), scripts()]);
+  const sources = await Promise.all([load("index.html"), styles(), scripts()]);
   textTests();
   pick(codes()[0]);
   const sample = fixtures();

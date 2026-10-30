@@ -1,8 +1,8 @@
 import {
   data, load, setOf, civsOf, pack, unpack, addLanguage, localeFile, toJson, availabilityOf, pictureOf, fromExtra,
   joinLines, missingText,
-} from "../datahandler.js";
-import { TAG, check, expect, same, codes, keys } from "./helpers.js";
+} from "../model/datahandler.js";
+import { TAG, check, expect, same, codes, keys } from "./helpers_test.js";
 
 const slash = "/";
 const here = new URL(".", location.href).href;
@@ -30,9 +30,12 @@ export async function scripts() {
     }
   };
 
-  await visit(new URL("script.js", here).href, false);
+  await visit(new URL("js/script.js", here).href, false);
   return [...files.values()];
 }
+
+export const styles = () => Promise.all([...document.querySelectorAll("link[rel=stylesheet]")]
+  .map((link) => link.getAttribute("href")).map(async (path) => ({ path, code: await load(path) })));
 
 const FILE_LIMIT = 400;
 const FUNCTION_LIMIT = 60;
@@ -139,10 +142,10 @@ function longFunctions(code, lines) {
     .map((each) => `${nameOf(lineOf(each.from))} at line ${lineOf(each.from)} has ${sizeOf(each)} lines of code`);
 }
 
-function sizeProblems(page, sheet, files) {
+function sizeProblems(page, sheets, files) {
   const sources = [
     { path: "index.html", code: page.split("<!-- Code injected by live-server -->")[0] },
-    { path: "style.css", code: sheet },
+    ...sheets,
     ...files,
   ].map(({ path, code }) => ({ path, code, lines: code.split("\n").map((line) => line.replace(/\r$/, "")) }));
 
@@ -164,7 +167,7 @@ const MARKUP = [
   /\.style\b(?!\.setProperty\("--\w+", [^"]*\))\s*[.=[]/, /setAttribute\(\s*["']style/,
   /\.(innerHTML|outerHTML|insertAdjacentHTML)\b/, /createElement\s*\(/, /document\.write/,
 ];
-const PAGE_FREE = ["script.js", "js/datahandler.js", "js/model.js"];
+const PAGE_FREE = ["js/script.js", "js/model/datahandler.js", "js/model/model.js"];
 const SPINNER = [
   /@media \(prefers-reduced-motion: no-preference\) \{ \.spinner \{ animation: spin 1s linear infinite; \} \}/,
   /@keyframes spin \{ to \{ rotate: 1turn; \} \}/,
@@ -172,23 +175,26 @@ const SPINNER = [
 
 const unspun = (sheet) => SPINNER.reduce((rest, turn) => rest.replace(turn, ""), sheet);
 
-function badImages(page, sheet) {
+function badImages(page, sheets) {
   const outside = page.replace(/<template\b[\s\S]*?<\/template>/gi, "");
   const inside = page.match(/<template\b[\s\S]*?<\/template>/gi) ?? [];
 
-  const misplaced = ([, selector, body]) => [...body.matchAll(/url\(\s*"?([^")]*)/gi)].some(([, src]) => (
-    selector.trim() === "@font-face"
-      ? !/^assets\/fonts\/[A-Za-z0-9-]+\.ttf$/.test(src)
-      : !selector.split(/,(?![^(]*\))/).every((part) => /^(html)?\.pictures\b/.test(part.trim()))
-        || !/^assets\/images\/([a-z0-9]+\/)*[a-z0-9_]+\.webp$/.test(src)));
+  const misplaced = (path) => ([, selector, body]) => [...body.matchAll(/url\(\s*"?([^")]*)/gi)]
+    .map(([, src]) => new URL(src, new URL(path, here)).href.slice(here.length)).some((src) => (
+      selector.trim() === "@font-face"
+        ? !/^assets\/fonts\/[A-Za-z0-9-]+\.ttf$/.test(src)
+        : !selector.split(/,(?![^(]*\))/).every((part) => /^(html)?\.pictures\b/.test(part.trim()))
+          || !/^assets\/images\/([a-z0-9]+\/)*[a-z0-9_]+\.webp$/.test(src)));
 
   return /<(svg|canvas|picture|video|audio|object|embed)\b/i.test(page) || /<img\b/i.test(outside)
     || inside.some((part) => /<img\b[^>]*\ssrc(set)?=/i.test(part))
     || !/<link rel="icon" href="data:,"/.test(page) || !data.icons.favicon.startsWith("assets/images/")
-    || [...sheet.matchAll(/([^{}]*)\{([^{}]*)\}/g)].some(misplaced);
+    || sheets.some(({ path, code }) => [...code.matchAll(/([^{}]*)\{([^{}]*)\}/g)].some(misplaced(path)));
 }
 
-export function sourceTests(page, sheet, files) {
+export function sourceTests(page, sheets, files) {
+  const sheet = sheets.map(({ code }) => code).join("\n");
+
   const failing = (cases) => Object.entries(cases).filter(([, bad]) => bad).map(([name]) => name);
 
   const named = (test) => files.filter(test).map(({ path }) => path);
@@ -197,32 +203,37 @@ export function sourceTests(page, sheet, files) {
 
   const outward = ({ specifier, target }) => !specifier.startsWith(".") || !target.startsWith(`${here}js/`);
 
+  const names = [...sheets, ...files].map(({ path }) => path.split("/").pop());
+
   expect("rules: no comments in the code", [
     ...(page.includes("<!--") && !page.includes("<!-- Code injected by live-server -->") ? ["index.html"] : []),
-    ...(sheet.includes(slash + "*") ? ["style.css"] : []),
+    ...sheets.filter(({ code }) => code.includes(slash + "*")).map(({ path }) => path),
     ...named(({ code }) => code.includes(slash + "*") || code.includes(slash + slash)),
   ]);
   expect("rules: the scripts have no CSS or HTML, and only hand numbers to CSS custom properties",
     named(({ code }) => MARKUP.some((pattern) => pattern.test(code))));
-  expect("rules: script.js is in the main folder and every other script in js/, scripts import only scripts in js/, "
-    + "and the tests are in js/tests/ and load only when testing", [
-    ...named(({ path }) => !/^(script\.js|js\/([a-z]+\/)*[a-z]+\.js)$/.test(path)),
+  expect("rules: the style sheets are in css/, the scripts start from js/script.js and the others are in js/model/, "
+    + "js/view/ and js/controller/, scripts import only scripts in js/, the tests are in js/tests/, end in _test.js "
+    + "and load only when testing, and no two of these files share a name", [
+    ...sheets.map(({ path }) => path).filter((path) => !/^css\/[a-z]+\.css$/.test(path)),
+    ...named(({ path }) => !/^js\/(script|(model|view|controller)\/[a-z]+|tests\/[a-z]+_test)\.js$/.test(path)),
     ...files.flatMap(({ path, imports }) => imports.filter(outward)
       .map(({ specifier }) => `${path} imports ${specifier}`)),
     ...named((file) => testing(file) !== file.dynamic),
+    ...names.filter((name, i) => names.indexOf(name) !== i).map((name) => `two files named ${name}`),
   ]);
   expect(`rules: no file has over ${FILE_LIMIT} lines of code, no function over ${FUNCTION_LIMIT}, `
-    + `and no line of a script over ${LINE_LIMIT} characters`, sizeProblems(page, sheet, files));
+    + `and no line of a script over ${LINE_LIMIT} characters`, sizeProblems(page, sheets, files));
   expect("rules: script.js, datahandler.js and model.js never touch the page, "
     + "and only datahandler.js and the tests load or store data", [
     ...named((file) => PAGE_FREE.includes(file.path)
       && /\b(document|window)\b|getElementById|querySelector|addEventListener/.test(file.code)),
-    ...named((file) => !testing(file) && file.path !== "js/datahandler.js"
+    ...named((file) => !testing(file) && file.path !== "js/model/datahandler.js"
       && /XMLHttpRequest|localStorage|\bfetch\s*\(/.test(file.code)),
   ]);
   expect("rules: images only from assets/images/, in templates or CSS, only without Simple UI, fonts only from "
     + "assets/fonts/, and no sounds, animations but the loading spin, or dependencies in the sources", failing({
-    images: badImages(page, sheet),
+    images: badImages(page, sheets),
     sounds: files.some(({ code }) => /new\s+(Audio|AudioContext)\b/.test(code)),
     animations: /@keyframes|\banimation|\btransition/i.test(unspun(sheet))
       || files.some(({ code }) => /\.animate\s*\(/.test(code)),

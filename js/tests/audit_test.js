@@ -1,11 +1,11 @@
-import { data, tag, nameOf } from "../datahandler.js";
-import { items } from "../model.js";
-import { $ } from "../stringbuilder.js";
-import { options } from "../optionshandler.js";
+import { data, tag, nameOf } from "../model/datahandler.js";
+import { items } from "../model/model.js";
+import { $ } from "../view/stringbuilder.js";
+import { options } from "../controller/optionshandler.js";
 import {
   TAG, root, check, describe, rendered, everything, styles, pictured, focusables, tidy, nameFor, squash, visibleTexts,
   tabIcons,
-} from "./helpers.js";
+} from "./helpers_test.js";
 
 const MEDIA = "img, svg, canvas, picture, video, audio, object, embed, iframe, source, track, map, area";
 
