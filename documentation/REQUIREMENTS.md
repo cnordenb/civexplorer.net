@@ -28,7 +28,7 @@
 26. A node which possesses multiple descendant nodes of multiple assigned values will have its checkbox ticked with a white dash.
 27. (RESCINDED.)
 28. A node will automatically expand to either the first level of multiple child nodes or to the deepest descendant node when the user assigns its checkbox a value.
-29. All descendant nodes of the same compatible civilisattions in a line of single descendant nodes will be assigned the same value as the one the user assigns to a node.
+29. All descendant nodes of the same compatible civilisations in a line of single descendant nodes will be assigned the same value as the one the user assigns to a node.
 30. A node will not be automatically assigned a value if the assigned value is given to a unit node or technology node of different number of compatible civilisations. This requirement also applies to Fortifications.
 31. A node will be expanded to if it is automatically assigned a value. This requirement may be flouted for building variant edge cases where the same node has to occur multiple times in several branches.
 32. Options window will contain a "Simple UI" checkbox.

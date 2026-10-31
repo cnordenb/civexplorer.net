@@ -108,13 +108,14 @@ why a game update changes only those files, and sometimes adds an icon.
 | `data.json` | The data and the English text; see [The data](#the-data). |
 | `locales/` | One file per other language, such as `de.json` for German. |
 | `assets/` | Pictures and fonts, used only when Simple UI is off; see [Assets](#assets). |
-| `documentation/` | This guide, `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DEVLOG.md` and `code_docu.pdf`. |
+| `documentation/` | This guide, `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DECISIONS.md`, `code_docu.pdf`, and the development log in `DEVLOG/`. |
 | `README.md` | Introduces the project. |
 | `.github/workflows/tests.yml` | Tells GitHub to run the tests on every push. |
 
-`code_docu.pdf` describes every file and every function in the code, one by one: the folder of each file, the lines
-of each function, the functions that call it and those it calls, with every name linked to its section. It also holds
-the UML diagram, a page on how `data.json` is laid out, and an index.
+`code_docu.pdf` describes the code folder by folder: each folder is a chapter, each file in it a subchapter, and each
+function a section numbered after both, with its lines, the functions that call it and those it calls. Every name of
+a folder, file or function links to its place. It also holds the UML diagram, a page on how `data.json` is laid out,
+and an index.
 
 ### UML diagram
 
@@ -574,4 +575,4 @@ and with a screen reader.
 - No button, box or other control may move on the screen while the visitor uses it, and the page itself never
   scrolls with every branch closed.
 - `REQUIREMENTS.md` defines the page, and only the chief developer may change it.
-- Record what you change, and why, in `DEVLOG.md`.
+- Record what you change, and why, in the last part of `documentation/DEVLOG/`, under the day's date.
