@@ -33,10 +33,16 @@ What only the pictures need: Civ view, list or tiles, and the tooltip. It also s
 - setView: Shows the civilisations as a list or as tiles, remembers the choice and marks it among the radio buttons.
   Tiles are pictures, so CSS shows them only without Simple UI.
 - setTips: Switches the tooltips on or off, remembers the choice, and ticks the Tooltips box.
-- tipFor: Returns the tooltip's text for what the mouse is over: the marking hint over the tree, Include's description
-  over Include, or a civilisation's address over its link.
-- wireTip: Moves the tooltip with the mouse, into the Options window while it is open, with its corner at the cursor
-  picture's corner and inside the window. It shows only for a mouse, without Simple UI and with Tooltips on.
+- branchTip: The tooltip of a branch's arrow, or of the name of a group inside a building, which has no box and opens on
+  a click: to collapse the branch while it is open, to expand it while it is closed, and none on a locked branch, whose
+  arrow is disabled.
+- tipFor: Returns the tooltip's text for what the mouse is over: the marking hint over the tree, the text that an
+  element's `data-tip` names over every control, the hint of a branch's arrow (branchTip()), or the address of a
+  civilisation's or the footer's link.
+- wireTip: Moves the tooltip with the mouse, with its corner at the cursor picture's corner and inside the window, and
+  puts it into the Options window while that is open. After every click it works the tooltip out again for what is under
+  the mouse (`elementFromPoint`), so that it follows a button that changes, such as Expand all turning into Collapse
+  all. It shows only for a mouse, without Simple UI and with Tooltips on.
 - startPictures: Restores Civ view and Tooltips from the saved choices, adds both to the Options window's choices,
   starts the tooltip and the scroll bars. Runs once, after start().
 
@@ -52,11 +58,13 @@ The game's scroll bars, which replace the browser's without Simple UI. A bar is 
   size.
 - hold: Makes an arrow or the bar's body act on a press, and again every 50 milliseconds after 400 while held, keeping
   hold of the pointer so the press stays while it leaves.
-- page: Scrolls a list by a page, less 40 pixels, towards a press above or below the knob, and not at all once the knob
+- page: Scrolls a list by a page, less a line, towards a press above or below the knob, and not at all once the knob
   reaches the pointer.
 - drag: Lets the knob be dragged: the list scrolls as far as the knob moves, scaled from the body's room to the list's.
-- wire: Connects a bar: the arrows scroll 40 pixels, the body pages, the knob drags and the wheel over the bar scrolls
-  the list; the list's scrolling fits the bar again.
+- wire: Connects a bar: the arrows scroll a line, the body pages, the knob drags and the wheel over the bar scrolls the
+  list; the list's scrolling fits the bar again. A line is 40 pixels, but in the language list without Simple UI it is
+  one language, and the wheel there, over the list or its bar, scrolls a language at a time, so that the list always
+  shows whole languages.
 - startBars: Puts a bar from its template after every list that scrolls, connects it, and fits the bars again whenever
   anything about them changes. Runs once, from startPictures().
 
@@ -125,8 +133,9 @@ The tree on the left: drawing its rows, opening and closing them, their counts, 
 The Options window and the choices in it: the language menu, the two Include boxes and Simple UI, with the screen's
   pictures, the loading screen and the tab icon. It also starts the page with the visitor's saved choices.
 - options: Lists the language menu's buttons. Used by the menu's keys and by the tests.
-- setMenu: Opens or closes the language menu, hiding the settings while it is open so the window keeps its size (Rule
-  18), and moves focus if asked.
+- setMenu: Opens or closes the language menu, and moves focus if asked. With Simple UI it hides the settings while the
+  list is open, so that the window keeps its size (Rule 18); without Simple UI the list lies over them, as the game's
+  combo box does.
 - buildLanguages: Makes one button per language, named and tagged in its own language, so screen readers say each name
   right (WCAG 3.1.2). Runs once at the start.
 - showLanguage: Shows a language as chosen in the window: its name on the menu's button and its mark in the list. OK
@@ -157,9 +166,9 @@ The Options window and the choices in it: the language menu, the two Include box
 - ready: Tells whether every picture and font has loaded already.
 - finishLoading: Hides the loading screen once every picture and font has loaded, at once if they have already. Without
   Simple UI only; a later call takes over from an earlier one.
-- setSimple: Switches Simple UI (Req. 32, 33): saves the choice, ticks the box, picks the screen's pictures the first
-  time, shows the loading screen when leaving Simple UI, adds or removes the `pictures` class, sets the tab icon, and
-  dresses the tree's rows and the list again.
+- setSimple: Switches Simple UI (Req. 32, 33): saves the choice, ticks the box, the first time picks the screen's
+  pictures and sets `--pixel`, the size of one screen pixel, shows the loading screen when leaving Simple UI, adds or
+  removes the `pictures` class, sets the tab icon, and dresses the tree's rows and the list again.
 - picked: The language marked in the window's list, which OK makes the page's language.
 - choices: Every setting of the Options window as an entry: how to read its value now, set it, and for the language and
   Civ view read and show what the window shows. startPictures() adds Civ view and Tooltips. Cancel and OK go through it.
@@ -193,4 +202,5 @@ Runs the tests and shows the report. Loaded only when the address ends in `?test
 - rounds: Runs every test in three rounds, functional, accessibility and maintainability, in the order TESTS.md lists
   them, picking sample items afresh where the tree was rebuilt.
 - runTests: Runs the tests, numbers them in the order they first ran, checks the 100-test limit (Rule 17), marks the
-  page passed or failed for CI, and shows the report, failures first.
+  page passed or failed for CI, and shows the report, failures first. Its Close leaves the tests: it opens the page's
+  own address, without `?test`.

@@ -76,9 +76,22 @@ Small tools the test files share: recording results, finding and measuring eleme
 - frameShape: The height of one picture in a sheet divided by its width, from the sheet's own size, so a test can tell a
   picture drawn in proportion from a stretched one.
 - sprite: Describes how an element draws its picture: the file, its size, its repeat and its position.
+- comboArrow: The size of the combo box's arrow and how far it sits in from the box's right edge, in CSS pixels: 19 by
+  14 and 2 pixels in, or on a 4K screen 35 by 28 and 4 of the screen's own pixels.
 - barProblems: Lists what is wrong with a list's scroll bar: not along its right edge in the room kept for it, the wrong
   pictures or the wrong part of them, arrows, body and knob not equally wide, out of proportion, or the knob not where
-  the list is scrolled to.
+  the list is scrolled to. The language list's bar has the combo box's arrows instead, centred on the bar and of the
+  size comboArrow() gives.
+- hover: Moves the mouse over an element, as a visitor would.
+- untipped: Moves the mouse over every control and link in a part of the page that can be seen, is not disabled and is
+  outside the report, and names those whose tooltip is missing or, but for Find's, longer than 100 characters, and the
+  links whose tooltip is not their address.
+- tipGaps: Lists the controls and links without a tooltip of at most 100 characters (untipped()): on the page with every
+  branch open, a mark and a search, then in the Options window and with its language list open (Test 49).
+- tipLooks: Tests the tooltip: over the tree at the cursor's corner, inside the window and in its parchment colour; over
+  Include with Include's own tooltip, inside the Options window, while the description stays hidden but still describes
+  the box to screen readers; and none once Tooltips is unticked, which is remembered, until Space ticks it again (Test
+  49).
 - shownKeys: Lists the items currently in the tree, to compare the default tree with the full one.
 - uniqueKeys: Lists the items the default tree leaves out as unique: those inside unique groups and those
   aoe2techtree.net calls unique.

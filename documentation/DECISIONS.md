@@ -23,6 +23,10 @@ link.
   without JavaScript (Rules 1 and 2). [2026-10-18](DEVLOG/DEVLOG1.md#translations-and-making-the-project-follow-rulesmd)
 - **The updater is not a build.** It refreshes `data.json` in the browser, at `index.html?update` (Rules 13 to 15).
   [2026-10-18](DEVLOG/DEVLOG1.md#translations-and-making-the-project-follow-rulesmd)
+- **Making `code_docu.pdf`** may use npm packages, Python and a build (Rule 36): its skills in `.claude/skills/`
+  install them in a folder outside the project, and nothing the page loads uses them. The skills keep the other
+  rules, and each has its own `SKILL.md` (Rule 29).
+  [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
 - **No page scrolling.** The document never scrolls; the panes scroll inside themselves (Rule 12).
   [2026-10-18](DEVLOG/DEVLOG1.md#translations-and-making-the-project-follow-rulesmd)
 - **Rule 18** is read as: a control must not move away from under the user while it is used, as opening a branch has to
@@ -328,6 +332,10 @@ link.
 - **Tests removed**: Tests 49, 50 and 52, on the pictures, and the focus outline test and Test 53, on the loading
   screen, as false positives. [2026-10-21](DEVLOG/DEVLOG2.md#fewer-test-windows-and-three-tests-removed)
   [2026-10-26](DEVLOG/DEVLOG4.md#the-focus-outline-test-is-gone) [2026-10-27](DEVLOG/DEVLOG4.md#test-53-removed)
+  Later Test 51, on the Options window without Simple UI.
+  [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
+- **Close in the test report** leaves the tests: it opens the page's address without `?test`.
+  [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
 
 ## Documents
 
@@ -340,6 +348,11 @@ link.
 - **`code_docu.pdf`** describes the code folder by folder: a chapter for each folder, a subchapter for each file, and a
   section for each function. Replaced: a chapter for each file. [2026-10-19](DEVLOG/DEVLOG1.md#code_docupdf)
   [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again) [2026-10-31](DEVLOG/DEVLOG5.md#code_docupdf-by-folder)
+- **`code_docu.pdf` is made from `.claude/skills/`**, only when asked, by four skills for Claude Code that keep its
+  steps, scripts and descriptions. Its chapters keep their order, from the main folder to `locales/`, and the UML
+  diagram is on an A4 page. Replaced: the sources outside the project, and the A3 page.
+  [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again)
+  [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
 - **The development log** is in `documentation/DEVLOG/`, in parts of at most 1000 lines that never split a day, each a
   list of days with links; this file lists its decisions.
   [2026-10-31 00:48:46](DEVLOG/DEVLOG5.md#004846-the-log-in-parts)

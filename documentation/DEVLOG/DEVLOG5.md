@@ -596,6 +596,7 @@ Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions ma
 - No test checks the tooltip after a click, or the new texts.
 - The new texts in the 16 other languages have not been proofread.
 - `code_docu.pdf`, as in the entries before.
+
 ### 14:16:57: Include's tooltip worded as the other settings'
 
 #### What changed
@@ -624,3 +625,95 @@ Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions ma
 1. **Requirement 8.** It asks for a description of the checkbox's effect in the Options window. Without Simple UI the
    description now shows nowhere on screen, only to screen readers. Should it show again, as text under the box or
    in the tooltip?
+
+### 16:46:04: Test 51 gone, Close leaving the tests, and the skills that make `code_docu.pdf`
+
+#### What changed
+
+- **Test 51 removed.** It checked the Options window without Simple UI: Cancel and OK in the parchment's corner, the
+  language menu as the game's combo box with its arrow and seven languages in sight, the settings 60 pixels from the
+  panel's sides, and OK applying the changes. Tests 52 to 100 are now Tests 51 to 99, and Tests 47 to 52 are those
+  that turn Simple UI off. The helpers only it used went with it, `cornered()` and `confirming()` among them;
+  `comboArrow()` in `helpers_test.js` stays, as the test of the scroll bars uses it.
+- **Close in the test report.** It closed the report and left the page at `?test`. `runTests()` in `run_test.js` now
+  opens the page's own address without `?test` when Close is clicked, so `/?test` leads to `/` and
+  `/index.html?test` to `/index.html`.
+- **The sources of `code_docu.pdf`.** They are now kept in the project, in `.claude/skills/`, as four skills for
+  Claude Code, each with a `SKILL.md` that says when and how it is used:
+  - `code-docu`: the steps; `layout.json`, which folders are chapters and which files their subchapters; `desc/`, the
+    descriptions of every folder, file, part, function and key; `gen.mjs`, which builds the page to print from them
+    and the code; and `build.mjs`, which runs every step and stops while a description is missing or left over.
+  - `code-docu-inventory`: reads the scripts' functions, their lines and the calls between them.
+  - `code-docu-uml`: draws the UML diagram of `MAINTAINER.md` on its page, with its links.
+  - `code-docu-pdf`: prints the page in Chrome, reads back the page numbers, titles the bookmarks, compresses the
+    file, checks it, and renders pages as pictures.
+
+  The scripts are those that made the PDF of 2026-10-31, split so that each keeps Rules 7, 23 to 25 and 29; the page
+  they build was compared byte for byte before and after the split.
+- **What they need.** Node, Chrome, Python with pikepdf, pypdf and pypdfium2, and acorn 8.14.0 and mermaid 11.4.1,
+  which `.claude/skills/package.json` names and `preflight.mjs` installs into a work folder outside the project
+  (Rule 36). Nothing the page loads uses them.
+- **The UML page on A4.** The diagram is drawn top to bottom and left to right, each fitted to an upright and to a
+  lying A4 page, and the one with the largest text is kept: upright, top to bottom, at 4.3 points.
+- **The link preview.** The page is titled "Civ Explorer", and its `og:` meta tags give link previews a title, a
+  description and `assets/images/preview.jpg`, 1200 by 630 pixels.
+- **CI.** The check of allowed files admits the skills: `.claude/skills/package.json`, each skill's `SKILL.md` and
+  `layout.json`, and the files in its `desc/`, `references/` and `scripts/`. It still refuses `node_modules`, lock
+  files and `.claude/settings.local.json`. It also admits `assets/images/preview.jpg`, the one JPEG, without which the
+  check failed on the files as they are. Two of its lines were split to keep within 120 characters (Rule 24).
+- **Checked.** A draft built with the skills from the descriptions as they are: 66 A4 pages, 1.4 MB, 3,431 links, all
+  with a target, and 427 bookmarks; the page numbers settled at the second printing, and `verify.py` passed. It was
+  not installed. The patterns of the CI check of allowed files, tried in Node on the files as they are, admit them
+  all.
+- **Answers.** Of the questions of 2026-10-30, in [`code_docu.pdf` made again](#code_docupdf-made-again): the sources
+  are kept, in `.claude/skills/` (1); the UML page is A4 (2). Of 2026-10-31, in
+  [`code_docu.pdf` by folder](#code_docupdf-by-folder): the chapters keep their order (1). `code_docu.pdf` is made
+  again only when asked. Of 14:16:57: Requirement 8 no longer asks for a description of Include (1).
+- **Rules.** Rule 29 leaves out `SKILL.md`, and Rule 36 lifts Rules 13 to 15 for making `code_docu.pdf`.
+- **Documents.** `TESTS.md`: Tests 51 to 99. `MAINTAINER.md`: `.claude/skills/`, how `code_docu.pdf` is made, Close in
+  the report, `preview.jpg`, and the three window sizes GitHub runs the tests at, which it gave as four.
+  `DECISIONS.md`.
+- **Replaced.** The A3 page of the UML diagram, and the sources kept outside the project, of
+  [`code_docu.pdf` made again](#code_docupdf-made-again).
+
+#### Not done
+
+- `code_docu.pdf` is not made again, and its descriptions lag the code: `branchTip()` in `pictures.js`, and
+  `comboArrow()`, `hover()`, `untipped()`, `tipGaps()` and `tipLooks()` in `helpers_test.js`, have none; six functions
+  described in `pictures_test.js` have left it, `hover()` and `tipLooks()` for `helpers_test.js`; lines 14 and 97 to
+  104 of `index.html` and 225 to 261 of `css/pictures.css` are in no part. The `code-docu` skill lists them all when
+  it is next used.
+- The tests were run once after Test 51 was removed, in dark colours at 1920 by 1080, and all 99 passed; not in the
+  other windows, and not since Close was changed.
+- No test checks where Close leads.
+
+### 17:17:31: `code_docu.pdf` made again
+
+#### What changed
+
+- **`code_docu.pdf`**, 67 pages and 1.4 MB, made again with the `code-docu` skill for the code as it now stands, in
+  the same form as before: 8 chapters, 21 subchapters, 356 functions and the object `choices`, 3,434 links and 429
+  bookmarks.
+- **Descriptions.** Changed only where the code changed since the PDF of commit `1dbca36`:
+  - `pictures.js`: the new `branchTip()`; `tipFor()` with the texts `data-tip` names, the hints of the branches' arrows
+    and the footer's links; `wireTip()`, which works the tooltip out again after a click.
+  - `scrollbars.js`: `page()` and `wire()`, which scroll the language list a language at a time without Simple UI.
+  - `optionshandler.js`: `setMenu()`, which hides the settings only with Simple UI, and `setSimple()`, which sets
+    `--pixel`.
+  - `run_test.js`: `runTests()`, with Close leaving the tests.
+  - `helpers_test.js`: `comboArrow()`, `hover()`, `untipped()`, `tipGaps()` and `tipLooks()` described, and
+    `barProblems()` with the combo box's arrows on the language list's bar.
+  - `pictures_test.js`: the six functions that left it are no longer described, and `barLooks()` checks the language
+    list's wheel.
+  - The numbers of the tests from Test 52 on are one lower, as Test 51 was removed.
+  - `index.html`: the parts from the loading screen on are 8 lines lower, after the `og:` tags in the head, which the
+    head's part names; the templates and the tooltip as they now are.
+  - `css/pictures.css`: the Options window's part is split in three, with the new parts Language box and Options on
+    tall windows, and the parts after it are 33 lines lower; the text buttons and the scroll bars name the language box.
+  - `data.json`: `text.ui` holds the tooltips' texts too.
+- **Checked.** `verify.py` passed: every link has a target, every page's header names its chapter and subchapter, the
+  bookmarks are titled as their headings, every page is A4, and the `data.json` subchapter takes one page. The page
+  numbers settled at the second printing. The UML diagram is on an upright A4 page, its text at 4.3 points. The title
+  page, the contents, the UML page, the `data.json` page, both pages of `pictures.css`, the subchapter of
+  `pictures.js`, a page of `helpers_test.js` and the first page of the index were looked at.
+- **Documents.** The descriptions in `.claude/skills/code-docu/desc/`.

@@ -16,33 +16,34 @@ Every name of a folder, a file or a function links to its chapter, subchapter or
 @ index.html
 The page's structure, and all of its HTML (Rule 2). It holds no text of its own: the scripts fill in every word in the
   chosen language, and copy its templates instead of writing HTML.
-- [Head 1-13]: Sets the language, character set, viewport, light and dark colour schemes, title and description, and
-  links base.css, pictures.css and script.js, as a module. The tab icon starts as the empty `data:`, so no picture loads
-  before the scripts run (Req. 33).
-- [Loading screen 15]: The screen shown without Simple UI until every picture has loaded, with its text. showLoading()
+- [Head 1-21]: Sets the language, character set, viewport, light and dark colour schemes, title and description, and
+  what link previews show: the `og:` tags give a title, a description, `assets/images/preview.jpg` and the page's
+  address. It links base.css, pictures.css and script.js, as a module. The tab icon starts as the empty `data:`, so no
+  picture loads before the scripts run (Req. 33).
+- [Loading screen 23]: The screen shown without Simple UI until every picture has loaded, with its text. showLoading()
   adds the turning picture from its template.
-- [Header 16-19]: Holds the title twice: the full sentence of Req. 2 for Simple UI, and "Civ Explorer" for the pictures
+- [Header 24-27]: Holds the title twice: the full sentence of Req. 2 for Simple UI, and "Civ Explorer" for the pictures
   (Req. 0). Then the cogwheel Options button (Req. 6), a text character with a hidden label. Hidden until the page
   starts.
-- [Messages 20-21]: A noscript line for browsers without JavaScript, and a load error shown if data.json cannot be
+- [Messages 28-29]: A noscript line for browsers without JavaScript, and a load error shown if data.json cannot be
   loaded, so a visitor is never left with a blank page.
-- [Tree pane 22-43]: The start of the content, then the left pane, in the order of Req. 3: heading, Clear, Expand all
+- [Tree pane 30-51]: The start of the content, then the left pane, in the order of Req. 3: heading, Clear, Expand all
   and Collapse all, the Find field with its label, clearing cross and live match count, the must have and must lack
   legend, and the empty tree.
-- [Civilisations pane 44-57]: The right pane (Req. 4): heading, live count, the Filters list (Req. 22), the civilisation
+- [Civilisations pane 52-65]: The right pane (Req. 4): heading, live count, the Filters list (Req. 22), the civilisation
   list and the hint shown when it is empty. It scrolls on its own, so the page never does (Rule 12).
-- [Footer 58-59]: Names and links the data source and its date (Req. 5), then Microsoft's notice, in English, with links
+- [Footer 66-67]: Names and links the data source and its date (Req. 5), then Microsoft's notice, in English, with links
   to its rules and to the project. The code writes the sentence around the links.
-- [Options window 60-76]: A dialog (Req. 7, 8, 32): title, the language label, button and list, then the settings:
+- [Options window 68-84]: A dialog (Req. 7, 8, 32): title, the language label, button and list, then the settings:
   Simple UI, Include Unique and Universal with its description, Include Regionals, Civ view and Tooltips; and Cancel and
   OK.
-- [Report window 77-85]: A dialog for the reports of the tests and the updater: title, live status, result list,
+- [Report window 85-93]: A dialog for the reports of the tests and the updater: title, live status, result list,
   download links and Close. Always in English, so it is marked `lang="en"`.
-- [Templates 86-95]: Markup for tree rows, Filters buttons, civilisations, the loading picture, the icons of
-  civilisations and of the tree, language options, report lines, downloads and the scroll bar. The code copies these
-  instead of writing HTML (Rule 2).
-- [Tooltip 96]: The note that follows the mouse without Simple UI, over the tree, Include or a civilisation. Hidden
-  otherwise.
+- [Templates 94-103]: Markup for tree rows, Filters buttons, civilisations, whose links open in a new tab, the loading
+  picture, the icons of civilisations and of the tree, language options, report lines, downloads and the scroll bar. The
+  code copies these instead of writing HTML (Rule 2).
+- [Tooltip 104]: The note that follows the mouse without Simple UI: over the tree, over every control, each naming its
+  text with `data-tip`, and over a link, with its address. Hidden otherwise.
 
 @ css/base.css
 How the page looks with Simple UI, and its layout either way: colours, sizes and layouts for big and small screens, in
@@ -85,28 +86,37 @@ How the page looks without Simple UI. Every rule here that shows a picture start
   Options button from its three-state sheet.
 - [Fonts 47-56]: Georgia, Times New Roman Bold and Trajan Pro Bold from `assets/fonts/`, under their own names, trying
   the installed copy first. Only rules for the pictures use them, so Simple UI never downloads a font.
-- [Text buttons 57-66]: Every button with words, but those of the report, shows the button picture, normal, under the
-  mouse or pressed, with its ends drawn apart so it can be any width.
+- [Text buttons 57-66]: Every button with words, but those of the report and the language box, shows the button picture,
+  normal, under the mouse or pressed, with its ends drawn apart so it can be any width.
 - [Loading screen 68-71]: The screen that covers the page while the pictures load, and its turning picture, the only
   animation, which stops with reduced motion (Rule 11).
 - [Boxes and radio buttons 73-89]: Check boxes from their sheet, a row for each state and a column for normal, under the
   mouse and pressed, with a black dash; Tooltips and the Civ view radio buttons, shown only here.
 - [Frames 90-97]: The 9-slice frames of the two panes, and their fonts and colours.
-- [Options window 98-126]: The window's frame and the parchment behind it, measured to fit around the same window as
-  with Simple UI, with OK and Cancel in the parchment's corner and the title on its ribbon on tall enough windows.
-- [Tree 127-148]: The tree's colours, found rows in amber, the rows' icons from the four atlases with an outline by kind
+- [Options window 98-113]: The window's frame, measured to fit around the same window as with Simple UI, with its
+  contents 60 pixels from the frame's sides, or 120 of the screen's own pixels on a 4K screen (`--pixel`), and the
+  settings lit under the mouse.
+- [Language box 114-145]: The language menu as the game's combo box: its picture, 219 by 35 pixels at the right of its
+  row, with the language's name and, at its right end, the arrow from its atlas, pointing down while the list is closed
+  and up while it is open, normal, under the mouse or pressed, and 35 by 28 of the screen's own pixels on a 4K screen.
+  The list lies over the settings below the box, as wide as it and seven languages high, in the box's colours, and snaps
+  to whole languages; the chosen language is red and the one under the mouse teal. Its scroll bar lies over it.
+- [Options on tall windows 146-159]: On windows at least 588 pixels high, the parchment behind the window, OK and Cancel
+  in its corner, and the title on its ribbon.
+- [Tree 160-181]: The tree's colours, found rows in amber, the rows' icons from the four atlases with an outline by kind
   and reach as `colour_key.csv` says, and greyed-out icons.
-- [Tools 149-157]: Filters chips, no legend, Find first, and Clear and Expand all as two buttons that share the pane's
+- [Tools 182-190]: Filters chips, no legend, Find first, and Clear and Expand all as two buttons that share the pane's
   width.
-- [Find box 158-175]: Find's field in its 9-slice frame, 325 px wide, with the search picture while empty and the
+- [Find box 191-208]: Find's field in its 9-slice frame, 325 px wide, with the search picture while empty and the
   clearing cross while not; the hidden label and Include's hidden description.
-- [Tooltip 176-180]: The tooltip's place, set by the script as numbers, 32 pixels from the pointer as both cursors are
+- [Tooltip 209-213]: The tooltip's place, set by the script as numbers, 32 pixels from the pointer as both cursors are
   32 pixels large, and its parchment look.
-- [Civilisations 181-196]: The civilisations' icons from their atlas, and the tiles, six to a row, each with its icon
+- [Civilisations 214-229]: The civilisations' icons from their atlas, and the tiles, six to a row, each with its icon
   and its name in Trajan Pro.
-- [Scroll bars 197-224]: The game's scroll bars: the browser's are hidden, room is kept for the bar, and the bar is
+- [Scroll bars 230-261]: The game's scroll bars: the browser's are hidden, room is kept for the bar, and the bar is
   placed, sized and drawn from its arrows, body and knob, each from its sheet, as [[js/view/scrollbars.js#fit]] sets
-  them.
+  them. The language list's bar has the combo box's arrows instead, centred on it, and its arrows and knob always show
+  their first picture.
 
 @ js/script.js
 Where the page starts. It defines no functions; its top-level code runs once.

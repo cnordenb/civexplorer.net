@@ -111,11 +111,17 @@ why a game update changes only those files, and sometimes adds an icon.
 | `documentation/` | This guide, `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DECISIONS.md`, `code_docu.pdf`, and the development log in `DEVLOG/`. |
 | `README.md` | Introduces the project. |
 | `.github/workflows/tests.yml` | Tells GitHub to run the tests on every push. |
+| `.claude/skills/` | How `code_docu.pdf` is made, as skills for Claude Code; see below. |
 
 `code_docu.pdf` describes the code folder by folder: each folder is a chapter, each file in it a subchapter, and each
 function a section numbered after both, with its lines, the functions that call it and those it calls. Every name of
 a folder, file or function links to its place. It also holds the UML diagram, a page on how `data.json` is laid out,
 and an index.
+
+It is made again only when asked. Its steps, the descriptions of every function and the scripts that print it are in
+`.claude/skills/`, as skills for Claude Code: asked to make `code_docu.pdf` again, Claude Code follows
+`.claude/skills/code-docu/SKILL.md`. They use Node, Chrome and Python, which Rule 36 allows for this alone; the page
+itself never does.
 
 ### UML diagram
 
@@ -553,9 +559,10 @@ is #201819, as the list's is.
   their own pixels. The tooltip starts at the cursor's bottom-right corner, 32 pixels from its point, `--reach` on
   `.tip` in the same file: change it with them.
 - To replace a picture, save the new one under the same name, as WebP and with the same proportions. Names use only
-  lower-case letters, digits and underscores, and GitHub refuses other names and formats than WebP, PNG and ICO. If the
-  parchment's frame is in another place, change `--left`, `--right`, `--top` and `--bottom` in the `.pictures body` rule
-  of `css/pictures.css`: each is a position in the picture, divided by its width or height. Look at the page to check.
+  lower-case letters, digits and underscores, and GitHub refuses other names and formats than WebP, PNG and ICO,
+  except `preview.jpg`, the picture that link previews show. If the parchment's frame is in another place, change
+  `--left`, `--right`, `--top` and `--bottom` in the `.pictures body` rule of `css/pictures.css`: each is a position in
+  the picture, divided by its width or height. Look at the page to check.
 - The tree's icons are copied from aoe2techtree's repository and keep its file numbers. `pictures` in `data.json`
   says which file each item uses. The Xolotl Warrior's, `unit/1570.png`, is not there: it is the game's icon from
   the Age of Empires wiki, made 48 by 48, and numbered after the unit. The colour of an icon's outline depends on the
@@ -576,10 +583,10 @@ is #201819, as the list's is.
 
 ### Tests
 
-Open the page with `?test` to run the tests in your browser. They run in three rounds: functional tests,
-accessibility tests and maintainability tests, in the order `TESTS.md` lists them, and the report names each by its
-number there. GitHub runs them on every push, at four window sizes in light and dark colours, and also checks the
-file names and that no folder holds too many files.
+Open the page with `?test` to run the tests in your browser; **Close** in their report opens the page again without
+it. They run in three rounds: functional tests, accessibility tests and maintainability tests, in the order
+`TESTS.md` lists them, and the report names each by its number there. GitHub runs them on every push, at three
+window sizes in light and dark colours, and also checks the file names and that no folder holds too many files.
 
 | File in `js/tests/` | Tests |
 | --- | --- |

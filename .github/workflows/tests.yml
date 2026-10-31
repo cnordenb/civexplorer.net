@@ -22,7 +22,7 @@ jobs:
             -e 'locales/[a-z]+\.json' \
             -e 'documentation/[A-Za-z_]+\.(md|pdf)|documentation/DEVLOG/DEVLOG[1-9][0-9]*\.md' \
             -e 'assets/images/([a-z0-9]+/)*[a-z0-9_]+\.(webp|png|ico)|assets/images/icons/nodes/colour_key\.csv' \
-            -e 'assets/fonts/[A-Za-z0-9-]+\.ttf' \
+            -e 'assets/images/preview\.jpg|assets/fonts/[A-Za-z0-9-]+\.ttf' \
             -e '\.claude/skills/package\.json|\.claude/skills/[a-z-]+/[A-Za-z]+\.(md|json)' \
             -e '\.claude/skills/[a-z-]+/(desc|references|scripts)/[a-z0-9]+\.[a-z]+' \
             || true)"
