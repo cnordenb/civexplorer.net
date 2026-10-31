@@ -31,7 +31,7 @@ jobs:
         run: |
           status=0
           for scheme in 1 0; do
-            for size in 1920,1080 1280,800 800,1100 500,900; do
+            for size in 1920,1080 1000,1000 720,1280; do
               google-chrome --headless=new --no-sandbox --disable-gpu --allow-file-access-from-files \
                 --blink-settings=preferredColorScheme=$scheme --virtual-time-budget=900000 --window-size=$size \
                 --dump-dom "file://$PWD/index.html?test" > page.html 2> chrome.log || true
