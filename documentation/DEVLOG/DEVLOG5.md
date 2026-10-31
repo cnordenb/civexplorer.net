@@ -308,3 +308,319 @@ Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions ma
   one, the earlier one is named after it, with its own link. This does what the entry before left undone.
 - **Checked.** Every link in `DECISIONS.md` leads to a heading of the part it names, and every entry it names was
   found by its day and title.
+
+### 12:47:21: `TERMINOLOGY.md`
+
+#### What changed
+
+- **`TERMINOLOGY.md`.** `documentation/TERMINOLOGY.md` defines 49 of the project's terms, one a line, each line at
+  most 120 characters and in lower case except where it quotes the page. No line uses a term that is defined below
+  it. The terms run from the input panel and its nodes through marking, the output panel, the filters and the
+  variants to Options, Simple UI, the pictures and the updater's parts of `data.json`.
+- **Checked.** A script checked every line's length, its case and the order of the terms it uses.
+- **Rule 26.** `documentation/` now holds seven files, as many as Rule 26 allows.
+
+### The language menu as the game's combo box
+
+#### What changed
+
+- **The box.** Without Simple UI, the language menu in the Options window no longer shows `button_sd.webp` or
+  `button_4k.webp`. It is `combobox_background.webp` in its own proportions, 290 by 35 pixels, or narrower in a
+  narrow window, with its caption in bold Georgia, `#391c1b`. At its right end is an arrow from
+  `combobox_arrow_atlas.webp`, which holds two rows, up and down, of three columns, normal, under the mouse and
+  pressed: down while the list is closed, up while it is open. Both pictures come in one size, used on 4K screens too.
+- **The list.** It opens right below the box, as wide as the box with its outline included, in place of the grid of
+  button pictures: the languages in one column, in bold Georgia, `#391c1b`, the chosen one `#ab1c1b` and the one
+  under the mouse `#399c9a`, on `#d7b394`, within a `#201819` outline of 1 pixel, 2 on a 4K screen. It is as high
+  as its languages, down to the bottom of the settings' room at most, and scrolls with the game's scroll bar, whose
+  room it keeps at its right. The settings still hide while it is open. A language's focus outline is `#201819`.
+- **How.** The rules for the button picture in `css/pictures.css` leave out the language menu (`.language .tool`),
+  and new rules there draw the box, its arrow, the list and the languages. Nothing changes with Simple UI.
+- **Measured.** Each arrow is 35 by 28 pixels with transparent margins, the pressed ones one pixel lower, and sits at
+  the box's right end, centred from top to bottom. The box's frame is about 5 pixels wide, and its inside is
+  `#d7b394`, as the list is.
+- **Checked.** In Chrome at 1280 by 800, at 1920 by 1080 on a 4K screen, where the outline is 2 pixels, and at 390 by
+  844, where the box is 226.5 by 27.3 pixels and the list as wide. Test 51 now also checks the box, its arrow closed
+  and open, the list one column right below the box and as wide, its outline and colours, and the languages' colour,
+  font and lack of a picture. With the button picture put back on the menu, Test 51 failed. All 100 tests pass in light
+  colours at 1920 by 1080 and in dark colours at 1280 by 800 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 51, and the lines of Tests 52 and 53. `MAINTAINER.md`: the language menu with the
+  pictures, and its pictures under Assets.
+- **Replaced.** The language menu and its choices as the button picture
+  ([2026-10-21](DEVLOG2.md#game-buttons-with-trajan-pro)), and the open list's thin `#391c1b` border without a
+  background of its own ([2026-10-21](DEVLOG2.md#the-options-window-on-its-own-parchment)). Commit `15a0c86` has
+  both.
+
+#### Not done
+
+- `code_docu.pdf` does not yet describe the new rules in `css/pictures.css` or `comboProblems()` in
+  `js/tests/helpers_test.js`, and the lines it gives below the changes in those files and in
+  `js/tests/pictures_test.js` are out of date.
+
+#### Questions
+
+1. **Under the mouse.** The chosen language turns `#399c9a`, not `#ab1c1b`, while the mouse is over it. Should the
+   chosen colour win instead?
+2. **The closed box.** Its caption is `#391c1b`, the list's normal colour, and stays so under the mouse, where only
+   the arrow changes. Is another colour wanted?
+3. **The settings.** As before, they hide while the list is open, rather than staying in sight under it, as they
+   would below a traditional combo box. Should the list lie over them instead?
+
+### 12:56:48: the combo box's arrow sizes, and the settings in sight
+
+#### What changed
+
+- **The arrow.** It no longer grows with the box. It is 35 by 28 pixels on a 4K screen, the size of each picture in
+  `combobox_arrow_atlas.webp`, and 19 by 14 on others, still at the box's right end, centred from top to bottom.
+  19 by 14 is not quite in the picture's proportions, so the arrow is squeezed a little more across than down.
+- **The settings stay in sight.** With the pictures, the settings no longer hide while the language list is open.
+  The list lies over them, and its scroll bar over the list: `z-index` 1 and 2 in `css/pictures.css`, as the list
+  comes before the settings in the page and would otherwise be drawn under them. With Simple UI the settings still
+  hide, as the list there is a grid in their place: `setMenu()` in `js/controller/optionshandler.js` hides them
+  only then.
+- **Checked.** In Chrome at 1920 by 1080, on a full-HD screen (an arrow of 19 by 14) and on a 4K one (35 by 28), with
+  the settings in sight around the open list. Test 51 now checks the arrow's size and place, and that the open list
+  and its bar are on top with the settings in sight; with the settings hidden again, Test 51 failed. To measure the
+  list's bar, the check waits a frame after opening the list, and one before it, so that the `close` event of an
+  earlier `reset()` does not shut the list in between. All 100 tests pass in light colours at 1920 by 1080 and in
+  dark colours at 1280 by 800 and 500 by 900.
+- **Documents.** `TESTS.md`: Test 51. `MAINTAINER.md`: the arrow's sizes and the list over the settings.
+- **Answers.** Of the questions in the entry before: the list now lies over the settings (3). Questions 1 and 2 are
+  open.
+- **Replaced.** The arrow as a share of the box's width, and the settings hidden while the list is open, of the entry
+  before. Commit `15a0c86` has the settings hidden, with the old look.
+
+#### Not done
+
+- `code_docu.pdf`, as in the entry before.
+
+### 13:03:07: the 4K arrow in the screen's own pixels
+
+#### What changed
+
+- **The arrow on 4K screens.** It was 35 by 28 CSS pixels, which a 4K screen at a scaling of 200 % draws as 70 by 56
+  of its own pixels, twice the picture's size. It is now 35 by 28 of the screen's own pixels: 17.5 by 14 CSS pixels at
+  200 %, and 35 by 28 at 100 %. On other screens it stays 19 by 14 CSS pixels.
+- **How.** As the page works out its pictures' size from the screen, `setSimple()` in
+  `js/controller/optionshandler.js` also sets `--pixel` on `<html>`, one screen pixel in CSS pixels, from
+  `devicePixelRatio`, once, as `data-assets` is. `css/pictures.css` sizes the arrow on 4K screens as 35 and 28
+  times `--pixel`.
+- **Checked.** In Chrome at 1920 by 1080, on a 4K screen at 200 % (an arrow of 17.5 by 14 CSS pixels, 35 by 28 in the
+  screenshot's pixels) and on a full-HD one (19 by 14). Test 51 expects 35 by 28 divided by `devicePixelRatio` on
+  4K screens; the tests' Chrome has a small screen, so it checks the 19 by 14. All 100 tests pass in light colours at
+  1920 by 1080 and in dark colours at 500 by 900.
+- **Documents.** `TESTS.md`: Test 51. `MAINTAINER.md`: `--pixel`, and the arrow's sizes.
+- **Replaced.** The 4K arrow at 35 by 28 CSS pixels, of the entry before.
+
+#### Not done
+
+- `code_docu.pdf`, as in the entries before.
+### 13:43:37: tooltips on every control, civilisations in a new tab, and the combo box in its corner
+
+#### What changed
+
+- **The combo box's place.** Without Simple UI, the language box and its list sit at the right of the Options
+  window's panel, as far from the panel's right edge as from its top edge: 17 pixels, the panel's margin around the
+  window's grid. In a window less than 588 pixels high the panel takes in the title too, so the box sits the title's
+  height and the gap below it (`--lid`) further in, 52 pixels from both edges. `css/pictures.css` puts both at the end
+  of their column, with that margin below 588 pixels and none from 588 up.
+- **The label.** It reads "Language:" in English and ends with a colon in every language, with Simple UI too: after a
+  no-break space in French, full-width in Chinese and Japanese (`language` in `data.json` and `locales/`).
+- **Tooltips.** Without Simple UI and with **Tooltips** ticked, every control now has a tooltip, not only the tree's
+  items and **Include Unique and Universal**: the cogwheel, **Find** and its cross, **Clear**, **Expand all** and
+  **Collapse all**, each branch's arrow and each group's name (to open or close it), the chips of **Filters**, the
+  language box and each language, the other settings, both civilisation views, **Cancel**, **OK**, and each part of a
+  scroll bar. Each says what a click does, as "Click to clear all nodes and reset filters" on **Clear**, in at most
+  100 characters; the longest in any language has 83. The footer's links show their address, as the civilisations'
+  links already did. 22 new texts, `optionsTip` to `knobTip`, are in `data.json` and the 16 language files.
+- **How.** Each control in `index.html` and its templates names its text with `data-tip`. `tipFor()` in
+  `js/view/pictures.js` takes a tree item's text first, then the nearest `data-tip`, then a branch's text to open or
+  close it, then a link's address. Include's description now comes through `data-tip` too, in place of its own line in
+  `tipFor()`. A branch's arrow has no tooltip while the branch is locked, as a click does nothing then.
+- **Civilisations in a new tab.** A civilisation's link opens its page on aoe2techtree.net in a new tab
+  (`target="_blank"`, with `rel="noopener"`), from `civTemplate` in `index.html`. The footer's links are unchanged.
+- **Checked.** Test 49 now moves the mouse over every control and link in sight, with every branch open, a filter
+  and text in **Find**, then in Options, then with the language list open, and wants a tooltip of at most 100
+  characters on each, and a link's address on a link (Include's description may be longer). Test 51 also wants the
+  box as far from the panel's right edge as from its top. `hover()` moved from `js/tests/pictures_test.js` to
+  `js/tests/helpers_test.js` for the check. With **Clear**'s `data-tip` taken out, Test 49 failed; with the footer's
+  links left out of `tipFor()`, too; with the box back at the left of its column, Test 51 failed. All 100 tests pass
+  in light colours at 1920 by 1080, 1000 by 1000 and 1000 by 720 (984 by 569, where the panel holds the title), and
+  in dark colours at 1280 by 800, 720 by 1280 and 500 by 900. Screenshots at 1920 by 1080, on a full-HD and a 4K
+  screen, show the box in its corner and the tooltips of the box, **Clear** and a footer link.
+- **Documents.** `TESTS.md`: Tests 49 and 51, and the lines of Tests 48 to 53. `MAINTAINER.md`: the tooltips, the
+  civilisations' new tab, and the box's place and label. `DECISIONS.md`.
+
+#### Not done
+
+- `code_docu.pdf`, as in the entries before; it lacks `tipFor()`'s new lines, `panelGaps()` and `tipGaps()`.
+- The report window of `?test` and `?update` has no tooltips: it is a tool in English with Simple UI's look.
+- The new texts in the 16 other languages have not been proofread.
+- **Runs that stop early.** On this machine about one run of the tests in seven, in headless Chrome, came back
+  without a report, with the new check and without it. Chrome's virtual time (`--virtual-time-budget=900000`) runs on
+  while the page waits for a frame: one `painted()` in Test 51 or Test 53 then takes about 100 seconds of it, with
+  no timer of the page's own in between, and a few of those use up the 900. Turning off Windows' window occlusion
+  (`CalculateNativeWinOcclusion`) changed nothing. Whether CI's Chrome on Linux does the same was not tried.
+- **Test 53 in a low window.** Below 500 pixels high the content scrolls as a whole and the tree does not, so Test 53
+  fails with "the tree has no bar", at 1000 by 560 and 1000 by 640, with the new check and without it. CI's windows
+  are all higher.
+
+#### Questions
+
+1. **Requirement 8.** It names the menu's label "Language", which is now "Language:". `REQUIREMENTS.md` is left as it
+   is. Should requirement 8 read "Language:"?
+2. **The low window.** Below 588 pixels high the box is 52 pixels from the panel's right edge, as far as from the
+   panel's top above the title. Would 17 pixels, as in a higher window, be better there?
+3. **The footer's links.** They still open in the same tab. Should they open in a new tab too?
+4. **Runs that stop early.** Should the tests wait for frames less, or CI give Chrome more virtual time?
+### 13:54:31: the combo box's arrow further in, and the language list's own scroll bar
+
+#### What changed
+
+- **The combo box's arrow.** It sits 2 pixels in from the box's right end, and on a 4K screen 4 of the screen's own
+  pixels in (4 times `--pixel`, the unit of the arrow's size there), rather than at the very end.
+- **The language list's scroll bar.** Its arrows are the combo box's own, from `combobox_arrow_atlas.webp`, at the
+  box's arrow's size, 19 by 14 pixels, on a 4K screen 35 by 28 of the screen's own, centred on the 20-pixel bar; the
+  bar's body takes the room they leave. Its arrows and knob show only their normal picture, under the mouse and while
+  pressed too. The other bars are unchanged.
+- **No smooth scrolling in the list.** The browser scrolls a list smoothly under the mouse wheel. Without Simple UI
+  the language list now scrolls at once by the wheel's step, as its bar already did: `js/view/scrollbars.js` handles
+  the wheel over the list itself (`STEPPED`). With Simple UI the browser scrolls it as before.
+- **Tests.** Test 51 wants the arrow 2 pixels in, or 4 screen pixels on a 4K screen. Test 53 wants the combo box's
+  arrows on the language list's bar, at the box's arrow's size and centred, and a turn of the wheel over the list to
+  scroll it at once. `comboArrow()` in `js/tests/helpers_test.js` holds the arrow's sizes for both.
+- **Documents.** `TESTS.md`: Tests 51 and 53, and the lines of Tests 48 to 53. `MAINTAINER.md`: the arrow's place,
+  and the language list's bar. `DECISIONS.md`.
+- **Replaced.** The arrow at the box's very end, of the entries before.
+
+#### Not done
+
+- The tests were not run for this entry; the changed scripts parse.
+- Page Up and Page Down with a language focused still scroll the list the browser's way, smoothly where it does.
+- Nothing checks that the list's arrows and knob keep their normal picture under the mouse: a script cannot put the
+  mouse over them.
+- `code_docu.pdf`, as in the entries before.
+
+#### Questions
+
+1. **The 4K inset.** 4 pixels is read as 4 of the screen's own pixels, the unit of the 4K arrow's size: 2 CSS pixels
+   at a scaling of 200 %. Were 4 CSS pixels meant?
+2. **The list's bar arrows.** They are the box's arrow's size, 19 by 14 on a bar 20 wide, rather than stretched to
+   fill the bar's width. Is that the size wanted?
+### 13:59:17: seven languages in sight, a language at a time
+
+#### What changed
+
+- **Seven languages.** Without Simple UI, the open language list is seven languages high, its outline added, rather
+  than as high as the settings' room: each language is a line of text and 8 pixels high (`--entry` in
+  `css/pictures.css`), and the list `7 * var(--entry)` with its outline (`--edge`, 1 pixel, 2 on a 4K screen). In a
+  window too low for seven, the settings' room still caps it.
+- **A language at a time.** A turn of the mouse wheel over the list or its bar, or a click on one of the bar's arrows,
+  scrolls the list by one language, whatever the wheel's step; a click beside the knob scrolls by six, a page less one.
+  `js/view/scrollbars.js` takes a language's height as the step of the list (`line()` in `wire()`) with the pictures,
+  and `LINE` elsewhere. The list snaps to a whole language at its top (`scroll-snap-type`), so dragging the knob also
+  moves it a language at a time. With Simple UI nothing changes.
+- **Tests.** Test 51 wants the open list to show exactly seven languages. Test 53 turns the wheel by 100 pixels over
+  the list and wants it one language further down.
+- **Documents.** `TESTS.md`: Tests 51 and 53, and the lines of Tests 49 and 51 in `js/tests/helpers_test.js`.
+  `MAINTAINER.md`: the list's height and its steps. `DECISIONS.md`.
+- **Replaced.** The list as high as the settings' room, and its wheel scrolling by the wheel's own step, of the entries
+  before.
+
+#### Not done
+
+- The tests were not run for this entry or the one before; the changed scripts parse.
+- Page Up and Page Down with a language focused, and a touchpad's small wheel steps, are not changed to whole
+  languages beyond what the snapping does; on a touchpad each small step moves a whole language.
+- `code_docu.pdf`, as in the entries before.
+
+#### Questions
+
+1. **A page.** A click beside the knob scrolls by six languages, keeping the last one in sight. Should it be seven, or
+   one, as the arrows?
+### 14:07:50: the Options panel's contents 60 pixels from its sides
+
+#### What changed
+
+- **The margins.** Without Simple UI, the Options window's contents keep 60 pixels from the panel's left and right
+  edges, and on a 4K screen 120 of the screen's own pixels (`--side` in `css/pictures.css`, 120 times `--pixel`),
+  rather than 17. The panel keeps its place and size: its sideways margin around the window's grid is now `--side`,
+  and the window's padding at the sides one pixel less, its border making up the pixel. Its top and bottom are
+  unchanged. In a window less than 588 pixels high, where the panel also holds the title and the buttons, they keep
+  the same margins.
+- **The box.** `combobox_background.webp` is now 219 by 35 pixels, shorter than the 290 before. The box and its list
+  are 219 pixels wide, or narrower in a narrow window, and the caption's margins and size are reckoned in 219ths of
+  the box. The box sits at the right of the contents, 60 pixels from the panel's right edge; it no longer keeps as far
+  from that edge as from the panel's top, and `--lid` no longer moves it in a low window.
+- **Tests.** Test 51 now wants the label and the settings 60 pixels, or 120 screen pixels on a 4K screen, from the
+  panel's left edge, and the box and the settings as far from its right edge, and the box in 219 by 35 proportions.
+  `panelGaps()` in `js/tests/helpers_test.js` measures the gaps to the panel's sides instead of to its top.
+- **Documents.** `TESTS.md`: Test 51. `MAINTAINER.md`: the margins and the box's size and place. `DECISIONS.md`.
+- **Replaced.** The box as far from the panel's right edge as from its top, of
+  [13:43:37](#134337-tooltips-on-every-control-civilisations-in-a-new-tab-and-the-combo-box-in-its-corner), and the
+  contents 17 pixels from the panel's sides.
+
+#### Not done
+
+- The tests were not run for this entry or the two before; the changed scripts parse.
+- `code_docu.pdf`, as in the entries before.
+
+#### Questions
+
+1. **4K.** 120 pixels is read as 120 of the screen's own pixels, 60 CSS pixels at a scaling of 200 %, as with the
+   arrow's inset. Were 120 CSS pixels meant?
+2. **Low windows.** The title and Cancel and OK, inside the panel there, keep the same 60 pixels. Is that wanted?
+### 14:14:36: the tooltips of the language box and Find, and tooltips that follow a click
+
+#### What changed
+
+- **The language box.** Its tooltip is now the same as each language's in its list: "Select a language". Both name
+  `languageTip`; `languageOptionTip` is gone from `data.json` and the 16 language files.
+- **Find.** Its tooltip now reads "Search for a unit, technology, or building. If you cannot find what you are looking
+  for, enable Regionals or Universal and Unique in Options.", 140 characters, over the 100 the other tooltips keep.
+  The other languages name the two settings as their own texts do; German keeps to the infinitive of its other
+  tooltips rather than choosing between du and Sie.
+- **After a click.** The tooltip changed only when the mouse moved, so after a click on **Expand all** it still said
+  "Click to expand all nodes" over **Collapse all**, and a branch's arrow kept its old text. `wireTip()` in
+  `js/view/pictures.js` now remembers where the mouse is and, after every click, works the tooltip out again for what
+  is under it (`elementFromPoint`). The tooltip moves into an open window only when it shows, no longer while hidden.
+- **Tests.** No new checks. Test 49's limit of 100 characters now leaves out Find as well as Include.
+- **Documents.** `TESTS.md`: Test 49. `MAINTAINER.md`: the tooltips. `DECISIONS.md`.
+- **Replaced.** "Click to choose a language" on the box, "Click to select this language" on each language and
+  "Type to find buildings, units and technologies" on Find, of
+  [13:43:37](#134337-tooltips-on-every-control-civilisations-in-a-new-tab-and-the-combo-box-in-its-corner).
+
+#### Not done
+
+- The tests were not run for this entry or the three before; the changed scripts parse.
+- No test checks the tooltip after a click, or the new texts.
+- The new texts in the 16 other languages have not been proofread.
+- `code_docu.pdf`, as in the entries before.
+### 14:16:57: Include's tooltip worded as the other settings'
+
+#### What changed
+
+- **Include's tooltip.** Without Simple UI, **Include Unique and Universal** showed its whole description as its
+  tooltip. It now says what a click does, worded as **Include Regionals**' does: "Click to show or hide unique and
+  universal units, buildings and technologies" (`includeTip`, after `simpleTip` in `data.json` and the 16 language
+  files; the longest, in German, has 95 characters). Each language follows its own `regionalTip` and names the
+  setting as its `includeAll` does.
+- **The description.** It stays in the page: Simple UI shows it under the box as before, and without Simple UI it is
+  hidden as before, while the box still names it with `aria-describedby`, so screen readers read it.
+- **Tests.** Test 49 now wants `includeTip` over Include, the description hidden and still named by the box; its
+  limit of 100 characters now leaves out only Find.
+- **Documents.** `TESTS.md`: Test 49. `MAINTAINER.md`: the tooltips. `DECISIONS.md`.
+- **Replaced.** The Include description as Include's tooltip
+  ([2026-10-21](DEVLOG2.md#include-regionals-and-the-include-description-as-a-tooltip)).
+
+#### Not done
+
+- The tests were not run for this entry or the four before; the changed scripts parse.
+- The new texts in the 16 other languages have not been proofread.
+- `code_docu.pdf`, as in the entries before.
+
+#### Questions
+
+1. **Requirement 8.** It asks for a description of the checkbox's effect in the Options window. Without Simple UI the
+   description now shows nowhere on screen, only to screen readers. Should it show again, as text under the box or
+   in the tooltip?

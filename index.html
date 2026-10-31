@@ -4,8 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>AoE2 Civ Explorer</title>
+<title>Civ Explorer</title>
 <meta name="description" content="Find the Age of Empires II civilisations that have, or lack, the buildings, units and technologies you choose.">
+<meta property="og:title" content="Civ Explorer">
+<meta property="og:description" content="Explore AoE2 civs with tech filters.">
+<meta property="og:image" content="https://civexplorer.net/assets/images/preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://civexplorer.net/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Civ Explorer">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/pictures.css">
 <link rel="icon" href="data:," id="icon">
@@ -15,7 +23,7 @@
 <div class="loading" id="loading" role="status" hidden><span data-text="loading">Loading image assets...</span></div>
 <header class="top" id="top" hidden>
   <h1><span class="title-long" data-text="title"></span><span class="title-short" data-text="titleShort"></span></h1>
-  <button type="button" class="tool icon" id="optionsButton" aria-haspopup="dialog" aria-controls="options"><span class="cog" aria-hidden="true">⚙︎</span><span class="sr-only" data-text="options"></span></button>
+  <button type="button" class="tool icon" id="optionsButton" data-tip="optionsTip" aria-haspopup="dialog" aria-controls="options"><span class="cog" aria-hidden="true">⚙︎</span><span class="sr-only" data-text="options"></span></button>
 </header>
 <noscript><p>AoE2 Civ Explorer needs JavaScript.</p></noscript>
 <p class="load-error" id="loadError" hidden>AoE2 Civ Explorer could not load its data.</p>
@@ -25,13 +33,13 @@
     <div class="pane-head">
       <h2 id="treeTitle" data-text="tree"></h2>
       <div class="tools">
-        <button type="button" class="tool" id="clear"><span class="caption" data-text="clear"></span></button>
-        <button type="button" class="tool" id="expandAll"><span class="caption" data-text="expandAll"></span></button>
-        <button type="button" class="tool" id="collapseAll"><span class="caption" data-text="collapseAll"></span></button>
+        <button type="button" class="tool" id="clear" data-tip="clearTip"><span class="caption" data-text="clear"></span></button>
+        <button type="button" class="tool" id="expandAll" data-tip="expandAllTip"><span class="caption" data-text="expandAll"></span></button>
+        <button type="button" class="tool" id="collapseAll" data-tip="collapseAllTip"><span class="caption" data-text="collapseAll"></span></button>
       </div>
       <div class="find">
         <label for="find" data-text="find"></label>
-        <span class="field"><input type="search" id="find" autocomplete="off" spellcheck="false" placeholder=" "><button type="button" class="clear-find" id="clearFind"><span class="sr-only" data-text="clearFind"></span></button></span>
+        <span class="field"><input type="search" id="find" data-tip="findTip" autocomplete="off" spellcheck="false" placeholder=" "><button type="button" class="clear-find" id="clearFind" data-tip="clearFindTip"><span class="sr-only" data-text="clearFind"></span></button></span>
         <p id="found" role="status"></p>
       </div>
       <p class="legend">
@@ -61,18 +69,18 @@
   <h2 id="optionsTitle" data-text="options"></h2>
   <div class="language" id="language">
     <span id="languageLabel" data-text="language"></span>
-    <button type="button" class="tool language-button" id="languageButton" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span class="caption" id="languageName"></span><span class="chevron" aria-hidden="true"></span></button>
+    <button type="button" class="tool language-button" id="languageButton" data-tip="languageTip" aria-expanded="false" aria-controls="languageList" aria-labelledby="languageLabel languageName"><span class="caption" id="languageName"></span><span class="chevron" aria-hidden="true"></span></button>
     <ul class="language-list" id="languageList" role="list" tabindex="-1" hidden></ul>
   </div>
   <div class="settings" id="settings">
-    <div class="option" id="simple" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span data-text="simple"></span></div>
-    <div class="option" id="include" role="checkbox" tabindex="0" aria-checked="false" aria-describedby="includeHint"><span class="box" aria-hidden="true"></span><span data-text="includeAll"></span></div>
+    <div class="option" id="simple" data-tip="simpleTip" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span data-text="simple"></span></div>
+    <div class="option" id="include" data-tip="includeTip" role="checkbox" tabindex="0" aria-checked="false" aria-describedby="includeHint"><span class="box" aria-hidden="true"></span><span data-text="includeAll"></span></div>
     <p id="includeHint" data-text="includeHint"></p>
-    <div class="option" id="regional" role="checkbox" tabindex="0" aria-checked="true" data-state="has"><span class="box" aria-hidden="true"></span><span data-text="includeRegional"></span></div>
-    <div class="views" id="views" role="radiogroup" aria-labelledby="viewLabel"><span id="viewLabel" data-text="civView"></span><label class="view"><input type="radio" name="civView" value="list" checked><span data-text="viewList"></span></label><label class="view"><input type="radio" name="civView" value="tile"><span data-text="viewTile"></span></label></div>
-    <div class="option" id="tooltips" role="checkbox" tabindex="0" aria-checked="true" data-state="has"><span class="box" aria-hidden="true"></span><span data-text="tooltips"></span></div>
+    <div class="option" id="regional" data-tip="regionalTip" role="checkbox" tabindex="0" aria-checked="true" data-state="has"><span class="box" aria-hidden="true"></span><span data-text="includeRegional"></span></div>
+    <div class="views" id="views" role="radiogroup" aria-labelledby="viewLabel"><span id="viewLabel" data-text="civView"></span><label class="view" data-tip="listTip"><input type="radio" name="civView" value="list" checked><span data-text="viewList"></span></label><label class="view" data-tip="tileTip"><input type="radio" name="civView" value="tile"><span data-text="viewTile"></span></label></div>
+    <div class="option" id="tooltips" data-tip="tooltipsTip" role="checkbox" tabindex="0" aria-checked="true" data-state="has"><span class="box" aria-hidden="true"></span><span data-text="tooltips"></span></div>
   </div>
-  <form method="dialog"><button class="tool" id="optionsCancel"><span class="caption" data-text="cancel"></span></button><button class="tool" id="optionsOk"><span class="caption" data-text="ok"></span></button></form>
+  <form method="dialog"><button class="tool" id="optionsCancel" data-tip="cancelTip"><span class="caption" data-text="cancel"></span></button><button class="tool" id="optionsOk" data-tip="okTip"><span class="caption" data-text="ok"></span></button></form>
 </dialog>
 <dialog class="report" id="report" lang="en" aria-labelledby="reportTitle">
   <h2 id="reportTitle"></h2>
@@ -84,15 +92,15 @@
   <form method="dialog"><button class="tool" autofocus><span class="caption" data-tool="close"></span></button></form>
 </dialog>
 <template id="itemTemplate"><li><div class="row"><button type="button" class="twisty" aria-expanded="false"></button><span class="gap"></span><div class="node" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span class="name"></span><span class="sr-only lacking"></span><span class="n"><span class="count" aria-hidden="true"></span><span class="sr-only civ-count"></span></span></div></div><ul role="list" hidden></ul></li></template>
-<template id="chipTemplate"><li><button type="button" class="chip"><span class="box" aria-hidden="true"></span><span class="sr-only chip-label"></span><span class="chip-name" aria-hidden="true"></span><span aria-hidden="true">×</span></button></li></template>
-<template id="civTemplate"><li><a class="civ"><span class="civ-name"></span></a></li></template>
+<template id="chipTemplate"><li><button type="button" class="chip" data-tip="chipTip"><span class="box" aria-hidden="true"></span><span class="sr-only chip-label"></span><span class="chip-name" aria-hidden="true"></span><span aria-hidden="true">×</span></button></li></template>
+<template id="civTemplate"><li><a class="civ" target="_blank" rel="noopener"><span class="civ-name"></span></a></li></template>
 <template id="spinnerTemplate"><img class="spinner" data-src="assets/images/ui/loading.webp" alt=""></template>
 <template id="civIconTemplate"><span class="civ-icon"></span></template>
 <template id="nodeIconTemplate"><span class="node-icon"></span></template>
-<template id="languageTemplate"><li><button type="button" class="tool language-option"><span class="caption"></span></button></li></template>
+<template id="languageTemplate"><li><button type="button" class="tool language-option" data-tip="languageTip"><span class="caption"></span></button></li></template>
 <template id="reportTemplate"><li></li></template>
 <template id="downloadTemplate"><li><a download></a></li></template>
-<template id="barTemplate"><div class="bar" aria-hidden="true" hidden><span class="bar-up"></span><span class="bar-track"><span class="bar-knob"></span></span><span class="bar-down"></span></div></template>
+<template id="barTemplate"><div class="bar" aria-hidden="true" hidden><span class="bar-up" data-tip="scrollUpTip"></span><span class="bar-track" data-tip="scrollPageTip"><span class="bar-knob" data-tip="knobTip"></span></span><span class="bar-down" data-tip="scrollDownTip"></span></div></template>
 <div class="tip" id="tip" role="tooltip" hidden></div>
 </body>
 </html>

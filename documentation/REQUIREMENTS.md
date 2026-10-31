@@ -7,7 +7,7 @@
 5. The footer will contain a label "Data from aoe2techtree.net, Month Year" where Month Year is the time when the data was last updated.
 6. The Options button will be a cogwheel instead of a string label.
 7. An Options window will open when the user left-clicks the Options button.
-8. The Options window will contain, in top-down order: a title "Options", a drop-down menu labelled "Language", a checkbox labelled "Include Unique and Universal", a description of the checkbox effect, a "Close" button.
+8. The Options window will contain, in top-down order: a title "Options", a drop-down menu labelled "Language", a checkbox labelled "Include Unique and Universal", a "Close" button.
 9. The dropdown-menu will expand to show multiple language options when the user left-clicks it.
 10. The default value of the language dropdown-menu will be English.
 11. The language of the page will change to the language the user left-clicks.

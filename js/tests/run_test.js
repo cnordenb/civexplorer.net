@@ -1,6 +1,6 @@
 import { data, load, fill, attempt, recall, remember, language } from "../model/datahandler.js";
 import { include, regional } from "../model/model.js";
-import { simple } from "../view/stringbuilder.js";
+import { $, simple } from "../view/stringbuilder.js";
 import { setLanguage, setInclude, setRegional, setSimple } from "../controller/optionshandler.js";
 import { view, setView, tips, setTips } from "../view/pictures.js";
 import { openReport, report } from "../view/report.js";
@@ -104,4 +104,5 @@ export async function runTests() {
     colours: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
   }));
   for (const result of [...failed, ...merged.filter((r) => r.ok)]) report(reportLine(result, tools));
+  $("report").querySelector("form button").addEventListener("click", () => location.assign(location.pathname));
 }

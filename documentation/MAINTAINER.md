@@ -426,10 +426,13 @@ attributes, set before the `pictures` class:
 - `data-assets`, the size of every other picture: `4k` (and the `_x2` cursors) with `uhd` or `ultrawide`, and `sd`
   (and the `_x1` cursors) with `fhd` or `qhd`.
 
-Resizing the window or zooming changes neither, so the page uses one background and one size of each picture for the
-whole visit. In `css/pictures.css`, each rule with a picture names the `_sd` one or `fhd.webp`, and a rule starting with
-`.pictures[data-assets="4k"]` or `.pictures[data-background="..."]` names the other; it is more specific, so it wins,
-and the browser downloads only the picture that wins.
+`<html>` also gets `--pixel`, the size of one of the screen's own pixels, such as `0.5px` at 200 %, by which
+`css/pictures.css` keeps the language box's arrow at its picture's own size on a 4K screen.
+
+Resizing the window or zooming changes none of these, so the page uses one background and one size of each picture for
+the whole visit. In `css/pictures.css`, each rule with a picture names the `_sd` one or `fhd.webp`, and a rule starting
+with `.pictures[data-assets="4k"]` or `.pictures[data-background="..."]` names the other; it is more specific, so it
+wins, and the browser downloads only the picture that wins.
 
 A first visit opens without Simple UI. The page then first shows a grey loading screen, "Loading image assets..."
 above the turning `assets/images/ui/loading.webp`, and keeps it until every picture in the style sheets that the screen
@@ -456,44 +459,76 @@ the texts). The picture turns unless the visitor asks for reduced motion; its tu
 11 allows, and the tests allow no other.
 
 With the pictures on, the page also looks a little different: the title is the short "Civ Explorer", the legend is
-hidden as the tooltip explains the same, the Find box comes first, Include's description shows as a tooltip, the
-civilisations can be shown as tiles and link to their pages on aoe2techtree.net, and the mouse cursor is a sword.
+hidden as the tooltip explains the same, the Find box comes first, Include's description is hidden, though screen
+readers still read it, the civilisations can be shown as tiles and link to their pages on aoe2techtree.net, each opening
+in a new tab, and the mouse cursor is a sword.
+
+With **Tooltips** ticked, every control then has a tooltip while the mouse is over it (not on touch). An item of the
+tree says how to mark it (`nodeTip` in the texts), **Find** says what it searches and that more shows with Regionals or
+Universal and Unique (`findTip`), longer than 100 characters, a link shows its address, and a branch's arrow, or a
+group's name, says that a click opens or closes it (`expandTip`, `collapseTip`), unless it cannot open. Every other
+control says what a click does, in at most 100 characters: its element in `index.html` names its text with `data-tip`,
+such as `data-tip="clearTip"` on **Clear**, the scroll bars' parts and the languages in their templates; the language
+box and each language share `languageTip`, "Select a language". A new control needs a `data-tip` and its text in every
+language, or the tests fail. `tipFor()` in `js/view/pictures.js` picks the text. A click can change what is under the
+mouse, as **Expand all** turning into **Collapse all** or a branch opening, so after every click `wireTip()` works the
+tooltip out again for what is there. The report window of `?test` and `?update` has no tooltips.
 
 Under the Find box there are then two buttons instead of three: **Clear**, and **Expand all**, which turns into
 **Collapse all** in the same place while a branch at the top of the tree is open. Together they are as wide as the
 pane, whatever the language. Each shows the whole button picture in its own proportions, so in a narrow window the
 buttons and their text get smaller. Simple UI keeps the three buttons.
 
-A list that scrolls (the tree, the civilisations, **Filters**, the language list, the Options window's settings, and
-the whole content in a very short window) then has the game's scroll bar instead of the browser's: an arrow at each
-end and the knob, from `scrollbarendings_x1.webp` and `scrollbarknob_x1.webp` (`_x2` on a 4K screen), on a body of
-`scrollbar.webp` repeated from top to bottom. The three are equally wide, 20 pixels (`--bar` in `css/pictures.css`),
-and each keeps its own proportions: nothing is stretched. The bar shows whenever the list holds more than it shows,
-and only then; an arrow or the knob shows its second picture under the mouse and its third while pressed. An arrow
-scrolls by a line, and on while held; a click above or below the knob scrolls by a page; the knob can be dragged;
-and the mouse wheel over the bar scrolls the list. The list always keeps the bar's room on its right, so nothing in
-it moves when the bar comes or goes (Rule 18). `js/view/scrollbars.js` makes each bar from the template in
-`index.html`, puts it after its list, and gives CSS its place and the knob's as numbers; `css/pictures.css` hides the
-browser's own bar (`scrollbar-width: none`). With Simple UI the browser's own bars are back.
+A list that scrolls (the tree, the civilisations, **Filters**, the language list, the Options window's settings, and the
+whole content in a very short window) then has the game's scroll bar instead of the browser's: an arrow at each end and
+the knob, from `scrollbarendings_x1.webp` and `scrollbarknob_x1.webp` (`_x2` on a 4K screen), on a body of
+`scrollbar.webp` repeated from top to bottom. The three are equally wide, 20 pixels (`--bar` in `css/pictures.css`), and
+each keeps its own proportions: nothing is stretched. The bar shows whenever the list holds more than it shows, and only
+then; an arrow or the knob shows its second picture under the mouse and its third while pressed. An arrow scrolls by a
+line, and on while held; a click above or below the knob scrolls by a page; the knob can be dragged; and the mouse wheel
+over the bar scrolls the list. The list always keeps the bar's room on its right, so nothing in it moves when the bar
+comes or goes (Rule 18). `js/view/scrollbars.js` makes each bar from the template in `index.html`, puts it after its
+list, and gives CSS its place and the knob's as numbers; `css/pictures.css` hides the browser's own bar
+(`scrollbar-width: none`). With Simple UI the browser's own bars are back. The language list's bar is different: its
+arrows are the combo box's, from `combobox_arrow_atlas.webp`, as large as the box's arrow and centred on the bar, and
+its arrows and knob keep their first picture under the mouse and while pressed. The list scrolls a language at a time: a
+turn of the mouse wheel over it or its bar, or a click on an arrow, moves it one language, at once, not smoothly as the
+browser would, and a click beside the knob six (`STEPPED` in `js/view/scrollbars.js`).
 
-The Options window then shows its **Cancel** and **OK** buttons as the whole button picture, on the parchment below
-the window's panel, in the parchment's bottom right corner: as far from its right edge as from its bottom edge. In a
-window less than 588 pixels high the parchment is left out, and the buttons stay at the bottom of the panel. No
-button's text has a shadow; only the civilisations' names on tiles have one. With or without Simple
-UI, a change made in the window, a new language included, only shows in the window until **OK** applies it;
-**Cancel**, Escape or closing the window in any other way drops it, and the window opens again showing what applies.
-With Simple UI, the window is 10 pixels larger on every side, and there are 5 more pixels between the rows from its
-title to its buttons.
+The Options window then shows its **Cancel** and **OK** buttons as the whole button picture, on the parchment below the
+window's panel, in the parchment's bottom right corner: as far from its right edge as from its bottom edge. In a window
+less than 588 pixels high the parchment is left out, and the buttons stay at the bottom of the panel. No button's text
+has a shadow; only the civilisations' names on tiles have one. With or without Simple UI, a change made in the window, a
+new language included, only shows in the window until **OK** applies it; **Cancel**, Escape or closing the window in any
+other way drops it, and the window opens again showing what applies. The window's contents keep 60 pixels from the
+panel's left and right edges, 120 of the screen's own pixels on a 4K screen (`--side` in `css/pictures.css`): the panel
+keeps its place, as wide as the window, and the window's padding takes the contents in. With Simple UI, the window is 10
+pixels larger on every side, and there are 5 more pixels between the rows from its title to its buttons.
+
+The language menu in the Options window is then the game's combo box: `combobox_background.webp` in its own proportions,
+219 by 35 pixels, or narrower in a narrow window, with the arrow from `combobox_arrow_atlas.webp` 2 pixels in from its
+right end (4 of the screen's own pixels on a 4K screen), pointing down, or up while the list is open. The box sits at
+the right of the window's contents, 60 pixels from the panel's right edge. Its label ends with a colon, with Simple UI
+too, written as each language writes it (`language` in the texts): after a no-break space in French, full-width in
+Chinese and Japanese. The arrow is 19 by 14 pixels, and on a 4K screen 35 by 28 of the screen's own pixels, the
+picture's own size, which is 17.5 by 14 pixels at a scaling of 200 %. The list opens right below the box, over the
+settings, which stay in sight around it, and is as wide as the box, its outline included: the languages in one column,
+in bold Georgia, #391c1b, the chosen one #ab1c1b and the one under the mouse #399c9a, on #d7b394 within a #201819
+outline of 1 pixel, 2 on a 4K screen. It shows 7 languages at a time, each a line of text and 8 pixels high (`--entry`
+in `css/pictures.css`), and always stops with a whole language at its top (`scroll-snap-type`). The list, and its scroll
+bar above it, lie over the settings (`z-index` in `css/pictures.css`). With Simple UI the menu is a plain button, and
+the list a grid of buttons in place of the settings, which hide while it is open.
 
 The focus outline of a box or a language in the Options window is drawn just inside its edges, as in the tree,
-because the scrolling list around it would cut off an outline drawn outside.
+because the scrolling list around it would cut off an outline drawn outside. With the pictures, a language's outline
+is #201819, as the list's is.
 
 ### Assets
 
 | Folder | Holds |
 | --- | --- |
 | `assets/images/ui/backgrounds/` | The parchment behind the page in four sizes, the Options window's parchment and the title's frame. |
-| `assets/images/ui/buttons/` | The cogwheel, the text buttons, the Find box and its search and clear icons, and the scroll bars. |
+| `assets/images/ui/buttons/` | The cogwheel, the text buttons, the language box and its arrows, the Find box and its search and clear icons, and the scroll bars. |
 | `assets/images/ui/checkboxes/` | The checkboxes and the radio buttons. |
 | `assets/images/ui/cursors/` | The mouse cursors. |
 | `assets/images/ui/panels/` | The panes' frames and the box of a civilisation tile. |
@@ -504,12 +539,14 @@ because the scrolling list around it would cut off an outline drawn outside.
 | `assets/fonts/` | Georgia, Times New Roman Bold and Trajan Pro Bold, used only with the pictures. |
 
 - Most pictures come in two sizes, `_sd` and `_4k`, and the cursors, the civilisations' atlas and the scroll bars'
-  arrows and knob in `_x1` and `_x2`; the parchment comes as `fhd`, `qhd`, `uhd` and `ultrawide`. Which ones the page
-  uses depends on the screen (see [Simple UI and the pictures](#simple-ui-and-the-pictures)), and the browser downloads
-  only those. A new picture that comes in sizes needs those names, as the loading screen goes by them.
+  arrows and knob in `_x1` and `_x2`; the parchment comes as `fhd`, `qhd`, `uhd` and `ultrawide`, and the language
+  box and its arrows in one size for every screen. Which ones the page uses depends on the screen (see
+  [Simple UI and the pictures](#simple-ui-and-the-pictures)), and the browser downloads only those. A new picture that
+  comes in sizes needs those names, as the loading screen goes by them.
 - A picture with several states, such as a checkbox, holds them all in one sheet: rows for empty, ticked and
   crossed, and columns for normal, under the mouse and pressed. `css/pictures.css` shows the right part. The scroll
-  bar's arrows are rows for up and down, and its knob one row; its body, `scrollbar.webp`, has one state.
+  bar's arrows are rows for up and down, and its knob one row; its body, `scrollbar.webp`, has one state. The
+  language box's arrows are rows for up and down too, and `combobox_background.webp` has one state.
 - The cursors are the sword, `cursor_normal`, and the pointing hand, `cursor_pointing`, over the civilisations and the
   footer's links. The `_x1` ones, 32 by 32, are drawn at their own size; the `_x2` ones, 48 by 48, at two thirds of
   that, 32 by 32 too, as `css/pictures.css` names them in `image-set(... 1.5x)`, so on a screen at 150 % they show

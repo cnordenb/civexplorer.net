@@ -3,6 +3,8 @@ import { clone, simple } from "./stringbuilder.js";
 
 const SCROLLING = ".scroll, #ticked, #languageList, #settings, #content";
 
+const STEPPED = "#languageList";
+
 export const LINE = 40;
 
 const FIRST = 400;
@@ -61,9 +63,9 @@ function hold(part, step) {
   }
 }
 
-function page(box, knob, y) {
+function page(box, knob, y, line) {
   const { top, bottom } = knob.getBoundingClientRect();
-  if (!knob.hidden && (y < top || y > bottom)) box.scrollBy(0, Math.sign(y - top) * (box.clientHeight - LINE));
+  if (!knob.hidden && (y < top || y > bottom)) box.scrollBy(0, Math.sign(y - top) * (box.clientHeight - line));
 }
 
 function drag(knob, box) {
@@ -88,14 +90,20 @@ function drag(knob, box) {
 function wire(bar, box) {
   const [up, track, down] = bar.children;
   const knob = track.firstElementChild;
-  hold(up, () => box.scrollBy(0, -LINE));
-  hold(down, () => box.scrollBy(0, LINE));
-  hold(track, (y) => page(box, knob, y));
+  const stepped = () => box.matches(STEPPED) && !simple();
+  const line = () => (stepped() && box.firstElementChild?.offsetHeight) || LINE;
+  hold(up, () => box.scrollBy(0, -line()));
+  hold(down, () => box.scrollBy(0, line()));
+  hold(track, (y) => page(box, knob, y, line()));
   drag(knob, box);
-  bar.addEventListener("wheel", (e) => {
+
+  const wheel = (e) => {
     e.preventDefault();
-    box.scrollBy(0, e.deltaY * [1, LINE, box.clientHeight][e.deltaMode]);
-  }, { passive: false });
+    box.scrollBy(0, stepped() ? Math.sign(e.deltaY) * line() : e.deltaY * [1, LINE, box.clientHeight][e.deltaMode]);
+  };
+
+  bar.addEventListener("wheel", wheel, { passive: false });
+  if (box.matches(STEPPED)) box.addEventListener("wheel", (e) => simple() || wheel(e), { passive: false });
   box.addEventListener("scroll", () => fit(bar, box));
 }
 

@@ -1,0 +1,142 @@
+@ js/tests/helpers_test.js
+Small tools the test files share: recording results, finding and measuring elements, acting like a visitor, judging
+  pictures and scroll bars, and picking sample items.
+- check: Records one test result. Every test reports this way, and each name is one line in the report.
+- expect: Records a test that passes when its list of offenders is empty, naming the first few, so a failure points at
+  the exact items.
+- wait: Waits a number of milliseconds. Used to hold a long press.
+- settled: Waits until an image has loaded or failed.
+- loaded: Waits until every image has loaded or failed, or ten seconds have passed, so the tests check pictures only
+  once they are there.
+- phone: Tells whether the window uses the phone layout: narrower than 720 px and at least 640 px tall.
+- width: Measures the width of the first element a selector finds.
+- spans: Tells whether the footer is as wide as the panes, or hidden in the phone layout.
+- need: Returns a problem in a list if a condition fails, and an empty list if it holds, so a test can list exactly what
+  went wrong.
+- same: Tells whether two lists are equal, item by item. Used to compare lists of civilisations.
+- codes: Lists the language codes from data.json.
+- ui: Returns the page's texts in the current language.
+- box: Short for an element's `getBoundingClientRect()`: its place and size on the screen.
+- keys: Lists every item in the full tree.
+- describe: Names an element briefly, such as `button#clear` or a tree row's text, for failure messages.
+- rendered: Tells whether an element can be seen: laid out, not hidden, and not text for screen readers only. The
+  accessibility checks look at what is rendered.
+- everything: Lists every element that can be seen on the page.
+- styles: Gets an element's styles and those of its `::before`, `::after` and `::marker` parts, so decorations are
+  checked too.
+- pictured: Tells whether an element shows a picture through CSS: a background, list marker, border image, content or
+  cursor, in itself or its parts.
+- grade: The size of pictures the page chose, `sd` or `4k`, from `data-assets`.
+- fitted: Works out on its own, apart from the page's code, which parchment a screen should get from its size and scale,
+  to judge screenPictures().
+- misjudged: Lists the screens, from phones to ultrawide and from 100% to 300%, for which screenPictures() picks another
+  parchment or picture size than fitted().
+- fitting: Tells whether a picture's address suits a parchment: its own parchment, or the `_sd` and `_x1` pictures with
+  fhd and qhd and the `_4k` and `_x2` ones with uhd and ultrawide.
+- files: Reads the addresses out of a CSS value.
+- urlsOf: Lists the picture addresses in an element's style: background, border image, list marker, content and cursor.
+- tabIcons: Lists the tab icons the page asks for, leaving out the empty icon `data:,`, which is no picture.
+- pictures: Lists every picture on the page: images, tab icons and everything CSS draws with a picture, the page's own
+  background included. Simple UI must leave it empty (Req. 33).
+- picturesOn: Tells whether the main pictures show: those of the page, of its body and of the Options button.
+- rgb: Reads the numbers of a CSS colour.
+- yellow: Tells whether a colour is yellow: red and green high and close, blue clearly lower (Req. 20).
+- tone: Names a colour as white, black, green, red or other, loosely enough for light and dark colours.
+- drawn: Names the mark drawn on a checkbox, such as "green tick", "red cross" or "white dash", from the borders of its
+  `::before` and `::after`, leaving out parts that draw nothing (Req. 14, 23, 26).
+- simpleSpot: Returns where the Simple UI box is, to check that switching Simple UI does not move it (Rule 18).
+- simpleTicked: Tells whether the Simple UI box shows the given state, for the eye and for screen readers.
+- civLinks: Counts the civilisations in the list that are links.
+- focusables: Lists every element that can be seen and reached with the keyboard.
+- textOf: Reads an element's text as a screen reader would, leaving out parts marked `aria-hidden`.
+- tidy: Turns runs of spaces into single spaces and trims the ends.
+- nameFor: Works out an element's accessible name much as a browser does: from `aria-labelledby`, `aria-label`, its
+  label or its text. Lets the tests check that controls are named (WCAG 4.1.2).
+- squash: Lower-cases a text and keeps only letters and digits, for loose comparisons.
+- visibleTexts: Lists the visible pieces of text inside an element. Used to find stray placeholders, and to compare
+  names with what can be seen (WCAG 2.5.3).
+- keyDown: Sends a key press to an element, as a visitor's keyboard would.
+- tap: Clicks an element with mouse pointer events, as a visitor would.
+- type: Types a text into Find, as a visitor would.
+- pick: Chooses a language through the Options window, its menu and OK, as a visitor would.
+- reset: Returns the page to its start: Find empty, no marks, every branch closed, the menu and the Options window
+  closed, nothing focused. Tests start from here.
+- beside: Tells whether Find's message is on one line, right of the box and level with it (Req. 21).
+- listed: Lists the civilisations the page shows.
+- expected: Lists the names a set of civilisations should show, translated and sorted, to compare with listed().
+- below: Tells whether an item sits anywhere under another.
+- itemAbove: Tells whether an item has another item above it, or sits in a group marked `"lines"`, which makes it a unit
+  or technology. The tests work this out on their own, apart from the page's code.
+- chainOf: The rows that marking an item should open: the item and those below it while each has one row under it, those
+  with an arrow only. Worked out apart from the page's own [[js/model/model.js#chainOf]].
+- hex: Turns a colour written as six hex digits into the `rgb()` form the browser reports.
+- edges: Reads `colour_key.csv` into the outline colour of each kind and reach of tree icon, so the tests compare the
+  page with the file.
+- painted: Waits until the browser has drawn the page once more, so that the scroll bars have been fitted.
+- frameShape: The height of one picture in a sheet divided by its width, from the sheet's own size, so a test can tell a
+  picture drawn in proportion from a stretched one.
+- sprite: Describes how an element draws its picture: the file, its size, its repeat and its position.
+- barProblems: Lists what is wrong with a list's scroll bar: not along its right edge in the room kept for it, the wrong
+  pictures or the wrong part of them, arrows, body and knob not equally wide, out of proportion, or the knob not where
+  the list is scrolled to.
+- shownKeys: Lists the items currently in the tree, to compare the default tree with the full one.
+- uniqueKeys: Lists the items the default tree leaves out as unique: those inside unique groups and those
+  aoe2techtree.net calls unique.
+- ownKeys: Lists the items marked `"own"` and everything under them, which items standing in for theirs never show.
+- alternativesOf: Lists the items that marking an item must have should grey out, from data.json alone: the items it
+  names, the items that name it, and those that name what it names (Req. 37).
+- regionalKeys: Lists the items aoe2techtree.net calls regional, which Include Regionals leaves out when unticked.
+- outside: Lists the items of a tree outside regional items and all under them: what the tree shows with Include ticked
+  and Include Regionals unticked.
+- keptPath: Finds the path of a leaf to mark while an Include box changes. Paths survive the tree being built again;
+  item objects do not.
+- byPath: Finds the item with a path in the tree as it is now, after it was built again.
+- onTop: Tells whether an item is the top of its line: a unit or technology right under a building or group. The tests
+  work this out on their own, apart from the page's code (Req. 27).
+- lines: Lists the items that start a line.
+- inner: Tells whether an item is a unit or technology below the top of its line with one item under it, where a mark
+  passes down only at the same count (Req. 29, 30).
+- fixtures: Picks sample items from the tree: leaves some civilisations have, buildings, line tops, even and uneven
+  counts, a line in a group of lines, a building some do without, a lone building and an item with a rival. Found from
+  the data, to survive game updates.
+
+@ js/tests/static_test.js
+The maintainability and data tests: they read the page's own files as text and check the rules, then check data.json and
+  the updater's writing.
+- scripts: Reads every script reachable from `js/script.js`, following its imports, and notes which ones load only
+  through a later import, as the tests do.
+- styles: Reads every style sheet that index.html links, with its address.
+- linesOfCode: Counts the lines that are not blank, as Rules 23 and 25 count a function or a file.
+- regexMayStart: Tells whether a `/` after a given character or word starts a regular expression rather than a division,
+  so blanked() skips the right text.
+- closing: Finds where a string or regular expression that starts at a place ends, minding escapes and, for a regular
+  expression, character sets.
+- blanked: Blanks out the insides of strings, regular expressions and template texts, keeping the code inside `${}` and
+  every line break, so that only real braces and parentheses are left to count.
+- opensBody: Tells whether a brace opens a function's body: after `=>`, or after a parameter list that follows a name
+  which is not `if`, `for`, `while`, `switch`, `catch` or `with`.
+- functionsOf: Finds where every function body in a script starts and ends, by pairing its braces in the blanked text.
+- longFunctions: Names every function over 60 lines of code, with its line (Rule 23).
+- sizeProblems: Lists every file over 400 lines of code, every function over 60 and every script line over 120
+  characters (Rules 23 to 25).
+- unspun: Takes the loading picture's spin out of the style sheets' text, the only animation allowed, before they are
+  searched for others.
+- badImages: Tells whether any picture breaks the rules: media elements, images outside templates or with an address in
+  them, a tab icon in index.html, a picture in CSS outside a `.pictures` rule or outside `assets/images/`, or a font
+  outside `assets/fonts/` (Rules 9, 22).
+- sourceTests: The rules tests: no comments; no CSS or HTML in the scripts, which hand CSS only numbers; where the files
+  are and what they import, the tests named `_test.js` and loading only when testing, and no two of the files with one
+  name (Rule 29); the size limits; which scripts touch the page or store data; images, fonts, sounds, animations and
+  dependencies; and no game data in the scripts.
+- textTests: Checks that every language has all of the page's text, and names every item and civilisation.
+- tagTests: Checks that every language has a name and a valid language tag (WCAG 3.1.1).
+- alike: Tells whether two values are equal, by their JSON.
+- badExtras: Lists the entries of `extras` that are wrong: not in the tree, without a name number or a list of known
+  civilisations, or whose availability and icon in data.json do not match what fromExtra() makes of them.
+- treeTests: Checks the tree in data.json: every item once, only known keys, flags only where they belong, `"excludes"`
+  and `"replaces"` naming other known items, and every item with its civilisations and its icon.
+- textDataTests: Checks the texts in data.json: counted texts with an "other" form, the same placeholders in every
+  language, overrides of known names, and the source, tool texts and ignore list filled in.
+- dataTests: Runs the checks of the tree and of the texts in data.json.
+- updaterTests: Checks the updater's writing without going online: the files it writes read back the same, availability
+  is stored in its shortest form, and stored names are already tidy.

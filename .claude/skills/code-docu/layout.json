@@ -1,0 +1,15 @@
+{
+  "folders": [
+    { "dir": ".", "files": ["index.html", "data.json"] },
+    { "dir": "css", "files": ["css/base.css", "css/pictures.css"] },
+    { "dir": "js", "files": ["js/script.js"] },
+    { "dir": "js/model", "files": ["js/model/datahandler.js", "js/model/model.js"] },
+    { "dir": "js/view", "files": ["js/view/stringbuilder.js", "js/view/pictures.js", "js/view/scrollbars.js",
+      "js/view/report.js"] },
+    { "dir": "js/controller", "files": ["js/controller/nodetree.js", "js/controller/optionshandler.js"] },
+    { "dir": "js/tests", "files": ["js/tests/run_test.js", "js/tests/helpers_test.js", "js/tests/static_test.js",
+      "js/tests/behaviour_test.js", "js/tests/interface_test.js", "js/tests/pictures_test.js",
+      "js/tests/audit_test.js"] },
+    { "dir": "locales", "files": ["locales/de.json"] }
+  ]
+}

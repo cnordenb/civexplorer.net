@@ -208,9 +208,10 @@ link.
   [2026-10-21](DEVLOG/DEVLOG2.md#a-full-width-footer-civilisation-links-the-pointing-hand-and-six-tiles)
   [2026-10-21](DEVLOG/DEVLOG2.md#simple-ui-a-full-width-footer-and-civilisations-without-links)
   [2026-10-21](DEVLOG/DEVLOG2.md#no-footer-on-phones)
-- **Civilisations link to aoe2techtree.net** without Simple UI only.
+- **Civilisations link to aoe2techtree.net** without Simple UI only, each opening in a new tab.
   [2026-10-21](DEVLOG/DEVLOG2.md#a-full-width-footer-civilisation-links-the-pointing-hand-and-six-tiles)
   [2026-10-21](DEVLOG/DEVLOG2.md#simple-ui-a-full-width-footer-and-civilisations-without-links)
+  [2026-10-31 13:43:37](DEVLOG/DEVLOG5.md#134337-tooltips-on-every-control-civilisations-in-a-new-tab-and-the-combo-box-in-its-corner)
 - **On phones** the two panes are equal halves of fixed height (requirement 35, Rule 18). Replaced: the phone layout of
   2026-10-21. [2026-10-21](DEVLOG/DEVLOG2.md#the-phone-layout-and-test-15)
   [2026-10-24](DEVLOG/DEVLOG3.md#phone-panes-of-equal-fixed-height-requirement-35-rule-18)
@@ -253,15 +254,45 @@ link.
 - **The tooltip** starts at the cursor's bottom-right corner, 32 pixels from its point with both cursors.
   [2026-10-21](DEVLOG/DEVLOG2.md#a-find-box-of-fixed-width-and-the-tooltip-by-the-cursor)
   [2026-10-31 00:30:03](DEVLOG/DEVLOG5.md#003003-the-_x2-cursors-at-two-thirds-of-their-size)
-- **The Include description** is a tooltip with the pictures; Simple UI keeps the sentence.
+- **The Include description** is hidden with the pictures, though screen readers still read it, and Include's tooltip
+  says what a click does, as the other settings' do; Simple UI keeps the sentence. Replaced: the description as
+  Include's tooltip.
   [2026-10-21](DEVLOG/DEVLOG2.md#include-regionals-and-the-include-description-as-a-tooltip)
+  [2026-10-31 14:16:57](DEVLOG/DEVLOG5.md#141657-includes-tooltip-worded-as-the-other-settings)
+- **Every control has a tooltip** with the pictures: what a click does, in at most 100 characters, Find's longer, or a
+  link's address; it changes at once when a click changes what is under the mouse. The language box and its languages
+  share "Select a language". None on a locked branch's arrow or in the report window.
+  [2026-10-31 13:43:37](DEVLOG/DEVLOG5.md#134337-tooltips-on-every-control-civilisations-in-a-new-tab-and-the-combo-box-in-its-corner)
+  [2026-10-31 14:14:36](DEVLOG/DEVLOG5.md#141436-the-tooltips-of-the-language-box-and-find-and-tooltips-that-follow-a-click)
+  [2026-10-31 14:16:57](DEVLOG/DEVLOG5.md#141657-includes-tooltip-worded-as-the-other-settings)
 - **Icons** come from atlases, the civilisations' in two sizes; the tree's icons have outlines coloured as in
   `colour_key.csv`. [2026-10-21](DEVLOG/DEVLOG2.md#icons-in-the-tree) [2026-10-27](DEVLOG/DEVLOG4.md#icons-from-atlases)
   [2026-10-27](DEVLOG/DEVLOG4.md#the-civilisations-atlas-in-two-sizes)
 - **No tab icon with Simple UI**: `index.html` gives the empty icon `data:,`.
   [2026-10-22](DEVLOG/DEVLOG3.md#compliance-with-rulesmd-and-requirementsmd-and-jsuijs-split-in-three)
-- **The Options window** sits on its own parchment.
+- **The Options window** sits on its own parchment. Its contents keep 60 pixels from the panel's left and right edges,
+  120 screen pixels on 4K screens; the panel stays as wide as the window.
   [2026-10-21](DEVLOG/DEVLOG2.md#the-options-window-on-its-own-parchment)
+  [2026-10-31 14:07:50](DEVLOG/DEVLOG5.md#140750-the-options-panels-contents-60-pixels-from-its-sides)
+- **The language menu** is the game's combo box: its picture, 219 by 35 pixels, unstretched, with an arrow 2 pixels in
+  from its right end (4 screen pixels on 4K screens), down or up, 19 by 14 pixels, or on 4K screens the picture's own 35
+  by 28 screen pixels, and a list of one column right below it, as wide as it, seven languages high, in bold Georgia on
+  `#d7b394` within a `#201819` outline, lying over the settings, which stay in sight. The list's scroll bar has the
+  box's arrows and keeps its normal pictures, and the list scrolls a language at a time, at once. The box sits at the
+  right of the window's contents. Its label ends with a colon, with Simple UI too. With Simple UI the settings still
+  hide while the list is open. Replaced: the button picture on the menu and its languages, and a list without a
+  background of its own; the arrow scaled with the box; the settings hidden under the list; the 4K arrow at 35 by 28 CSS
+  pixels; the box at the left of its column; the box as far from the panel's right edge as from its top; the picture 290
+  pixels wide; the arrow at the box's very end; the list as high as the settings' room.
+  [2026-10-21](DEVLOG/DEVLOG2.md#game-buttons-with-trajan-pro)
+  [2026-10-21](DEVLOG/DEVLOG2.md#the-options-window-on-its-own-parchment)
+  [2026-10-31](DEVLOG/DEVLOG5.md#the-language-menu-as-the-games-combo-box)
+  [2026-10-31 12:56:48](DEVLOG/DEVLOG5.md#125648-the-combo-boxs-arrow-sizes-and-the-settings-in-sight)
+  [2026-10-31 13:03:07](DEVLOG/DEVLOG5.md#130307-the-4k-arrow-in-the-screens-own-pixels)
+  [2026-10-31 13:43:37](DEVLOG/DEVLOG5.md#134337-tooltips-on-every-control-civilisations-in-a-new-tab-and-the-combo-box-in-its-corner)
+  [2026-10-31 13:54:31](DEVLOG/DEVLOG5.md#135431-the-combo-boxs-arrow-further-in-and-the-language-lists-own-scroll-bar)
+  [2026-10-31 13:59:17](DEVLOG/DEVLOG5.md#135917-seven-languages-in-sight-a-language-at-a-time)
+  [2026-10-31 14:07:50](DEVLOG/DEVLOG5.md#140750-the-options-panels-contents-60-pixels-from-its-sides)
 
 ## Code and files
 
@@ -313,3 +344,6 @@ link.
   list of days with links; this file lists its decisions.
   [2026-10-31 00:48:46](DEVLOG/DEVLOG5.md#004846-the-log-in-parts)
   [2026-10-31 01:42:40](DEVLOG/DEVLOG5.md#014240-decisionsmd)
+- **`TERMINOLOGY.md`** defines the project's terms, one a line of at most 120 characters, in lower case but where it
+  quotes the page, each line using only terms defined above it.
+  [2026-10-31 12:47:21](DEVLOG/DEVLOG5.md#124721-terminologymd)

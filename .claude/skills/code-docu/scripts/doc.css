@@ -1,0 +1,80 @@
+@page {
+  size: A4; margin: 19mm 17mm 15mm;
+  @top-left { font: 8.5pt "Segoe UI", Arial, sans-serif; color: #444; vertical-align: bottom; padding-bottom: 4mm; white-space: pre; }
+  @top-right { content: "AoE2 Civ Explorer · Code documentation"; font: 8.5pt "Segoe UI", Arial, sans-serif; color: #777;
+    vertical-align: bottom; padding-bottom: 4mm; }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 8.5pt "Segoe UI", Arial, sans-serif; color: #777;
+    vertical-align: top; padding-top: 3mm; }
+}
+* { box-sizing: border-box; }
+html { font: 9.6pt/1.42 "Segoe UI", Arial, sans-serif; color: #1b1b1b; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; }
+a { color: #0b4f8c; text-decoration: none; }
+code, a.fn, .sig { font-family: "Cascadia Mono", Consolas, "Courier New", monospace; font-size: 0.9em; }
+code { color: #333; }
+a.fn { color: #0b4f8c; }
+p { margin: 3pt 0; hyphens: auto; }
+h1 { margin: 0 0 4pt; font-size: 19pt; line-height: 1.2; font-weight: 600; color: #111; break-after: avoid; }
+h1 .num { display: inline-block; min-width: 1.5em; color: #8a5a00; }
+.meta { display: flex; flex-wrap: wrap; gap: 0 14pt; margin: 0 0 2pt; font-size: 9pt; color: #333; }
+.uses { margin: 0 0 6pt; padding-bottom: 5pt; border-bottom: 0.6pt solid #bbb; font-size: 8.6pt; color: #333; }
+.intro { margin: 4pt 0 6pt; }
+.folder { margin-bottom: 12pt; }
+.folder .uses .sn { color: #8a5a00; }
+h2.file { margin: 0 0 3pt; font-size: 15pt; line-height: 1.2; font-weight: 600; color: #111; break-after: avoid; }
+h2.file .num { display: inline-block; min-width: 2.4em; color: #8a5a00; }
+.sub { margin-top: 8pt; break-inside: avoid; }
+h3 { display: flex; align-items: baseline; gap: 6pt; margin: 0 0 1pt; font-size: 10.5pt; line-height: 1.3; font-weight: 600; break-after: avoid; }
+h3 .num { flex: none; min-width: 3.3em; color: #8a5a00; font-weight: 600; }
+h3 .sig { font-weight: 700; font-size: 9.8pt; color: #111; }
+h3 .sig.plain { font-family: inherit; font-size: inherit; }
+h3 .tag { flex: none; padding: 0 4pt; border: 0.5pt solid #bbb; border-radius: 2pt; font-size: 7.4pt; font-weight: 500;
+  color: #555; text-transform: uppercase; letter-spacing: 0.04em; }
+h3 .lines { flex: none; margin-left: auto; font-size: 8.4pt; font-weight: 400; color: #555; }
+.sub > p { margin: 1pt 0 2pt 3.3em; padding-left: 6pt; }
+.refs { display: grid; grid-template-columns: 4.6em 1fr; gap: 0 4pt; margin: 0 0 0 3.3em; padding-left: 6pt; font-size: 8.4pt;
+  line-height: 1.35; }
+.refs dt { color: #666; }
+.refs dd { margin: 0; }
+.refs .in { color: #555; }
+.refs .none { color: #888; font-style: italic; }
+.chapter { break-before: page; }
+.front { break-before: page; }
+.titlepage { break-before: auto; padding-top: 52mm; }
+.t1 { margin: 0; font-size: 30pt; font-weight: 700; letter-spacing: 0.02em; color: #111; }
+.t2 { margin: 2pt 0 0; font-size: 18pt; color: #8a5a00; }
+.t3 { margin: 6pt 0 0; font-size: 11pt; color: #444; }
+.t4 { margin: 14pt 0 30pt; font-size: 9.5pt; color: #444; }
+.about p { margin: 0 0 6pt; max-width: 150mm; }
+ol.toc, ol.index { margin: 8pt 0 0; padding: 0; list-style: none; }
+.toc li a, .index li a { display: flex; align-items: baseline; gap: 5pt; color: inherit; }
+.toc li { margin: 0; padding: 2.4pt 0; border-bottom: 0.4pt solid #e3e3e3; }
+.toc .tn { flex: none; width: 2.4em; color: #8a5a00; }
+.toc .tl { flex: none; font-weight: 600; color: #0b4f8c; }
+.toc li.ch { margin-top: 5pt; }
+.toc li.ch .tn, .toc li.ch .tl { font-weight: 700; }
+.toc li.sub { padding-left: 2.4em; }
+.toc li.sub .tl { font-weight: 500; }
+.toc .tc { flex: none; color: #777; font-size: 8.6pt; }
+.dots { flex: 1; min-width: 8pt; overflow: hidden; white-space: nowrap; color: #9a9a9a; font-size: 8pt; letter-spacing: 2.2pt; }
+.dots::before { content: "...................................................................................................................................................................................................................................................................."; }
+.tp { flex: none; min-width: 1.6em; text-align: right; font-variant-numeric: tabular-nums; }
+.index { font-size: 8.8pt; line-height: 1.32; }
+.index li.letter { margin: 6pt 0 1pt; font-size: 10.5pt; font-weight: 700; color: #8a5a00; break-after: avoid; }
+.index li.letter:first-child { margin-top: 0; }
+.index .il { flex: none; font-family: "Cascadia Mono", Consolas, monospace; font-size: 0.92em; color: #0b4f8c;
+  max-width: 108mm; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.index .folder .il { font-family: inherit; font-size: inherit; font-weight: 700; }
+.index .file .il { font-family: inherit; font-size: inherit; }
+.index .iw { flex: none; color: #666; font-size: 0.92em; }
+.uml { margin-top: 6pt; }
+@page uml-portrait { size: A4 portrait; }
+@page uml-landscape { size: A4 landscape; }
+.uml svg { display: block; margin: 0 auto; }
+table.keys { width: 100%; margin-top: 6pt; border-collapse: collapse; font-size: 8.7pt; line-height: 1.33; }
+.keys th { padding: 2pt 4pt; border-bottom: 0.8pt solid #888; text-align: left; font-weight: 600; color: #333; }
+.keys td { padding: 2.2pt 4pt; border-bottom: 0.4pt solid #ddd; vertical-align: top; }
+.keys td.ln { white-space: nowrap; color: #555; font-variant-numeric: tabular-nums; }
+.keys td.key { white-space: nowrap; }
+.keys tr.d1 td.key { padding-left: 14pt; }
+.uml svg a text, .uml svg a tspan { fill: #0b4f8c !important; }

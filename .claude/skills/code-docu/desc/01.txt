@@ -1,0 +1,284 @@
+@ (title)
+This document explains the code of AoE2 Civ Explorer. Each folder is a chapter, and each file in it a subchapter. In the
+  subchapters on scripts, each function defined at the top level of its script is a section, numbered after its chapter
+  and subchapter, so the fourth section of the first file in chapter 4 is 4.1.4. A section gives the lines the function
+  takes up, says what it does and why, and lists the functions that call it and the functions it calls. A function
+  handed on to be called later, such as an event handler, counts as called by the function that hands it on. Helpers
+  defined inside a function are part of that function's text.
+"Exported" marks a function that other scripts import, and "internal" one that only its own script uses. The subchapters
+  on the page, its style sheets and the data are split into parts in the same way, each with its lines. Rules and
+  requirements are those of RULES.md and REQUIREMENTS.md.
+Every name of a folder, a file or a function links to its chapter, subchapter or section, and the page header always
+  names the chapter and the subchapter. The contents list the chapters, each with its subchapters indented under it. The
+  UML diagram after the contents shows how the scripts use each other, and the index at the end lists every chapter,
+  subchapter and function in alphabetical order.
+
+@ index.html
+The page's structure, and all of its HTML (Rule 2). It holds no text of its own: the scripts fill in every word in the
+  chosen language, and copy its templates instead of writing HTML.
+- [Head 1-13]: Sets the language, character set, viewport, light and dark colour schemes, title and description, and
+  links base.css, pictures.css and script.js, as a module. The tab icon starts as the empty `data:`, so no picture loads
+  before the scripts run (Req. 33).
+- [Loading screen 15]: The screen shown without Simple UI until every picture has loaded, with its text. showLoading()
+  adds the turning picture from its template.
+- [Header 16-19]: Holds the title twice: the full sentence of Req. 2 for Simple UI, and "Civ Explorer" for the pictures
+  (Req. 0). Then the cogwheel Options button (Req. 6), a text character with a hidden label. Hidden until the page
+  starts.
+- [Messages 20-21]: A noscript line for browsers without JavaScript, and a load error shown if data.json cannot be
+  loaded, so a visitor is never left with a blank page.
+- [Tree pane 22-43]: The start of the content, then the left pane, in the order of Req. 3: heading, Clear, Expand all
+  and Collapse all, the Find field with its label, clearing cross and live match count, the must have and must lack
+  legend, and the empty tree.
+- [Civilisations pane 44-57]: The right pane (Req. 4): heading, live count, the Filters list (Req. 22), the civilisation
+  list and the hint shown when it is empty. It scrolls on its own, so the page never does (Rule 12).
+- [Footer 58-59]: Names and links the data source and its date (Req. 5), then Microsoft's notice, in English, with links
+  to its rules and to the project. The code writes the sentence around the links.
+- [Options window 60-76]: A dialog (Req. 7, 8, 32): title, the language label, button and list, then the settings:
+  Simple UI, Include Unique and Universal with its description, Include Regionals, Civ view and Tooltips; and Cancel and
+  OK.
+- [Report window 77-85]: A dialog for the reports of the tests and the updater: title, live status, result list,
+  download links and Close. Always in English, so it is marked `lang="en"`.
+- [Templates 86-95]: Markup for tree rows, Filters buttons, civilisations, the loading picture, the icons of
+  civilisations and of the tree, language options, report lines, downloads and the scroll bar. The code copies these
+  instead of writing HTML (Rule 2).
+- [Tooltip 96]: The note that follows the mouse without Simple UI, over the tree, Include or a civilisation. Hidden
+  otherwise.
+
+@ css/base.css
+How the page looks with Simple UI, and its layout either way: colours, sizes and layouts for big and small screens, in
+  light and dark mode. Every rule with a picture or a font is in pictures.css instead.
+- [Colours 1-33]: Named colours for light mode, redefined for dark mode: text, lines, marks, hover, Find's yellow, the
+  green and red of the marks, and the dark box behind the white dash; and the 44-pixel target size and the font. The
+  tests measure their contrast.
+- [Base 34-46]: Box sizing, `hidden` that always hides, a full-height page that never scrolls (Rule 12), the system font
+  with 1.5 line spacing (WCAG 1.4.8), a 3 px focus outline (WCAG 2.4.13), and a class that hides text from sight but not
+  from screen readers.
+- [Header and language 48-66]: Lays out the title and cogwheel, and in the Options window the language label, its button
+  with a turning chevron, and the list of languages, where the current one is marked with a bar and bold.
+- [Panes 68-83]: Two panes side by side from 720 px wide; below that they share a phone's height, and the footer is
+  hidden. Each pane's head stays in place while its list scrolls.
+- [Controls 84-101]: Buttons and the Find field are at least 44 by 44 px (WCAG 2.5.5), with visible borders and a hover
+  colour. Find's message keeps its column, so the box never changes size while typing (Rule 18). The legend, and the
+  scrolling lists.
+- [Tree 103-121]: Indented rows with dotted guide lines, 44 px rows, turning arrows, pressed and greyed-out rows, and
+  found rows in yellow with the light colours (Req. 20) whatever the colour scheme.
+- [Check boxes 122-140]: Marks drawn with borders (Req. 14, 23, 26): a green tick, a red cross, and a white dash on a
+  dark box, in system colours when colours are forced.
+- [Names and views 141-145]: Hides Civ view and Tooltips, which only the pictures use; makes top-level and group names
+  bold; keeps counts on one line at the right; and draws focus rings inside rows.
+- [Filters and list 147-163]: Filters as a wrapping row of rounded chips under the pane's head, the civilisation list in
+  columns that never split a name, the empty hint and the footer.
+- [Dialogs 165-185]: Size, padding, border and backdrop of the Options and report windows. The Options window is a grid
+  of fixed height, so opening the language list never resizes it (Rule 18); only the report's list scrolls.
+- [Small screens 187-198]: On short screens everything scrolls as one, as at 400% zoom (WCAG 1.4.10); on narrow ones the
+  padding and the tree's indent shrink.
+- [Test helper 200-201]: The wider text spacing the tests apply (WCAG 1.4.12). Used only while testing.
+
+@ css/pictures.css
+How the page looks without Simple UI. Every rule here that shows a picture starts with `.pictures` or `html.pictures`,
+  so Simple UI turns them all off (Rules 9, 22), and picture addresses go from this folder, as `../assets/`. The
+  `[data-assets="4k"]` and `[data-background]` rules pick the pictures for the screen.
+- [Parchment and cursors 1-23]: The parchment behind the page, fitted so the content lies inside its frame on any
+  window, in the four sizes; the sword and the pointing hand as cursors, the `_x2` ones drawn at two thirds of their
+  size, at `1.5x` in `image-set`, so they are as large as the `_x1` ones.
+- [Header and footer 24-46]: The footer's colours, the title in its frame with the short title, the load error, and the
+  Options button from its three-state sheet.
+- [Fonts 47-56]: Georgia, Times New Roman Bold and Trajan Pro Bold from `assets/fonts/`, under their own names, trying
+  the installed copy first. Only rules for the pictures use them, so Simple UI never downloads a font.
+- [Text buttons 57-66]: Every button with words, but those of the report, shows the button picture, normal, under the
+  mouse or pressed, with its ends drawn apart so it can be any width.
+- [Loading screen 68-71]: The screen that covers the page while the pictures load, and its turning picture, the only
+  animation, which stops with reduced motion (Rule 11).
+- [Boxes and radio buttons 73-89]: Check boxes from their sheet, a row for each state and a column for normal, under the
+  mouse and pressed, with a black dash; Tooltips and the Civ view radio buttons, shown only here.
+- [Frames 90-97]: The 9-slice frames of the two panes, and their fonts and colours.
+- [Options window 98-126]: The window's frame and the parchment behind it, measured to fit around the same window as
+  with Simple UI, with OK and Cancel in the parchment's corner and the title on its ribbon on tall enough windows.
+- [Tree 127-148]: The tree's colours, found rows in amber, the rows' icons from the four atlases with an outline by kind
+  and reach as `colour_key.csv` says, and greyed-out icons.
+- [Tools 149-157]: Filters chips, no legend, Find first, and Clear and Expand all as two buttons that share the pane's
+  width.
+- [Find box 158-175]: Find's field in its 9-slice frame, 325 px wide, with the search picture while empty and the
+  clearing cross while not; the hidden label and Include's hidden description.
+- [Tooltip 176-180]: The tooltip's place, set by the script as numbers, 32 pixels from the pointer as both cursors are
+  32 pixels large, and its parchment look.
+- [Civilisations 181-196]: The civilisations' icons from their atlas, and the tiles, six to a row, each with its icon
+  and its name in Trajan Pro.
+- [Scroll bars 197-224]: The game's scroll bars: the browser's are hidden, room is kept for the bar, and the bar is
+  placed, sized and drawn from its arrows, body and knob, each from its sheet, as [[js/view/scrollbars.js#fit]] sets
+  them.
+
+@ js/script.js
+Where the page starts. It defines no functions; its top-level code runs once.
+- [Start-up 7-24]: Sets Simple UI from the saved choice first, so pictures load at once or never. Loads data.json and
+  the visitor's language (all of them for `?test` or `?update`), then starts the page and its pictures, and lets the
+  loading screen go; `?test` loads the tests and `?update` runs the updater. If loading fails, it shows the load error.
+
+@ js/model/datahandler.js
+Everything about data: loading, the chosen language and its text, sets of civilisations, saved choices, and the updater.
+- attempt: Runs a function and returns null instead of an error. Used where the browser may refuse, such as storage in a
+  private window, so a refusal never breaks the page.
+- recall: Reads a saved choice from the browser's storage, or null. Remembers the visitor's language and options between
+  visits.
+- remember: Saves a choice in the browser's storage, or removes it when the value is null. Failures are ignored, as the
+  page works without storage.
+- load: Fetches a file as text and returns a promise. It uses XMLHttpRequest because, unlike `fetch()`, it also reads
+  files when the page is opened from disk, as the tests in CI do.
+- fill: Replaces `{name}` placeholders in a text with values, leaving unknown ones alone. All text lives in the data
+  with placeholders, so the code never builds sentences itself.
+- treeKeys: Lists every item (or group) name in a tree, top to bottom. Used to check the tree, to find groups that need
+  text, and by the updater to know which items to look up.
+- useLanguage: Switches the active language: its text, language tag, sorting, plural rules and number format. Everything
+  that shows, sorts or counts text reads these, so one call changes them all.
+- nameOf: Returns a tree item's or group's name in the current language, or its key if missing. Used wherever an item is
+  shown or searched.
+- civName: Returns a civilisation's name in the current language, or its key if missing. Keeps the civilisation list
+  translated.
+- iconFile: Returns the path of a tree item's icon PNG from its kind and picture number, such as
+  `assets/images/icons/nodes/unit/8.png`, for the updater's report of new icons.
+- civFile: Returns the name of a civilisation's icon file: its name in lower case, unless `icons.names` in data.json
+  gives another, such as `inca` for the Incas.
+- byFile: Sorts picture numbers or names as their PNG files sort by name, `1.png`, `10.png`, `100.png` and on to
+  `11.png`, which is the order of the cells in an atlas.
+- cellOf: Finds a picture's cell in its atlas, which holds the pictures in file-name order, row by row, with as many
+  columns as the square root of their number, rounded up. The order is worked out once per list.
+- plural: Picks the right form of a counted text, such as "1 civilisation" or "5 civilisations", by the language's
+  plural rules, and fills in the formatted number.
+- plain: Lower-cases a text and strips accents, spaces and punctuation, so Find matches names however they are typed, in
+  any language.
+- localeFile: Returns the path of a language's file, such as `locales/de.json`. Keeps the pattern in one place for
+  loading and for the updater's downloads.
+- unpack: Turns data.json as stored into the shape used in memory, where overrides and text are kept per language, so
+  other languages can be added beside English.
+- addLanguage: Adds one language file's overrides and text to the data in memory. Used when a language loads, and when a
+  test reads back the files the updater would write.
+- useData: Reads data.json and gives each civilisation one bit, so a set of civilisations is a single number that `&`
+  and `|` combine quickly.
+- loadLanguage: Loads a language's file unless it is loaded already. A visitor downloads only the language shown, not
+  all of them.
+- loadLanguages: Loads every language's file. The tests and the updater need them all.
+- pack: Splits the data in memory back into files: data.json with English, and one file per other language. The updater
+  writes these, and a test checks that nothing is lost.
+- preferredLanguage: Chooses the language to start in: the one in the address (`?lng=`), else the visitor's saved
+  choice, else English (Req. 10). Shared links and return visits keep their language; first visits are English.
+- bit: Returns a civilisation's bit, or stops with an error for an unknown name, so a typo in data.json cannot silently
+  drop a civilisation.
+- size: Counts the civilisations in a set by counting its bits. Behind every number on the page.
+- setOf: Turns an availability rule from data.json (`"all"`, a `has` list or a `lacks` list) into a set. Rules stay
+  short in the file while the code works with sets.
+- civsOf: Turns a set back into a list of civilisations, in data.json order. Used to list the civilisations that fit.
+- isScalar: Tells whether a value is text, a number, true or false, or null. Helps toJson() decide what fits on one
+  line.
+- isFlatList: Tells whether a value is a list of scalars only, which toJson() writes on one line.
+- flat: Writes a value as one line of JSON, with a space after each comma and colon. The building block of toJson().
+- toJson: Writes JSON the way data.json is laid out: short objects and lists on one line, the rest indented, and a list
+  that ends an object of scalars opened on the object's line. Keeps the updater's files readable and their changes easy
+  to review.
+- isLower: Tells whether a character is a lower-case letter. joinLines() uses it to tell a hyphenated word from a real
+  hyphen.
+- capitalise: Upper-cases the first letter of a text, as some names in the game start in lower case.
+- fromExtra: Turns an entry of `extras` in data.json, an item aoe2techtree.net gives to no civilisation, into the node,
+  owners and picture counts the updater gathers for every other item. A test checks the extras the same way.
+- joinLines: Joins a game text broken with `<br>` into one line, by the language's rules for spaces and hyphens, and
+  tidies spaces. The game breaks names to fit its buttons.
+- localName: Finds an item's name in a language's game texts. If that name looks abbreviated, it takes the bold name
+  from the item's help text instead, which is written out in full.
+- availabilityOf: Writes who has an item in its shortest form: `"all"`, a `has` list or a `lacks` list. Keeps data.json
+  small; a test checks that every rule is stored this way.
+- pictureOf: Picks an item's icon for data.json from aoe2techtree.net's data: its kind, the picture most civilisations
+  show, and whether it is common, regional or unique, which the outlines and Include Regionals use.
+- missingText: Lists, per language, the page texts and group names that are missing. A test and the updater's report use
+  it, so no language shows a blank.
+- gather: Reads aoe2techtree.net's tree of every civilisation into three tables: each item's node, the civilisations
+  that have it, and how often each of its pictures is used. The updater's first step.
+- addExtras: Adds the items of `extras` in data.json to the gathered tables, and reports any that aoe2techtree.net now
+  has itself, so they can be taken out of `extras`.
+- translate: Writes every civilisation's and item's name in every language from the game's texts, unless an override
+  says otherwise, writing out abbreviated names from the help text.
+- compare: Lists the changes for the updater's report: civilisations added or gone, items whose civilisations changed or
+  that nobody has, renamed civilisations and items, items not yet in the tree, and missing texts.
+- addIcons: Adds every new picture to the list of its atlas in `icons.atlas`, in file-name order, and reports it with
+  its PNG, so the atlas can be built again.
+- refresh: The updater's core: works out the civilisations, who has what, the icons and every name from
+  aoe2techtree.net's data and the extras, dates the data, and writes the report. Stops if the tree names an unknown
+  item, or one twice.
+- fetchUpdate: Downloads aoe2techtree.net's data, trees and texts, runs refresh(), and returns the report and the files
+  that changed, data.json always. So a game update needs only a browser.
+
+@ js/model/model.js
+The tree and its rules: which items are shown, how marks pass on, what is greyed out, which civilisations fit, and what
+  Filters shows. It never touches the page.
+- setIncluded: Turns Include Unique and Universal on or off for the next rebuild().
+- setRegionals: Turns Include Regionals on or off for the next rebuild().
+- collect: Turns the shown part of data.json's tree into the items the page uses, each with its key, a path that tells
+  copies apart, its set of civilisations (all, for a group) and its links. Stops with an error for an item without
+  availability.
+- whole: The set of civilisations that have an item and everything under it, worked out once and kept on the item. A
+  row's count of matching civilisations uses it.
+- lift: Hands the rows of a unique item that is left out to its place, noting the item in their path, so that without
+  the Camel Scout the Camel Rider is a row of the Stable. Lent rows are dropped.
+- prune: Leaves out what Options leaves out: the unique groups and unique items (keeping their rows), regional items
+  without Include Regionals, and items that one, all or all but one civilisation have, unless something under them is
+  shown.
+- lent: Tells whether a row can be lent to an item that stands in for its own: neither unique nor marked `"own"`.
+- common: Copies a row and the rows under it that can be lent, marked as copies, for an item that stands in for it.
+- borrowed: Finds the item that a `"replaces"` names and returns the rows it lends; none if it counts as a unit or
+  technology, as its rows are its own upgrades.
+- named: Turns a `"replaces"` or `"excludes"` value, one name, a list or nothing, into a list.
+- variants: Adds under every item that names items it stands in for the rows those items lend, in the order named, so
+  their technologies are written only once in data.json.
+- twin: Ties every lent row to its original, so both share one mark: marking Two-Man Saw under the Mule Cart marks it
+  under the Lumber Camp too, with one entry in Filters.
+- pair: Links items both ways by `"excludes"` or `"replaces"`, as rivals or as alternatives.
+- side: An item and everything under it, but its rival and what is under that, so the Stable's side leaves out the
+  Xolotl Warrior inside it.
+- oppose: Gives every item the opponents that its must have greys out: everything on its rival's side, and the other way
+  round.
+- siblings: Adds to the alternatives of an item that stands in for others the other items that stand in for the same, so
+  marking the Folwark greys out the Settlement too.
+- rebuild: Builds the items afresh from data.json and the Include options, links copies, rivals and alternatives, and
+  keeps every mark by its path. Runs at the start and whenever an Include option changes.
+- barred: Tells whether an item is greyed out: not marked must have itself, while one of its alternatives or opponents
+  is (Req. 37).
+- within: Tells whether an item lies anywhere under another.
+- locked: Tells whether a greyed-out item is also closed: unless its own rival is inside it, as the Xolotl Warrior is
+  inside the Stable, which stays open so the Xolotl Warrior stays in sight.
+- setMark: Marks an item and everything under it, groups only through their rows, skipping the rivals of the item
+  marked. How a building or group is marked or cleared.
+- state: The mark an item shows: the one its own mark and all its rows share, or `"mixed"` when they differ, leaving out
+  the rivals of the item asked about.
+- isUnitOrTech: Tells whether an item is a unit or technology: an item with another item, or a `"lines"` group, above
+  it. Buildings and groups mark everything in them; units and technologies pass marks along lines.
+- descendants: Everything under an item, at every depth.
+- covers: Tells whether every civilisation that has an item also has the one above it, so that must have may pass up to
+  it.
+- prerequisites: The units and technologies above an item that its must have passes up to, stopping at a building or at
+  an item that some civilisations with it lack (Req. 34).
+- passedTo: The items a mark passes down to: along the item's line until it forks, and only those the same civilisations
+  have (Req. 29, 30).
+- current: The mark an item has now: its own for a unit or technology, otherwise what all of it shows.
+- put: Sets or clears a mark: on everything in a building or group, or along a unit's or technology's line. Must lack
+  also clears must have below that depended on it.
+- reached: The rows a mark reached, which marking opens: down to the first fork, and the rows it passed to or everything
+  inside.
+- mark: Marks an item must have or must lack, or clears it if it already has that mark, passes must have up to its
+  prerequisites, and returns the rows to open.
+- boxState: What a row's box shows: a unit's or technology's own mark, or a dash if a row below has another; otherwise
+  state().
+- fit: Works out the civilisations that fit every mark, as `matching`, and returns the marked items.
+- markOf: The mark an item stands for in Filters: the one all of it shows, else its own.
+- lineEnd: The last item of a line of upgrades that does not fork, or null if the item is a group or its line forks.
+- lineOf: The whole line of upgrades an item is on, from its top to its end, or just the item if it is on none. Filters
+  names and clears lines with it.
+- chainOf: An item and the rows below it for as long as each has exactly one row under it. Marking opens these.
+- unique: Tells whether data.json counts an item as unique.
+- alone: Tells whether an item is unique in a line that is not all unique, so it keeps its own entry in Filters (Req.
+  36).
+- held: Tells whether a mark keeps an item's own entry in Filters: must have on an item that alone() picks.
+- filtersOf: Works out the entries of Filters: one per marked building, group or line, but none for what a marked row
+  above covers, and the unique items' own entries, in the tree's order.
+- share: Notes the names that more than one row uses, so that Filters can say which one is meant.
+- chipName: Names an entry of Filters: a line after its deepest item with must have, a shared name "in" its parent, and
+  "Full" before a building or group marked in full with more than one row (Req. 24).
+- unmarkLine: Clears what an entry of Filters stands for: the marks of its kind along its line, or the item and
+  everything in it, keeping the unique items' own entries.

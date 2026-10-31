@@ -10,7 +10,7 @@ The test report and the GitHub check name each test by its number here, such as 
 while the tests run: it is the test's place in the order the tests first run in the main window. So when a test is added,
 removed or moved, renumber this document to match.
 
-WCAG 2.2 AAA is only required with Simple UI on, so the tests run with Simple UI on. Tests 47 to 53 turn it off to test the pictures.
+WCAG 2.2 AAA is only required with Simple UI on, so the tests run with Simple UI on. Tests 47 to 52 turn it off to test the pictures.
 
 ## Table of contents per category
 
@@ -64,64 +64,63 @@ Functional completeness & correctness tests:
 - [Test 46](#test-46): Options opens with Include unticked and Include Regionals ticked; changes wait for OK, Cancel or closing drops them
 - [Test 47](#test-47): The pictures, cursors and tab icon suit the screen's resolution, one size of each, the page sits on the parchment, the footer spans it or is hidden on phones
 - [Test 48](#test-48): Every checkbox and radio button shows its picture from its sheet, tree rows their outlined icons and civilisations theirs, each from its atlas
-- [Test 49](#test-49): The Find box shows a search icon or a clearing cross; the tree and Include have tooltips unless turned off
+- [Test 49](#test-49): The Find box shows a search icon or a clearing cross; every control and link has a tooltip unless turned off
 - [Test 50](#test-50): Without Simple UI, the tree has Clear and Expand all, which is Collapse all while a branch is open
-- [Test 51](#test-51): Without Simple UI, Cancel and OK sit in the parchment's corner, below the panel; changes wait for OK, Cancel drops them
-- [Test 52](#test-52): Ticking Simple UI takes away every image and the civ links on OK, unticking brings them back on OK, its box staying put
-- [Test 53](#test-53): Without Simple UI, a list that scrolls has the pictures' scroll bar, unstretched, its room always kept; none with Simple UI
-- [Test 54](#test-54): A unique item marked must have has its own filter, unless its whole line is unique
-- [Test 55](#test-55): A group inside a building has no checkbox; a click opens and closes it, and Down reaches its arrow
+- [Test 51](#test-51): Ticking Simple UI takes away every image and the civ links on OK, unticking brings them back on OK, its box staying put
+- [Test 52](#test-52): Without Simple UI, a list that scrolls has the pictures' scroll bar, unstretched, its room always kept; none with Simple UI; the language list's bar has the combo box's arrows, and the wheel scrolls the list a language at a time
+- [Test 53](#test-53): A unique item marked must have has its own filter, unless its whole line is unique
+- [Test 54](#test-54): A group inside a building has no checkbox; a click opens and closes it, and Down reaches its arrow
 
 Accessibility tests:
 
-- [Test 56](#test-56): Each language has a name and a valid tag
-- [Test 57](#test-57): A filter button clears its item and focus moves on
-- [Test 58](#test-58): Clearing the last filter moves focus and lists every civilisation
-- [Test 59](#test-59): Right opens a line all the way down
-- [Test 60](#test-60): Right and Left go into and out of branches
-- [Test 61](#test-61): Up, Down, Home and End move through the tree
-- [Test 62](#test-62): Down on an arrow goes to the next arrow
-- [Test 63](#test-63): Enter goes to the first match
-- [Test 64](#test-64): The page has a title and a language
-- [Test 65](#test-65): Language tags are valid and choices are marked
-- [Test 66](#test-66): One header, main, footer and main heading
-- [Test 67](#test-67): Headings have text and skip no levels
-- [Test 68](#test-68): Ids are unique and ARIA references resolve
-- [Test 69](#test-69): Controls say what state they are in
-- [Test 70](#test-70): Control names contain their visible text
-- [Test 71](#test-71): Text contrast is at least 7:1, or 4.5:1 when large
-- [Test 72](#test-72): Control borders have a contrast of at least 3:1
-- [Test 73](#test-73): Targets are at least 44 by 44 pixels
-- [Test 74](#test-74): The page does not scroll
-- [Test 75](#test-75): Nothing sticks out sideways
-- [Test 76](#test-76): Text is not justified and has 1.5 line spacing
-- [Test 77](#test-77): No images, sounds, video or animations on the page
-- [Test 78](#test-78): Nothing covers what has focus
-- [Test 79](#test-79): Down and End move through the language menu
-- [Test 80](#test-80): Wider text spacing breaks nothing
-- [Test 81](#test-81): Space unticks and ticks Include and Include Regionals, and OK applies it, keeping marks
+- [Test 55](#test-55): Each language has a name and a valid tag
+- [Test 56](#test-56): A filter button clears its item and focus moves on
+- [Test 57](#test-57): Clearing the last filter moves focus and lists every civilisation
+- [Test 58](#test-58): Right opens a line all the way down
+- [Test 59](#test-59): Right and Left go into and out of branches
+- [Test 60](#test-60): Up, Down, Home and End move through the tree
+- [Test 61](#test-61): Down on an arrow goes to the next arrow
+- [Test 62](#test-62): Enter goes to the first match
+- [Test 63](#test-63): The page has a title and a language
+- [Test 64](#test-64): Language tags are valid and choices are marked
+- [Test 65](#test-65): One header, main, footer and main heading
+- [Test 66](#test-66): Headings have text and skip no levels
+- [Test 67](#test-67): Ids are unique and ARIA references resolve
+- [Test 68](#test-68): Controls say what state they are in
+- [Test 69](#test-69): Control names contain their visible text
+- [Test 70](#test-70): Text contrast is at least 7:1, or 4.5:1 when large
+- [Test 71](#test-71): Control borders have a contrast of at least 3:1
+- [Test 72](#test-72): Targets are at least 44 by 44 pixels
+- [Test 73](#test-73): The page does not scroll
+- [Test 74](#test-74): Nothing sticks out sideways
+- [Test 75](#test-75): Text is not justified and has 1.5 line spacing
+- [Test 76](#test-76): No images, sounds, video or animations on the page
+- [Test 77](#test-77): Nothing covers what has focus
+- [Test 78](#test-78): Down and End move through the language menu
+- [Test 79](#test-79): Wider text spacing breaks nothing
+- [Test 80](#test-80): Space unticks and ticks Include and Include Regionals, and OK applies it, keeping marks
 
 Maintainability tests:
 
-- [Test 82](#test-82): No comments in the code
-- [Test 83](#test-83): No CSS or HTML in the scripts, only numbers for CSS custom properties
-- [Test 84](#test-84): Style sheets in css/, js/script.js and the rest in js/model/, js/view/ and js/controller/, tests named _test.js and on demand, no two files with one name
-- [Test 85](#test-85): No file over 400 lines of code, no function over 60, no line over 120 characters
-- [Test 86](#test-86): Page code stays out of script.js, datahandler.js and model.js, and data code is in datahandler.js
-- [Test 87](#test-87): Images and fonts only from assets/ and without Simple UI, a blank tab icon; no sounds, animations but the loading spin, or dependencies
-- [Test 88](#test-88): No game data in the scripts
-- [Test 89](#test-89): Each item is in the tree once
-- [Test 90](#test-90): The tree uses only known fields, and unique, lines, own, excludes and replaces are well placed
-- [Test 91](#test-91): Each item's availability names known civs, and each item has an icon, as extras says
-- [Test 92](#test-92): Counted texts have an "other" form
-- [Test 93](#test-93): Translations keep their placeholders
-- [Test 94](#test-94): Overrides name known items and civs
-- [Test 95](#test-95): Source, tool texts and ignore list are filled in
-- [Test 96](#test-96): The updater writes and reads back every value
-- [Test 97](#test-97): Availability is stored in its shortest form
-- [Test 98](#test-98): Stored names are already tidy
-- [Test 99](#test-99): The report window keeps its title, count and Close in view and scrolls only its list; Close is plain, on the right
-- [Test 100](#test-100): There are at most 100 tests
+- [Test 81](#test-81): No comments in the code
+- [Test 82](#test-82): No CSS or HTML in the scripts, only numbers for CSS custom properties
+- [Test 83](#test-83): Style sheets in css/, js/script.js and the rest in js/model/, js/view/ and js/controller/, tests named _test.js and on demand, no two files with one name
+- [Test 84](#test-84): No file over 400 lines of code, no function over 60, no line over 120 characters
+- [Test 85](#test-85): Page code stays out of script.js, datahandler.js and model.js, and data code is in datahandler.js
+- [Test 86](#test-86): Images and fonts only from assets/ and without Simple UI, a blank tab icon; no sounds, animations but the loading spin, or dependencies
+- [Test 87](#test-87): No game data in the scripts
+- [Test 88](#test-88): Each item is in the tree once
+- [Test 89](#test-89): The tree uses only known fields, and unique, lines, own, excludes and replaces are well placed
+- [Test 90](#test-90): Each item's availability names known civs, and each item has an icon, as extras says
+- [Test 91](#test-91): Counted texts have an "other" form
+- [Test 92](#test-92): Translations keep their placeholders
+- [Test 93](#test-93): Overrides name known items and civs
+- [Test 94](#test-94): Source, tool texts and ignore list are filled in
+- [Test 95](#test-95): The updater writes and reads back every value
+- [Test 96](#test-96): Availability is stored in its shortest form
+- [Test 97](#test-97): Stored names are already tidy
+- [Test 98](#test-98): The report window keeps its title, count and Close in view and scrolls only its list; Close is plain, on the right
+- [Test 99](#test-99): There are at most 100 tests
 
 ## Test 1
 
@@ -632,7 +631,7 @@ Include unticked, Regionals ticked, only Cancel and OK; OK applies, Cancel or cl
 ## Test 47
 
 ### File residence:
-`js/tests/pictures_test.js`, lines 48-111
+`js/tests/pictures_test.js`, lines 24-87
 
 ### Purpose:
 Verify that without Simple UI the pictures and cursors suit the screen's resolution, one size of each, on the parchment.
@@ -643,7 +642,7 @@ Choice for 11 screens; all 4 shown right; sword, hand on links, x2 at 1.5x; Opti
 ## Test 48
 
 ### File residence:
-`js/tests/pictures_test.js`, lines 113-182 and 413-416
+`js/tests/pictures_test.js`, lines 89-158 and 319-322
 
 ### Purpose:
 Verify that without Simple UI boxes show their sheets, and rows and civilisations their icons, each from its atlas.
@@ -654,18 +653,19 @@ Boxes: row by state, no marks but a dash. Icons: cell by file name, atlas sized 
 ## Test 49
 
 ### File residence:
-`js/tests/pictures_test.js`, lines 184-233 and 418-420
+`js/tests/pictures_test.js`, lines 160-179 and 323-327
+`js/tests/helpers_test.js`, lines 237 and 289-342
 
 ### Purpose:
-Verify that without Simple UI Find clears with its cross, and tooltips show over the tree and Include unless turned off.
+Verify that without Simple UI Find clears with its cross, and every control and link has a tooltip unless turned off.
 
 ### Assertion expectation:
-325px field, no ring, status beside it; clearing cross; tip at the cursor; Include's hint as a tip; none if off.
+325px field, no ring, clearing cross; tip at cursor; Find long, rest 100 at most; links' URL; hint hidden; none if off.
 
 ## Test 50
 
 ### File residence:
-`js/tests/pictures_test.js`, lines 19-24, 235-280 and 422-425
+`js/tests/pictures_test.js`, lines 19-22, 181-226 and 329-332
 
 ### Purpose:
 Verify that without Simple UI Expand all turns into Collapse all in place while a branch is open, and hands focus on.
@@ -676,18 +676,7 @@ Clear and Expand all, or Collapse all with a top branch open; side by side, pane
 ## Test 51
 
 ### File residence:
-`js/tests/pictures_test.js`, lines 19-46, 282-324 and 427-429
-
-### Purpose:
-Verify that without Simple UI Cancel and OK sit in the parchment's corner and changes wait for OK, or Cancel drops them.
-
-### Assertion expectation:
-Side by side below the panel, as far from the parchment's right as its bottom; whole sprite; no text shadow; OK applies.
-
-## Test 52
-
-### File residence:
-`js/tests/pictures_test.js`, lines 326-359 and 431-432
+`js/tests/pictures_test.js`, lines 228-261 and 334-335
 
 ### Purpose:
 Verify Req. 2, 32 and 33, and Rules 18 and 22: Simple UI turns every image and civ link off and back on, each on OK.
@@ -695,19 +684,19 @@ Verify Req. 2, 32 and 33, and Rules 18 and 22: Simple UI turns every image and c
 ### Assertion expectation:
 Ticking: nothing till OK; then no image, tab icon or civ link, full title, saved. Unticking: all back on OK, box still.
 
-## Test 53
+## Test 52
 
 ### File residence:
-`js/tests/pictures_test.js`, lines 361-401 and 434-437
-`js/tests/helpers_test.js`, lines 235-278
+`js/tests/pictures_test.js`, lines 263-307 and 337-341
+`js/tests/helpers_test.js`, lines 237-287
 
 ### Purpose:
 Verify Rule 18 and the pictures' scroll bars: shown while a list scrolls, never stretched, never moving the list.
 
 ### Assertion expectation:
-Bar at the right edge in kept room; x1 or x2 sprites, in proportion, as wide as each other; knob tracks; arrow, wheel.
+Bar at right edge in kept room; x1/x2 sprites in proportion, equally wide; languages: box's arrows, wheel 1 row; knob.
 
-## Test 54
+## Test 53
 
 ### File residence:
 `js/tests/interface_test.js`, lines 356-394
@@ -718,7 +707,7 @@ Verify Req. 36: a unique item marked must have always has its own filter entry.
 ### Assertion expectation:
 A unique item atop others: its own filter and its line's; each, or a full group's, clears only itself. Unique line: one.
 
-## Test 55
+## Test 54
 
 ### File residence:
 `js/tests/interface_test.js`, lines 396-425
@@ -729,7 +718,7 @@ Verify that a group inside a building, such as the Castle's Unique Units, is a h
 ### Assertion expectation:
 No checkbox role, tab stop or box; its name and arrow open and close it; right-click marks nothing; Down reaches it.
 
-## Test 56
+## Test 55
 
 ### File residence:
 `js/tests/static_test.js`, lines 257-258
@@ -740,7 +729,7 @@ Keep the language menu and the page's lang attributes correct (WCAG 3.1.1, 3.1.2
 ### Assertion expectation:
 Every language has a name and a well-formed language tag.
 
-## Test 57
+## Test 56
 
 ### File residence:
 `js/tests/interface_test.js`, lines 259-261
@@ -751,7 +740,7 @@ Verify that filter buttons remove filters without losing keyboard focus (WCAG 2.
 ### Assertion expectation:
 Clicking the first filter button clears its item and moves focus to the next filter button.
 
-## Test 58
+## Test 57
 
 ### File residence:
 `js/tests/interface_test.js`, lines 263-265
@@ -762,7 +751,7 @@ Keep focus sensible, and list every civilisation, once no filters remain (WCAG 2
 ### Assertion expectation:
 Focus is on the Civilisations heading, every civilisation is listed, no hint shows and the Filters list is hidden.
 
-## Test 59
+## Test 58
 
 ### File residence:
 `js/tests/interface_test.js`, lines 272-273
@@ -773,7 +762,7 @@ Give keyboard users the same one-step opening of a line (WCAG 2.1.1).
 ### Assertion expectation:
 Right on a line's first item opens exactly that line's chain of only children.
 
-## Test 60
+## Test 59
 
 ### File residence:
 `js/tests/interface_test.js`, lines 287-288
@@ -784,7 +773,7 @@ Verify keyboard navigation into and out of branches (WCAG 2.1.1).
 ### Assertion expectation:
 Right opens a branch, Right again focuses its first child, Left returns to the branch, Left again closes it.
 
-## Test 61
+## Test 60
 
 ### File residence:
 `js/tests/interface_test.js`, lines 292-293
@@ -795,7 +784,7 @@ Verify keyboard movement through the tree (WCAG 2.1.1).
 ### Assertion expectation:
 Up on the first item stays put, Down moves to the next, End focuses the last top item and Home the first.
 
-## Test 62
+## Test 61
 
 ### File residence:
 `js/tests/interface_test.js`, lines 294-296
@@ -806,7 +795,7 @@ Let keyboard users move between branch arrows directly.
 ### Assertion expectation:
 Down on the first branch's arrow focuses the second branch's arrow.
 
-## Test 63
+## Test 62
 
 ### File residence:
 `js/tests/interface_test.js`, lines 304-305
@@ -817,7 +806,7 @@ Let keyboard users jump from the search bar to the results (WCAG 2.1.1).
 ### Assertion expectation:
 Enter in the search bar focuses the first match.
 
-## Test 64
+## Test 63
 
 ### File residence:
 `js/tests/audit_test.js`, lines 77-78
@@ -828,7 +817,7 @@ WCAG 2.4.2 and 3.1.1: the page has a title and states its language.
 ### Assertion expectation:
 The page title is not empty and the page's lang is the current language's tag.
 
-## Test 65
+## Test 64
 
 ### File residence:
 `js/tests/audit_test.js`, lines 79-82
@@ -839,7 +828,7 @@ WCAG 3.1.2: screen readers pronounce each language's name in that language.
 ### Assertion expectation:
 Every lang attribute is well formed, and each language option's lang is that language's tag.
 
-## Test 66
+## Test 65
 
 ### File residence:
 `js/tests/audit_test.js`, lines 84-86
@@ -850,7 +839,7 @@ WCAG 1.3.1: landmarks and a main heading let assistive technology find its way a
 ### Assertion expectation:
 There is exactly one header, one main, one footer and one visible h1.
 
-## Test 67
+## Test 66
 
 ### File residence:
 `js/tests/audit_test.js`, lines 87-88
@@ -861,7 +850,7 @@ WCAG 1.3.1 and 2.4.10: the headings form a clear outline.
 ### Assertion expectation:
 Every visible heading has text and is at most one level below the heading before it.
 
-## Test 68
+## Test 67
 
 ### File residence:
 `js/tests/audit_test.js`, lines 95-98
@@ -872,7 +861,7 @@ WCAG 4.1.2: labels and relationships resolve for assistive technology.
 ### Assertion expectation:
 No id repeats, and every id in aria-labelledby, aria-controls and aria-describedby exists.
 
-## Test 69
+## Test 68
 
 ### File residence:
 `js/tests/audit_test.js`, lines 104-109
@@ -883,7 +872,7 @@ WCAG 4.1.2: assistive technology can read each control's state.
 ### Assertion expectation:
 Checkboxes have aria-checked true, false or mixed; arrows and the menu button have aria-expanded matching the screen.
 
-## Test 70
+## Test 69
 
 ### File residence:
 `js/tests/audit_test.js`, lines 111-115
@@ -894,7 +883,7 @@ WCAG 2.5.3 and 4.1.2: every control has a name matching what users see.
 ### Assertion expectation:
 Every control has an accessible name, and, except for text inputs, that name contains its visible text.
 
-## Test 71
+## Test 70
 
 ### File residence:
 `js/tests/audit_test.js`, lines 121-127
@@ -905,7 +894,7 @@ WCAG 1.4.6 (AAA): text has enhanced contrast.
 ### Assertion expectation:
 All visible text has a contrast of at least 7:1 with its background, or 4.5:1 for large text.
 
-## Test 72
+## Test 71
 
 ### File residence:
 `js/tests/audit_test.js`, lines 128-133
@@ -916,7 +905,7 @@ WCAG 1.4.11: the edges of controls are visible.
 ### Assertion expectation:
 Buttons, filter buttons, inputs and checkboxes with a border have a border contrast of at least 3:1.
 
-## Test 73
+## Test 72
 
 ### File residence:
 `js/tests/audit_test.js`, lines 139-142
@@ -927,7 +916,7 @@ WCAG 2.5.5 (AAA): targets are large enough to hit.
 ### Assertion expectation:
 Every focusable control, except links inside running text, is at least 44 by 44 CSS pixels.
 
-## Test 74
+## Test 73
 
 ### File residence:
 `js/tests/audit_test.js`, lines 143-144
@@ -938,7 +927,7 @@ Enforce Rule 12: no page scrolling.
 ### Assertion expectation:
 The page is no taller and no wider than the window.
 
-## Test 75
+## Test 74
 
 ### File residence:
 `js/tests/audit_test.js`, lines 145-148
@@ -949,7 +938,7 @@ WCAG 1.4.10: content reflows without scrolling sideways.
 ### Assertion expectation:
 No visible element extends past the left or right edge of the window.
 
-## Test 76
+## Test 75
 
 ### File residence:
 `js/tests/audit_test.js`, lines 149-154
@@ -960,7 +949,7 @@ WCAG 1.4.8 (AAA): text is presented readably.
 ### Assertion expectation:
 No paragraph or list item is justified, and each has a line height of at least 1.5 times its font size.
 
-## Test 77
+## Test 76
 
 ### File residence:
 `js/tests/audit_test.js`, lines 157-166
@@ -971,7 +960,7 @@ Enforce Rules 9, 10, 11 and 22 on the page as rendered, with Simple UI on.
 ### Assertion expectation:
 No media elements or tab icon, no images in CSS, the page's own background included, no animations or transitions.
 
-## Test 78
+## Test 77
 
 ### File residence:
 `js/tests/audit_test.js`, lines 44-57, 65-70 and 73
@@ -982,7 +971,7 @@ WCAG 2.4.12 (AAA): nothing hides the element that has focus.
 ### Assertion expectation:
 Each focused element's visible centre hits it, or, for a greyed-out row that clicks pass through, the row's branch.
 
-## Test 79
+## Test 78
 
 ### File residence:
 `js/tests/interface_test.js`, lines 182-183
@@ -993,7 +982,7 @@ Verify keyboard use of the language menu (WCAG 2.1.1).
 ### Assertion expectation:
 Down on the menu button opens the menu at the current language; Down moves one on; End reaches the last language.
 
-## Test 80
+## Test 79
 
 ### File residence:
 `js/tests/interface_test.js`, lines 205-208
@@ -1004,7 +993,7 @@ WCAG 1.4.12: wider text spacing set by the user does not break the layout.
 ### Assertion expectation:
 With WCAG's text spacing applied, the page and every element stay within the window's width.
 
-## Test 81
+## Test 80
 
 ### File residence:
 `js/tests/interface_test.js`, lines 220-234
@@ -1015,7 +1004,7 @@ Verify that the Include Unique and Universal and Include Regionals boxes work fr
 ### Assertion expectation:
 Space flips both boxes, the tree unchanged till OK, which applies them; flipping back and OK restores it; marks kept.
 
-## Test 82
+## Test 81
 
 ### File residence:
 `js/tests/static_test.js`, lines 208-212
@@ -1026,7 +1015,7 @@ Enforce Rule 7: no comments in the code.
 ### Assertion expectation:
 index.html, the style sheets and every script hold no comment markers. The comment live-server injects is ignored.
 
-## Test 83
+## Test 82
 
 ### File residence:
 `js/tests/static_test.js`, lines 213-214
@@ -1037,7 +1026,7 @@ Enforce Rule 2: no CSS or HTML inside the JavaScript.
 ### Assertion expectation:
 No inline styles but setProperty("--name", number); no HTML strings, createElement or document.write.
 
-## Test 84
+## Test 83
 
 ### File residence:
 `js/tests/static_test.js`, lines 215-224
@@ -1048,7 +1037,7 @@ Enforce Rules 2, 16 and 29, and keep the tests out of what visitors download.
 ### Assertion expectation:
 Sheets in css/; js/script.js, the rest in model/, view/, controller/; imports in js/; *_test.js on demand; unique names.
 
-## Test 85
+## Test 84
 
 ### File residence:
 `js/tests/static_test.js`, lines 45-164 and 225-226
@@ -1059,7 +1048,7 @@ Verify Rules 23, 24 and 25: functions, lines and files stay small enough to read
 ### Assertion expectation:
 index.html, the style sheets, every script: at most 400 lines of code, functions at most 60, lines at most 120 characters.
 
-## Test 86
+## Test 85
 
 ### File residence:
 `js/tests/static_test.js`, lines 227-233
@@ -1070,7 +1059,7 @@ Keep page code out of script.js, datahandler.js and model.js, and data loading a
 ### Assertion expectation:
 script.js, datahandler.js and model.js never touch the page; only datahandler.js uses fetch or localStorage.
 
-## Test 87
+## Test 86
 
 ### File residence:
 `js/tests/static_test.js`, lines 171-193 and 234-241
@@ -1081,7 +1070,7 @@ Enforce Rules 9, 10, 11 (but for the loading spin), 14 and 22 in the source file
 ### Assertion expectation:
 img only in templates, no src; blank tab icon; url() to assets/images/ in .pictures, assets/fonts/ in @font-face; etc.
 
-## Test 88
+## Test 87
 
 ### File residence:
 `js/tests/static_test.js`, lines 242-243
@@ -1092,7 +1081,7 @@ Enforce Rule 1: game data lives only in data.json.
 ### Assertion expectation:
 No civilisation or item name from data.json appears as a quoted string in any script.
 
-## Test 89
+## Test 88
 
 ### File residence:
 `js/tests/static_test.js`, line 280
@@ -1103,7 +1092,7 @@ Prevent duplicate items in the tree, which would break counts and marking.
 ### Assertion expectation:
 Every item appears exactly once in the tree in data.json.
 
-## Test 90
+## Test 89
 
 ### File residence:
 `js/tests/static_test.js`, lines 290-293
@@ -1114,7 +1103,7 @@ Catch misspelt, stale or misplaced fields in the tree in data.json, such as the 
 ### Assertion expectation:
 Only known fields; unique and lines are true on groups, own is true on items; excludes and replaces name other items.
 
-## Test 91
+## Test 90
 
 ### File residence:
 `js/tests/static_test.js`, lines 265-277 and 294-301
@@ -1125,7 +1114,7 @@ Ensure every item's availability names real civilisations and every item has an 
 ### Assertion expectation:
 Availability is "all" or a has or lacks list of known civs; pictures gives kind, picture and reach; extras match both.
 
-## Test 92
+## Test 91
 
 ### File residence:
 `js/tests/static_test.js`, lines 309-310
@@ -1136,7 +1125,7 @@ Ensure counted texts have a fallback form for any number.
 ### Assertion expectation:
 Every counted (plural) text in every language has an "other" form.
 
-## Test 93
+## Test 92
 
 ### File residence:
 `js/tests/static_test.js`, lines 311-313
@@ -1147,7 +1136,7 @@ Prevent translations that lose or misspell placeholders such as {n}.
 ### Assertion expectation:
 Each interface text has the same {placeholders} in every language as in English.
 
-## Test 94
+## Test 93
 
 ### File residence:
 `js/tests/static_test.js`, lines 314-316
@@ -1158,7 +1147,7 @@ Catch stale or misspelt name corrections after a game update.
 ### Assertion expectation:
 Every key in each language's overrides is a known item or civilisation.
 
-## Test 95
+## Test 94
 
 ### File residence:
 `js/tests/static_test.js`, lines 317-322
@@ -1169,7 +1158,7 @@ Ensure the footer, the updater and the tests have the data they need (Req. 5).
 ### Assertion expectation:
 source has name, url, data, an integer helpOffset and a YYYY-MM date; no tool text is empty; ignore is a list of text.
 
-## Test 96
+## Test 95
 
 ### File residence:
 `js/tests/static_test.js`, lines 336-338
@@ -1180,7 +1169,7 @@ Ensure the updater writes data.json and the locale files without losing or chang
 ### Assertion expectation:
 Writer outputs data.json plus one locales/ file per other language; reading them back gives identical data.
 
-## Test 97
+## Test 96
 
 ### File residence:
 `js/tests/static_test.js`, lines 342-343
@@ -1191,7 +1180,7 @@ Keep data.json compact and identical to what the updater would write.
 ### Assertion expectation:
 Each item's availability is "all", or whichever of the has or lacks lists is shorter.
 
-## Test 98
+## Test 97
 
 ### File residence:
 `js/tests/static_test.js`, lines 344-346
@@ -1202,7 +1191,7 @@ Keep stored names identical to what the updater would write.
 ### Assertion expectation:
 Joining lines and tidying spaces leaves every stored item and civilisation name unchanged, in every language.
 
-## Test 99
+## Test 98
 
 ### File residence:
 `js/tests/interface_test.js`, lines 327-354
@@ -1213,7 +1202,7 @@ Keep the report window usable: title, count and Close stay put and only the list
 ### Assertion expectation:
 200 lines scrolled to the end move nothing; focus starts on Close, at the right; Close looks the same without Simple UI.
 
-## Test 100
+## Test 99
 
 ### File residence:
 `js/tests/run_test.js`, lines 94-95

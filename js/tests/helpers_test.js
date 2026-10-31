@@ -1,4 +1,6 @@
-import { data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language } from "../model/datahandler.js";
+import {
+  data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language, recall, attempt,
+} from "../model/datahandler.js";
 import { items, whole, lineOf, lineEnd, shared } from "../model/model.js";
 import { $ } from "../view/stringbuilder.js";
 import { setMenu, options, screenPictures } from "../controller/optionshandler.js";
@@ -246,17 +248,21 @@ const sprite = (el) => {
     .join(" ");
 };
 
+const comboArrow = () => (grade() === "4k" ? [35, 28, 4].map((side) => side / devicePixelRatio) : [19, 14, 2]);
+
 export async function barProblems(bar, list) {
   const [up, track, down] = bar.children;
   const knob = track.firstElementChild;
-  const [name, scale, style] = [describe(list), grade() === "4k" ? "x2" : "x1", getComputedStyle(list)];
-  const [outer, inner] = [box(bar), box(list)];
+  const [name, scale, style, menu] = [describe(list), grade() === "4k" ? "x2" : "x1", getComputedStyle(list),
+    list === $("languageList")];
+  const [outer, inner, [wide, high]] = [box(bar), box(list), comboArrow()];
   const edge = inner.right - parseFloat(style.borderRightWidth);
+  const ending = menu ? "combobox_arrow_atlas.webp" : `scrollbarendings_${scale}.webp`;
   const wanted = [
-    [up, `scrollbarendings_${scale}.webp 300% 200% no-repeat 0px 0px`],
+    [up, `${ending} 300% 200% no-repeat 0px 0px`],
     [track, "scrollbar.webp 100% auto repeat-y 0px 0px"],
     [knob, `scrollbarknob_${scale}.webp 300% 100% no-repeat 0px 0px`],
-    [down, `scrollbarendings_${scale}.webp 300% 200% no-repeat 0px 100%`],
+    [down, `${ending} 300% 200% no-repeat 0px 100%`],
   ];
   const [ends, grip] = [await frameShape(up, 3, 2), await frameShape(knob, 3, 1)];
   const at = box(track).top + (box(track).height - box(knob).height) * list.scrollTop
@@ -264,17 +270,75 @@ export async function barProblems(bar, list) {
 
   const shape = (el) => box(el).height / box(el).width;
 
+  const fits = (el) => (menu ? Math.abs(box(el).width - wide) < 0.5 && Math.abs(box(el).height - high) < 0.5
+    && Math.abs(box(el).left + box(el).right - outer.left - outer.right) < 1 : Math.abs(shape(el) - ends) < 0.005);
+
   return [
     ...need(Math.abs(outer.right - edge) < 0.5 && outer.left > edge - parseFloat(style.paddingRight) - 0.5
       && Math.abs(outer.top - inner.top - list.clientTop) < 0.5 && Math.abs(outer.height - list.clientHeight) < 1,
     `${name}'s bar is not along its right edge, in the room kept for it`),
     ...wanted.filter(([el, look]) => sprite(el) !== look).map(([el]) => `${name}'s ${el.className} is ${sprite(el)}`),
-    ...need([up, track, down, knob].every((el) => el.hidden || Math.abs(box(el).width - outer.width) < 0.01),
-      `${name}'s arrows, body and knob are not equally wide`),
-    ...need([up, down].every((el) => Math.abs(shape(el) - ends) < 0.005)
-      && (knob.hidden || Math.abs(shape(knob) - grip) < 0.005), `${name}'s arrows or knob are out of proportion`),
+    ...need([track, knob, ...(menu ? [] : [up, down])].every((el) => el.hidden
+      || Math.abs(box(el).width - outer.width) < 0.01), `${name}'s arrows, body and knob are not equally wide`),
+    ...need([up, down].every(fits) && (knob.hidden || Math.abs(shape(knob) - grip) < 0.005),
+      `${name}'s arrows or knob are out of proportion, or not the combo box's arrows`),
     ...need(knob.hidden || Math.abs(box(knob).top - at) < 1, `${name}'s knob is not where it is scrolled to`),
   ];
+}
+
+export const hover = (el, x, y) => el.dispatchEvent(new PointerEvent("pointermove", {
+  bubbles: true, pointerType: "mouse", clientX: x, clientY: y,
+}));
+
+const CONTROLS = "button, a[href], input, .node, .option, .view, .bar > *, .bar-knob";
+
+const untipped = (scope) => [...scope.querySelectorAll(CONTROLS)]
+  .filter((el) => rendered(el) && el.ariaDisabled !== "true" && !el.closest("#report")).filter((el) => {
+    hover(el, box(el).left + 1, box(el).top + 1);
+    const text = $("tip").hidden ? "" : $("tip").textContent;
+    return el.matches("a") ? text !== el.href : !text || (text.length > 100 && el.id !== "find");
+  }).map(describe);
+
+export async function tipGaps() {
+  $("expandAll").click();
+  tap(fixtures().partial.node);
+  type("a");
+  await painted();
+  const gaps = untipped(document.body);
+  $("optionsButton").click();
+  await painted();
+  gaps.push(...untipped($("options")));
+  setMenu(true);
+  await painted();
+  gaps.push(...untipped($("language")));
+  reset();
+  return [...new Set(gaps)].map((name) => `${name} has no tooltip of at most 100 characters`);
+}
+
+export function tipLooks() {
+  const [cx, cy] = [box(items[0].node).left + 5, box(items[0].node).top + 5];
+  hover(items[0].node, cx, cy);
+  const tip = box($("tip"));
+  const reach = 32;
+  const tipped = !$("tip").hidden && $("tip").textContent === ui().nodeTip
+    && getComputedStyle($("tip")).backgroundColor === "rgb(215, 179, 148)"
+    && tip.left >= 3.5 && tip.right <= innerWidth - 3.5
+    && (Math.abs(tip.left - cx - reach) < 1 || Math.abs(tip.right - innerWidth + 4) < 1)
+    && (Math.abs(tip.top - cy - reach) < 1 || Math.abs(tip.bottom - cy + 8) < 1);
+  hover($("count"), 0, 0);
+  $("optionsButton").click();
+  hover($("include"), box($("include")).left + 5, box($("include")).top + 5);
+  const hinted = !$("tip").hidden && $("tip").textContent === ui().includeTip && $("options").contains($("tip"))
+    && box($("includeHint")).width <= 1 && $("include").getAttribute("aria-describedby") === "includeHint";
+  $("tooltips").click();
+  $("optionsOk").click();
+  hover(items[0].node, cx, cy);
+  const silent = $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "false"
+    && (recall("tooltips") === "false" || attempt(() => localStorage) === null);
+  $("optionsButton").click();
+  keyDown($("tooltips"), " ");
+  $("optionsOk").click();
+  return { tipped, hinted, silent: silent && $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "true" };
 }
 
 export const shownKeys = () => [...new Set(items.filter((item) => !item.group).map((item) => item.key))];

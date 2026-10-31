@@ -1,0 +1,31 @@
+@ ./
+The page and its data: index.html, which the browser opens, and data.json, which the scripts load at start-up. The other
+  files there, such as README.md, are not part of the code.
+
+@ css/
+The two style sheets index.html links: base.css, for Simple UI and the layout either way, and pictures.css, for every
+  rule with a picture or a font, which Simple UI turns off.
+
+@ js/
+Where the scripts start: script.js, which index.html loads as a module. Every other script is in one of the four folders
+  below it: js/model/, js/view/ and js/controller/ for the page, and js/tests/ for the tests.
+
+@ js/model/
+The data and the tree's rules: datahandler.js looks after the data and the languages, and model.js holds the tree and
+  its rules.
+
+@ js/view/
+What the page shows: stringbuilder.js writes its text, pictures.js holds what only the pictures need, scrollbars.js
+  draws the game's scroll bars, and report.js shows the report window.
+
+@ js/controller/
+What happens when the visitor clicks, touches or types: nodetree.js handles the tree, and optionshandler.js the Options
+  window.
+
+@ js/tests/
+The tests, loaded only when the address ends in `?test`. run_test.js runs them and helpers_test.js holds the tools they
+  share; the other five hold the tests, which TESTS.md describes one by one.
+
+@ locales/
+One file for each language but English, all laid out alike, so only de.json is described here.
+

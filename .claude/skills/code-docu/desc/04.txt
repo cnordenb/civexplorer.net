@@ -1,0 +1,203 @@
+@ js/tests/behaviour_test.js
+The tests of the tree: marking, Filters, the counts, opening and closing, and Find. Each test function names its checks
+  after TESTS.md, which says on which lines each test is found.
+- sameCivs: Lists the items of a line, from an item down while each has one item under it that is not a group, that have
+  the same civilisations as the item: those a mark on it passes down to (Req. 29, 30).
+- chipNames: Lists the names on the Filters buttons.
+- fullName: Returns "Full" and an item's name, as Filters names a fully marked building (Req. 24).
+- marking: Tests marking by click, X, the menu key and Space, the civilisation list and its count, and the first Filters
+  button (Tests 3 to 7; Req. 3, 4, 22).
+- branches: Tests buildings, groups and lines: what marking them marks and shows, their Filters buttons and names,
+  "Full" only with something under it and not in a group of lines, and the tick, cross and dash (Tests 8 to 14; Req. 14,
+  23 to 26, 30).
+- crowding: Tests that a full tree and the longest civilisation list never make the page scroll, crush a pane or
+  overlap, in whatever window the tests run (Test 15; Rule 12).
+- gestures: Tests that a long press with a finger marks must lack, and that a right-click clears it (Test 16; Req. 3).
+- lineTops: Tests that marking the top of a line passes the mark down only at the same count, must have or must lack,
+  that marking it again clears it, and that marking a line's last item marks the line before it with one filter (Tests
+  17, 18; Req. 29, 30).
+- parents: Tests that must have passes up but never to a building, which then shows a dash, and that an item can be must
+  lack while everything under it is must have (Tests 19, 20; Req. 30).
+- rivals: Tests an item that excludes another, such as the Xolotl Warrior and the Stable: must have on the one greys out
+  the other and everything in it, the one staying in sight and the other's arrow working; must have on any of those
+  greys out the one; what is greyed out cannot be marked; and must lack greys out nothing (Test 21).
+- standIns: Tests an item that replaces others, such as the Pasture and the Farm: it holds everything in their buildings
+  but their unique items and groups, as the same items, so marking one marks both with one filter; must have on one
+  greys out and closes every alternative until it is cleared (Test 22; Req. 37).
+- beyond: With Include ticked, finds an item that some civilisations have without the unit or technology above it,
+  checks that must have on it and must lack on the one above list just those civilisations, and that unticking Include
+  lifts it up with its mark kept. Part of Test 24.
+- lines: Tests that marking a unit or technology opens it to its first fork or its end, and that below the top of a line
+  a mark passes down only while the civilisations stay the same (Tests 23, 24; Req. 28 to 31).
+- counts: Tests the numbers on the items: closed and open, on lines, and with filters (Tests 25 to 28; Req. 3).
+- tree: Tests Expand all, Collapse all and the arrows, and that opening a branch also opens its only children (Tests 29,
+  30; Req. 18, 19).
+- finding: Tests that Find highlights its matches in yellow, opens the branches down to them and counts them beside the
+  box, and says when nothing matches (Tests 31, 32; Req. 20, 21).
+- behaviourTests: Runs the tests of the tree, in the order TESTS.md lists them.
+
+@ js/tests/interface_test.js
+The tests of the language menu, the languages, the Options window, the keyboard and the report window, and the runs of
+  the accessibility audit.
+- englishFirst: Tells whether a first visit, with no saved choice and a German browser, starts in the language the
+  address names, or else in English (Req. 10). Puts the saved choice back afterwards.
+- menuTests: Tests the language menu: in Options, every language in its own language, closing on Escape, a click or
+  leaving it, a window that never resizes, the language changed on OK and kept in the address, English first, and marks
+  kept (Tests 33 to 37; Req. 8 to 12).
+- languageTests: Tests one language: the page's text, the tree's names, no placeholders, the footer's links and
+  Microsoft's notice, and a translated, sorted civilisation list (Tests 38 to 42; Req. 4, 5, 11).
+- optionTests: Tests the two Include boxes: what the tree leaves out by default, ticking and unticking with marks kept,
+  the choices remembered, and Options opening and closing properly (Tests 43 to 46; Req. 7, 13 to 16).
+- menuAudit: Runs the accessibility audit with a mark and the language menu open. This is the audit's first run, so its
+  checks are listed from here.
+- menuKeys: Tests the language menu's keys: Down opens it at the current language, and Down and End move through it
+  (Test 79; WCAG 2.1.1).
+- languageAudits: Runs the accessibility audit in one language: as loaded, with filters, and with everything open. The
+  focus checks run only in the first language.
+- spacingTests: Tests that wider text spacing, as WCAG 1.4.12 describes it, makes nothing stick out sideways (Test 80).
+- optionKeys: Tests that Space ticks and unticks Include and Include Regionals, and that OK then shows or leaves out
+  those items, keeping marks (Test 81; WCAG 2.1.1).
+- optionAudits: Runs the audit with the Options window open, and with everything included and open.
+- filterFocus: Tests that a Filters button clears its item and hands focus to the next button, and that clearing the
+  last one hands it to the civilisations' heading, with every civilisation listed (Tests 57, 58).
+- keyboard: Tests the arrow keys in the tree: Right opens a line all the way down, or opens a branch and goes into it,
+  Left goes back out and closes it, Down and Up step between items, End and Home go to the last and the first, and Down
+  on an arrow goes to the next arrow (Tests 59 to 62; WCAG 2.1.1).
+- findKey: Tests that Enter in Find goes to the first match (Test 63).
+- keyboardTests: Runs the keyboard tests: filterFocus(), keyboard() and findKey().
+- accessibilityTests: Runs this file's audits and accessibility tests in the order TESTS.md lists them: the menu, the
+  first language, spacing and keys, then every other language and the Options window.
+- reportTests: Tests the report window with 200 lines in it: its title, its count and Close stay in view and only its
+  list scrolls, and Close has focus, sits on the right and is the plain button, with or without Simple UI (Test 99).
+- uniqueFilterTests: Tests that a unique item marked must have gets its own Filters button, even in a full group, which
+  clears only it, while its line's or group's button leaves it marked, and that a wholly unique line has one button
+  (Test 54; Req. 36).
+- headingTests: Tests a group inside a building, such as the Castle's Unique Units: it has no checkbox, a click on its
+  name or arrow opens and closes it, a right-click marks nothing, and Down from the row above reaches its arrow (Test
+  55).
+
+@ js/tests/pictures_test.js
+The tests of the pictures, run with Simple UI off. There the page need not meet WCAG (Rule 22), nor the UI particulars
+  of REQUIREMENTS.md (Req. 0).
+- at: Tells whether a CSS `url()` points at a given picture in `assets/images/`.
+- picture: Tells whether an element's background is a given picture.
+- cut: Tells whether a button is not drawn as the whole button picture: the wrong file or sheet size, drawn parts left
+  on, or not 290 by 50 in proportion.
+- shaded: Tells whether a button or anything in it has a text shadow, which no button may have.
+- checked: Tells whether an Options box with an id is ticked, as it tells screen readers.
+- cornered: Lists what is wrong with where the Options window's buttons are: the panel not between the title and Cancel,
+  or OK not as far from the parchment's right edge as from its bottom edge.
+- offParchment: Lists the header, panes and footer that stick out of the parchment, worked out from the five numbers
+  `--ratio`, `--left`, `--top`, `--right` and `--bottom` in pictures.css and the window's size.
+- strayCursors: Lists the elements without the right cursor: the pointing hand over links and the sword elsewhere, `_x1`
+  at their own size or `_x2` at two thirds, at 1.5x (Test 47).
+- wrongSizes: Lists the pictures that do not suit the parchment chosen, trying every parchment in turn: `_sd` and `_x1`
+  pictures with fhd and qhd, `_4k` and `_x2` ones with uhd and ultrawide.
+- pictureLooks: Tests the pictures as a whole: the choice for each screen, background, cursors, the Options button and
+  its ring, the tab icon, the parchment and the footer (Test 47).
+- wrongBoxes: Lists the checkboxes without the sheet's picture for their state, empty, ticked or crossed, or with a
+  drawn mark other than the dash, the radio buttons without theirs, and any state with no box (Test 48).
+- cellIn: Works out where a picture's cell is in its atlas: the files sorted by name, row by row, in a square grid.
+- share: Turns a column or row into the percentage CSS needs to show that cell of an atlas.
+- offCell: Tells whether an icon does not show its cell of its atlas: the wrong file, repeat, box, size or position.
+  Notes the atlas for misfit().
+- misfit: Lists the atlases whose size does not fit their grid of 48 px cells, which would shift every icon.
+- unpictured: With every item included, lists the tree rows without the right icon: its cell of its atlas, 44 px,
+  between box and name, and outlined as `colour_key.csv` says (Test 48).
+- findLooks: Tests the Find box with the pictures: its frame, search icon and clearing cross, its width of up to 325 px,
+  the message beside it, and that matches are marked (Test 49; Req. 21).
+- hover: Moves the mouse over an element, as a visitor would.
+- tipLooks: Tests the tooltip: over the tree at the cursor's corner, over Include with its description, which then shows
+  only there, and none when Tooltips is unticked (Test 49).
+- toolLooks: Lists what is wrong with the tree's buttons: not Clear and Expand all, or Collapse all while a branch is
+  open, not side by side as wide as the pane, not the whole button picture, text cut, moved, focus not handed over, or
+  different in another language (Test 50).
+- confirming: Lists what is wrong with the Options window's foot and its OK: Cancel and OK not side by side where they
+  belong, button pictures or shadows wrong, or changes taking effect before OK, or kept after Cancel or closing the
+  window (Test 51).
+- simpleSwitch: Ticks and unticks Simple UI, and lists what went wrong: a picture, tab icon or link left, the box moved,
+  the choice not remembered, or something not back (Test 52).
+- strayBars: Lists the lists whose scroll bar is wrong: one shown where nothing scrolls or with Simple UI, none where
+  the list scrolls, or one that barProblems() finds fault with.
+- ownBars: Lists the lists whose own browser scroll bar is not as wanted: hidden with the pictures and back with Simple
+  UI.
+- barLooks: Tests the pictures' scroll bars with every branch closed and open, scrolled to the end, in Options, with the
+  language list and with Simple UI, and that the down arrow and the wheel scroll (Test 53).
+- pictureTests: Runs the tests of the pictures with Simple UI off, then turns it on again (Tests 47 to 53; Rules 9, 18,
+  22; Req. 0, 32, 33).
+
+@ js/tests/audit_test.js
+The accessibility audit: checks the page as it stands against WCAG 2.2 AAA, wherever a test calls it. Its checks are
+  Tests 64 to 78.
+- rgba: Reads a CSS colour into its red, green, blue and alpha numbers.
+- blend: Blends a see-through colour over the colour below it, to get the colour actually seen.
+- backgroundOf: Works out the colour behind an element by blending its own and its ancestors' backgrounds. Contrast is
+  measured against this.
+- luminance: Computes a colour's relative luminance, as WCAG defines it.
+- contrast: Computes the contrast ratio of two colours, as WCAG defines it, from 1:1 to 21:1.
+- contrastOn: Computes the contrast of a colour, which may be see-through, over the colour behind it.
+- visibleCentre: Finds the middle of the visible part of an element's first line, clipped by every scrolling area around
+  it, to see what is drawn there.
+- focusChecks: Focuses every control in turn, and checks that it shows a thick outline with 3:1 contrast and that
+  nothing covers it (Test 78; WCAG 2.4.7, 2.4.12, 2.4.13).
+- structureChecks: Checks the page's title and languages, its landmarks and headings, and that ids are unique and ARIA
+  references resolve (Tests 64 to 68; WCAG 1.3.1, 2.4.2, 3.1.1, 3.1.2, 4.1.2).
+- controlChecks: Checks that boxes, branches and the language menu say their state, and that every control has a name
+  containing its visible text (Tests 69, 70; WCAG 2.5.3, 4.1.2).
+- colourChecks: Checks the contrast of all visible text, 7:1, or 4.5:1 when large, and of control borders, 3:1 (Tests
+  71, 72; WCAG 1.4.6, 1.4.11).
+- layoutChecks: Checks 44 by 44 targets, no page scrolling, nothing sticking out sideways, and unjustified text with 1.5
+  line spacing (Tests 73 to 76; WCAG 2.5.5, 1.4.10, 1.4.8; Rule 12).
+- mediaChecks: Checks that the page shows no media, tab icon or CSS picture, and runs no animations or transitions (Test
+  77; Rules 9, 10, 11, 22).
+- audit: Checks the page as it stands through the checks above, and the focus checks if asked, under a name that says
+  the state. Called in many states and languages.
+
+@ data.json
+All of the page's data, in English: the civilisations, the tree, who has each item, its icon and the page's texts.
+  useData() reads it at start-up, and the updater writes it through pack() and toJson(): short objects and lists on one
+  line, the rest indented by two spaces. The other languages' texts are in `locales/`, one file each, laid out like the
+  `overrides` and `text` here.
+An item is named by its English name throughout: the tree, `availability`, `pictures`, `extras` and `text.items` use the
+  same names as keys.
+- source: Where the data comes from: aoe2techtree.net and its data address, `helpOffset` (taken from an item's help
+  string number to find its text, in localName()), the month of the last update, and Microsoft's notice with the rules
+  and the project it links.
+- languages: Every language by its code, with its name in itself, its language tag, and whether its words are spaced and
+  its hyphens at line ends are merged. English comes first.
+- civs: The civilisations, in the order whose bits the sets use. A set is a number with one bit per civilisation
+  (bit()).
+- icons: Where the pictures are: the tab icon, the file names of civilisations that differ from their names, and the
+  folder of the tree's icons.
+- icons.groups: The icon of each top-level group, by kind and picture.
+- icons.atlas: For each kind, the pictures in its atlas, which cellIn() places by file name.
+- tree: The tree as nested objects: `{"group": …}` for a top-level group or a group in a building, `{"item": …}` for an
+  item, with `kids` for what is under it and the flags `own`, `lines`, `excludes` and `replaces` where they belong.
+  rebuild() reads it.
+- availability: Who has each item: `"all"`, `{"has": […]}` or `{"lacks": […]}`, whichever is shortest
+  (availabilityOf()). setOf() turns it into a set.
+- pictures: Each item's icon: its kind, its picture in that kind's atlas, and its reach, common, regional or unique,
+  which Include Regionals and the outlines use.
+- ignore: Names on aoe2techtree.net that the updater does not report as new items.
+- extras: Items aoe2techtree.net does not show in its tree, with their kind, picture, reach, name number and
+  civilisations. fromExtra() turns each into availability and a picture.
+- overrides: Names to use instead of the game's own, where it gets one wrong.
+- tools: The texts of the tests' report and of the updater, in English only, with `{}` placeholders that fill() fills
+  in.
+- text: The page's texts in English, in four parts.
+- text.ui: The page's own texts, by the name `data-text` gives in index.html, counted ones as `{"one": …, "other": …}`
+  for plural().
+- text.groups: The name of each group.
+- text.civs: The name of each civilisation.
+- text.items: The name of each item.
+
+@ locales/de.json
+The German texts. Every other language has a file like it in `locales/`, which the page loads when that language is
+  chosen (localeFile()) and the updater writes. It holds the two keys of data.json that differ by language, with the
+  same keys inside.
+- overrides: German names to use instead of the game's own.
+- text: The page's texts in German, in the same four parts as data.json's `text`.
+- text.ui: The page's own texts.
+- text.groups: The name of each group.
+- text.civs: The name of each civilisation.
+- text.items: The name of each item.

@@ -17,11 +17,15 @@ jobs:
         run: |
           extra="$(git ls-files | grep -vxE \
             -e 'index\.html|data\.json|README\.md|LICENSE|\.assetsignore|\.gitignore|\.github/.*|\.github/.*' \
-            -e '\.well-known/discord|css/[a-z]+\.css|js/(model/|view/|controller/)?[a-z]+\.js|js/tests/[a-z]+_test\.js' \
+            -e '\.well-known/discord|css/[a-z]+\.css|js/(model/|view/|controller/)?[a-z]+\.js' \
+            -e 'js/tests/[a-z]+_test\.js' \
             -e 'locales/[a-z]+\.json' \
             -e 'documentation/[A-Za-z_]+\.(md|pdf)|documentation/DEVLOG/DEVLOG[1-9][0-9]*\.md' \
             -e 'assets/images/([a-z0-9]+/)*[a-z0-9_]+\.(webp|png|ico)|assets/images/icons/nodes/colour_key\.csv' \
-            -e 'assets/fonts/[A-Za-z0-9-]+\.ttf' || true)"
+            -e 'assets/fonts/[A-Za-z0-9-]+\.ttf' \
+            -e '\.claude/skills/package\.json|\.claude/skills/[a-z-]+/[A-Za-z]+\.(md|json)' \
+            -e '\.claude/skills/[a-z-]+/(desc|references|scripts)/[a-z0-9]+\.[a-z]+' \
+            || true)"
           if [ -n "$extra" ]; then
             echo "These files are not allowed by the project's rules:"
             echo "$extra"

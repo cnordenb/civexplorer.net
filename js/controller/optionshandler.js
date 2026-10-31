@@ -12,7 +12,7 @@ export const options = () => [...$("languageList").querySelectorAll("[data-langu
 export function setMenu(open, focus) {
   $("languageButton").setAttribute("aria-expanded", String(open));
   $("languageList").hidden = !open;
-  $("settings").hidden = open;
+  $("settings").hidden = open && simple();
   focus?.focus();
 }
 
@@ -130,7 +130,10 @@ export function setSimple(on) {
   const coming = !on && simple();
   remember("simple", String(on));
   tick("simple", on);
-  if (!document.documentElement.dataset.assets) Object.assign(document.documentElement.dataset, screenPictures());
+  if (!document.documentElement.dataset.assets) {
+    Object.assign(document.documentElement.dataset, screenPictures());
+    document.documentElement.style.setProperty("--pixel", `${1 / devicePixelRatio}px`);
+  }
   if (on || coming) showLoading(coming);
   document.documentElement.classList.toggle("pictures", !on);
   if (coming) pictureFiles(rooted).forEach(copy);

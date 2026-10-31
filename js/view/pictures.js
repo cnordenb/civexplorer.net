@@ -25,26 +25,44 @@ export function setTips(on) {
   tick("tooltips", on);
 }
 
+const branchTip = (target) => {
+  const twisty = target.closest?.(".twisty, .node:not([role])")?.closest(".row").querySelector(".twisty");
+  if (!twisty || twisty.ariaDisabled === "true") return "";
+  return words.ui[twisty.getAttribute("aria-expanded") === "true" ? "collapseTip" : "expandTip"];
+};
+
 const tipFor = (target) => {
   if (itemAt(target)) return words.ui.nodeTip;
-  if (target.closest?.("#include")) return words.ui.includeHint;
-  return target.closest?.(".civs a")?.href ?? "";
+  const tipped = target.closest?.("[data-tip]");
+  if (tipped) return words.ui[tipped.dataset.tip];
+  return branchTip(target) || (target.closest?.(".civs a, .foot a")?.href ?? "");
 };
 
 function wireTip() {
   const tip = $("tip");
-  document.addEventListener("pointermove", (e) => {
-    const host = e.target.closest?.("dialog[open]") ?? document.body;
-    if (tip.parentElement !== host) host.append(tip);
-    tip.textContent = simple() || !tips || e.pointerType !== "mouse" ? "" : tipFor(e.target);
+  let mouse = null;
+
+  const show = (target, { clientX: x, clientY: y, pointerType }) => {
+    tip.textContent = simple() || !tips || pointerType !== "mouse" ? "" : tipFor(target);
     tip.hidden = !tip.textContent;
     if (tip.hidden) return;
+    const host = target.closest?.("dialog[open]") ?? document.body;
+    if (tip.parentElement !== host) host.append(tip);
     const reach = Number(getComputedStyle(tip).getPropertyValue("--reach"));
-    const below = e.clientY + reach + tip.offsetHeight <= innerHeight - 4;
-    tip.style.setProperty("--x", Math.max(4, Math.min(e.clientX + reach, innerWidth - tip.offsetWidth - 4)));
-    tip.style.setProperty("--y", below ? e.clientY + reach : e.clientY - tip.offsetHeight - 8);
+    const below = y + reach + tip.offsetHeight <= innerHeight - 4;
+    tip.style.setProperty("--x", Math.max(4, Math.min(x + reach, innerWidth - tip.offsetWidth - 4)));
+    tip.style.setProperty("--y", below ? y + reach : y - tip.offsetHeight - 8);
+  };
+
+  document.addEventListener("pointermove", (e) => {
+    mouse = e;
+    show(e.target, e);
+  });
+  document.addEventListener("click", () => {
+    if (mouse) show(document.elementFromPoint(mouse.clientX, mouse.clientY) ?? document.body, mouse);
   });
   document.documentElement.addEventListener("pointerleave", () => {
+    mouse = null;
     tip.hidden = true;
   });
 }

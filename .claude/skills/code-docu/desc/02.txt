@@ -1,0 +1,196 @@
+@ js/view/stringbuilder.js
+The page's text: the fixed texts, the texts of the chosen language, the tree's names, the list of civilisations and
+  Filters, the loading screen, and the small helpers every script that touches the page uses.
+- $: Short for `document.getElementById`, used wherever the page is touched.
+- clone: Copies the element inside a template in index.html. Repeated markup lives in index.html (Rule 2); the code only
+  fills it in.
+- simple: Tells whether Simple UI is on, from the `pictures` class on the page, which is what shows the pictures. One
+  source of truth, readable from every script.
+- place: Tells an icon which cell of its atlas to show, as four numbers for CSS: its column and row, and the atlas's
+  columns and rows. Scripts give CSS only numbers.
+- compose: Writes a text with placeholders into an element, putting elements such as the source link where their
+  placeholder is. Lets a translated sentence contain a link.
+- writeFixed: Writes the texts that never change: the report window's English words, the source's, Microsoft's and the
+  project's links, and Microsoft's notice around its links. Runs once at the start.
+- writeTexts: Writes every text of the chosen language: the page's `lang`, each element marked `data-text`, and the
+  footer's source and date (Req. 5, 11).
+- label: Writes every tree item's name in the current language, and notes the names used more than once.
+- civIcon: Makes a civilisation's icon from its template, showing its cell of the civilisations' atlas. Only used
+  without Simple UI.
+- listCivs: Lists the civilisations that fit the marks, translated and sorted (Req. 4), with icons and links to
+  aoe2techtree.net without Simple UI; writes the count, and the hint when the list is empty.
+- listFilters: Makes one Filters button per entry (Req. 22, 23), with its mark and name, and a label telling screen
+  readers what a click clears. Hides Filters when nothing is marked.
+- showLoadError: Shows, or hides, the message that the data or a language could not be loaded.
+- spin: Gives the loading picture its address, kept in `data-src` so that it loads only when the loading screen shows
+  it.
+- showLoading: Shows or hides the loading screen, with its turning picture, made once, and makes the page behind it
+  unreachable while it shows.
+
+@ js/view/pictures.js
+What only the pictures need: Civ view, list or tiles, and the tooltip. It also starts the scroll bars.
+- showView: Marks the chosen view among the Civ view radio buttons.
+- setView: Shows the civilisations as a list or as tiles, remembers the choice and marks it among the radio buttons.
+  Tiles are pictures, so CSS shows them only without Simple UI.
+- setTips: Switches the tooltips on or off, remembers the choice, and ticks the Tooltips box.
+- tipFor: Returns the tooltip's text for what the mouse is over: the marking hint over the tree, Include's description
+  over Include, or a civilisation's address over its link.
+- wireTip: Moves the tooltip with the mouse, into the Options window while it is open, with its corner at the cursor
+  picture's corner and inside the window. It shows only for a mouse, without Simple UI and with Tooltips on.
+- startPictures: Restores Civ view and Tooltips from the saved choices, adds both to the Options window's choices,
+  starts the tooltip and the scroll bars. Runs once, after start().
+
+@ js/view/scrollbars.js
+The game's scroll bars, which replace the browser's without Simple UI. A bar is placed after each list that scrolls, so
+  it does not scroll with it, and CSS draws it from the numbers fit() gives it.
+- fit: Gives a list's bar its place along the list's right edge, its height and the knob's position, as numbers for CSS,
+  and hides the bar with Simple UI or when the list holds no more than it shows, and the knob when the bar is too short
+  for it.
+- fitAll: Fits every bar again. Runs when a list or what is in it changes size, when anything is added or taken out,
+  when Simple UI changes and when the window does.
+- watch: Has the size observer watch a list and everything directly in it, so a bar is fitted again when they change
+  size.
+- hold: Makes an arrow or the bar's body act on a press, and again every 50 milliseconds after 400 while held, keeping
+  hold of the pointer so the press stays while it leaves.
+- page: Scrolls a list by a page, less 40 pixels, towards a press above or below the knob, and not at all once the knob
+  reaches the pointer.
+- drag: Lets the knob be dragged: the list scrolls as far as the knob moves, scaled from the body's room to the list's.
+- wire: Connects a bar: the arrows scroll 40 pixels, the body pages, the knob drags and the wheel over the bar scrolls
+  the list; the list's scrolling fits the bar again.
+- startBars: Puts a bar from its template after every list that scrolls, connects it, and fits the bars again whenever
+  anything about them changes. Runs once, from startPictures().
+
+@ js/view/report.js
+The report window of the updater and the tests.
+- openReport: Opens the report window, used by the tests and the updater, with a title and a status line, and empties
+  it.
+- report: Adds a line to the report window.
+- runUpdate: Runs the updater: shows its progress, lists what changed, and offers each changed file for download. Opened
+  with `?update`; it changes nothing by itself.
+
+@ js/controller/nodetree.js
+The tree on the left: drawing its rows, opening and closing them, their counts, marking with clicks, touch and keys,
+  Find, and the buttons above the tree.
+- isOpen: Tells whether an item's branch is open, read from its arrow's `aria-expanded`, which is the one place this is
+  kept.
+- shown: Tells whether an item's row can be seen, that is, whether every branch above it is open.
+- behind: Tells whether an item lies inside a closed greyed-out item, where Find does not look.
+- heading: Tells whether a group is only a heading inside an item, which has no box and cannot be marked.
+- focusOf: The part of a row that takes focus: a heading's arrow, or any other row's name.
+- itemAt: Returns the tree item an element belongs to, but not a heading, so one listener on the tree serves every row,
+  and the tooltip knows when it is over the tree.
+- dress: Gives a tree row its icon between its box and name, from its cell of its atlas, with its kind and reach for the
+  outline, or takes it away with Simple UI on (Rules 9, 22).
+- build: Makes a row for each item from the template, with its arrow, and ids that tie the arrow and the list to the
+  name for screen readers. A heading loses its box. Calls itself for the items below.
+- endPress: Cancels a long press in progress and its highlight, when the finger moves or lifts, or the tree is drawn
+  again, and notes when a touch ended.
+- plant: Draws the tree from the model again, keeping open branches open, and dresses each row. Runs at the start and
+  through replant().
+- count: Writes an item's count of civilisations that fit the marks: its own number, or "own–all" when it is closed with
+  items under it, and a spoken version for screen readers.
+- setOpen: Opens or closes an item's branch, and rewrites its count, since a closed item shows two numbers.
+- expand: Opens an item and each only child below it, so opening Militia shows its whole line in one step, unless the
+  item is greyed out and closed. Used by the arrows and the Right key.
+- paint: Updates every box: its state for the eye, `aria-checked` for screen readers, the hidden "must lack" words, the
+  bold of a row's own mark, and greyed-out rows and arrows.
+- update: Redraws all that depends on the marks: closes greyed-out items, then the boxes, the civilisation list and its
+  count, every item's count and Filters. Runs after every change.
+- toggle: Handles a mark from a click, a key, a right-click or a long press, unless the item is greyed out: calls
+  mark(), opens the way to every row it reached (Req. 28, 31), and redraws.
+- reveal: Scrolls the tree's own list just enough to show a row, and nothing around it, so the Find box being typed in
+  never moves (Rule 18).
+- find: Runs Find: highlights the matching items, announces how many there are, opens the branches down to them and
+  shows the first (Req. 20, 21).
+- replant: Builds the tree again and redraws it, its names and its counts, and runs Find again if it holds text. Used
+  when an Include box changes.
+- onKey: Handles keys in the tree: Space marks must have and X must lack (Req. 3); Up, Down, Home and End move; Right
+  and Left open, enter, leave and close branches (WCAG 2.1.1).
+- onPress: Starts a right-click, or a touch that becomes a long press after half a second, which marks must lack (Req.
+  3). The row shows as pressed when the long press is ready.
+- onRelease: Ends a press: marks the item must lack if the press was ready and ends on the same item, and swallows the
+  click that follows.
+- onMenu: Stops the browser's own menu over the tree, and marks must lack on the menu key. Right-clicks and long presses
+  are left to onPress() and onRelease().
+- onClick: Opens or closes a branch from its arrow, or a heading from its name, or marks an item must have (Req. 3),
+  unless the click ends a long press.
+- onChip: Clears the marks behind a Filters button, and moves focus to the next button, or to the heading after the last
+  one (WCAG 2.4.3).
+- wireTools: Connects Expand all and Collapse all, which hand focus to each other without Simple UI, Clear (Req. 17 to
+  19), Find with its clearing cross and Enter, and the Filters buttons. Runs once at the start.
+- startTree: Draws the tree and connects it: keys, presses, moves that cancel a long press, the menu and clicks, then
+  the tools around it. Runs once at the start.
+
+@ js/controller/optionshandler.js
+The Options window and the choices in it: the language menu, the two Include boxes and Simple UI, with the screen's
+  pictures, the loading screen and the tab icon. It also starts the page with the visitor's saved choices.
+- options: Lists the language menu's buttons. Used by the menu's keys and by the tests.
+- setMenu: Opens or closes the language menu, hiding the settings while it is open so the window keeps its size (Rule
+  18), and moves focus if asked.
+- buildLanguages: Makes one button per language, named and tagged in its own language, so screen readers say each name
+  right (WCAG 3.1.2). Runs once at the start.
+- showLanguage: Shows a language as chosen in the window: its name on the menu's button and its mark in the list. OK
+  makes it the page's language.
+- setLanguage: Shows the page in a language: its texts, the menu's name and mark, the tree's names, then redraws, and
+  runs Find again if it holds text. Runs at the start and when a language is chosen.
+- tick: Shows an Options box as ticked or not, for the eye and for screen readers.
+- setInclude: Switches Include Unique and Universal (Req. 13 to 15): saves the choice, ticks the box and builds the tree
+  again, keeping marks.
+- setRegional: Switches Include Regionals: saves the choice, ticks the box and builds the tree again, keeping marks.
+- showIcon: Gives the tab its icon from data.json without Simple UI, and the empty icon `data:,` with it, so Simple UI
+  uses no image at all (Req. 33).
+- savedSimple: Reads the saved Simple UI choice: off unless it was saved as on, so a first visit shows the pictures.
+- screenPictures: Works out the pictures for the screen from its size in device pixels: the parchment (`fhd`, `qhd`,
+  `uhd` or `ultrawide`, and `fhd` on a phone) and the size of every other picture, `sd` or `4k`.
+- rulesIn: Lists every rule of a style sheet, with the rules inside media queries.
+- linksIn: Lists the picture and font addresses in a rule's text, made whole from the style sheet's own address.
+- filesOf: Lists the addresses in a style sheet's rules whose selectors pass a test.
+- rooted: Tells whether a selector already holds for `<html>` or `<body>`, as for the parchment and the cursors, whose
+  pictures show at once.
+- fits: Tells whether a picture is the one for the screen: the parchment of `data-background`, and the size of
+  `data-assets`. Pictures without a size always fit.
+- pictureFiles: Lists the pictures and fonts in the style sheets that the screen uses, so the loading screen can wait
+  for them all.
+- copy: Loads a picture once into a kept image, so that the browser has it before the page shows it.
+- onPage: The addresses of the images already in the page, but for the loading screen's own.
+- done: Waits for a kept image to be decoded, or to fail, so that waiting never stops.
+- ready: Tells whether every picture and font has loaded already.
+- finishLoading: Hides the loading screen once every picture and font has loaded, at once if they have already. Without
+  Simple UI only; a later call takes over from an earlier one.
+- setSimple: Switches Simple UI (Req. 32, 33): saves the choice, ticks the box, picks the screen's pictures the first
+  time, shows the loading screen when leaving Simple UI, adds or removes the `pictures` class, sets the tab icon, and
+  dresses the tree's rows and the list again.
+- picked: The language marked in the window's list, which OK makes the page's language.
+- choices: Every setting of the Options window as an entry: how to read its value now, set it, and for the language and
+  Civ view read and show what the window shows. startPictures() adds Civ view and Tooltips. Cancel and OK go through it.
+- checked: Tells whether an Options box is ticked.
+- shownOf: What the window shows for a setting: its own reading, or its box.
+- toggle: Ticks or unticks an Options box in the window only; OK applies it.
+- apply: Applies every setting whose window value differs from the page's, when OK is pressed.
+- discard: Shows the page's values again in the window, dropping what was changed, each time the window opens.
+- wireOptions: Connects the cogwheel button, the Options window, OK and its boxes, by click and by Space. Runs once at
+  the start.
+- choose: Chooses a language: loads its file if needed, shows it, saves the choice, and puts it in the address
+  (`?lng=`), so a shared link keeps it. Shows the load error if the file cannot be loaded.
+- onMenuKey: Handles the language menu's keys: Down and Up open it at the current language and move through it, Home and
+  End jump, and Escape closes it and returns focus (WCAG 2.1.1).
+- onScrollbar: Tells whether a click landed on the language list's own scroll bar, which Chrome reports as a click, so
+  that scrolling the list does not close it.
+- wireLanguages: Connects the language menu: its button, a click on a language or anywhere else in the list (Req. 11,
+  12), its keys, and closing when focus or a click goes elsewhere. Runs once at the start.
+- start: Starts the page: restores the Include choices, draws the tree, builds the language menu, writes the fixed texts
+  and the tab icon, connects every control, shows the chosen language, and reveals the page.
+
+@ js/tests/run_test.js
+Runs the tests and shows the report. Loaded only when the address ends in `?test`.
+- merge: Combines the results into one line per test, failed if any of its checks failed, with the first details and the
+  window's size. A test may check in several states and languages.
+- reportLine: Writes a test's report line, such as "Test 15 failed: ...", from its number, name and details.
+- loadFailed: Marks the tests as failed when the page could not load, so CI never waits for a result that cannot come.
+- prepare: Notes the visitor's language, options and saved choices, then sets the tests' starting point: Include
+  unticked, Include Regionals ticked, Simple UI and Tooltips on.
+- restore: Puts back the visitor's language, options, view, address and saved choices after the tests.
+- rounds: Runs every test in three rounds, functional, accessibility and maintainability, in the order TESTS.md lists
+  them, picking sample items afresh where the tree was rebuilt.
+- runTests: Runs the tests, numbers them in the order they first ran, checks the 100-test limit (Rule 17), marks the
+  page passed or failed for CI, and shows the report, failures first.

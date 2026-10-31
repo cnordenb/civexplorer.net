@@ -1,13 +1,13 @@
 import { data, size, attempt, recall, nameOf, civFile, language } from "../model/datahandler.js";
-import { items, include } from "../model/model.js";
+import { items } from "../model/model.js";
 import { $, simple } from "../view/stringbuilder.js";
 import { bars, LINE } from "../view/scrollbars.js";
 import { setOpen } from "../controller/nodetree.js";
 import { options, setInclude, setSimple, setMenu } from "../controller/optionshandler.js";
 import {
-  root, check, expect, loaded, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges,
+  root, check, expect, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges,
   spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, tabIcons, drawn, ui, box, fixtures, codes,
-  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, painted, barProblems,
+  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, painted, barProblems, tipGaps, tipLooks,
 } from "./helpers_test.js";
 
 const rows = { has: 50, lacks: 100 };
@@ -20,30 +20,6 @@ const cut = (el) => !picture(getComputedStyle(el), `ui/buttons/button_${grade()}
   || getComputedStyle(el).backgroundSize !== "100% 300%"
   || styles(el).slice(1, 3).some((style) => style.display !== "none")
   || Math.abs(box(el).width * 50 / 290 - box(el).height) > 1;
-
-const shaded = (el) => [el, ...el.querySelectorAll("*")].some((part) => getComputedStyle(part).textShadow !== "none");
-
-const checked = (id) => $(id).getAttribute("aria-checked") === "true";
-
-async function cornered(cancel, ok) {
-  const [look, panel] = [getComputedStyle($("options"), "::backdrop"), getComputedStyle($("options"), "::before")];
-  if (look.backgroundImage === "none") return [];
-  const sheet = new Image();
-  sheet.src = /url\("(.+)"\)/.exec(look.backgroundImage)[1];
-  await loaded([sheet]);
-  const width = parseFloat(look.backgroundSize);
-  const height = width * sheet.naturalHeight / sheet.naturalWidth;
-  const [, sign, shift] = /([+-]) ([\d.]+)px/.exec(look.backgroundPositionY) ?? [];
-  const bottom = (innerHeight + height) / 2 + Number(sign + shift);
-  const [across, down] = [(innerWidth + width) / 2 - ok.right, bottom - ok.bottom];
-  const top = box($("languageButton")).top + parseFloat(panel.marginTop);
-  const end = box($("settings")).bottom - parseFloat(panel.marginBottom);
-  return [
-    ...need(box($("optionsTitle")).bottom <= top && end <= cancel.top, "the panel is not between the title and Cancel"),
-    ...need(across > 0 && Math.abs(across - down) < 0.5,
-      `OK is ${Math.round(across)} from the parchment's right edge and ${Math.round(down)} from its bottom edge`),
-  ];
-}
 
 function offParchment(style) {
   const [left, top, right, bottom] = ["--left", "--top", "--right", "--bottom"]
@@ -202,36 +178,6 @@ function findLooks() {
   return { empty, typed, cleared };
 }
 
-const hover = (el, x, y) => el.dispatchEvent(new PointerEvent("pointermove", {
-  bubbles: true, pointerType: "mouse", clientX: x, clientY: y,
-}));
-
-function tipLooks() {
-  const [cx, cy] = [box(items[0].node).left + 5, box(items[0].node).top + 5];
-  hover(items[0].node, cx, cy);
-  const tip = box($("tip"));
-  const reach = 32;
-  const tipped = !$("tip").hidden && $("tip").textContent === ui().nodeTip
-    && getComputedStyle($("tip")).backgroundColor === "rgb(215, 179, 148)"
-    && tip.left >= 3.5 && tip.right <= innerWidth - 3.5
-    && (Math.abs(tip.left - cx - reach) < 1 || Math.abs(tip.right - innerWidth + 4) < 1)
-    && (Math.abs(tip.top - cy - reach) < 1 || Math.abs(tip.bottom - cy + 8) < 1);
-  hover($("count"), 0, 0);
-  $("optionsButton").click();
-  hover($("include"), box($("include")).left + 5, box($("include")).top + 5);
-  const hinted = !$("tip").hidden && $("tip").textContent === ui().includeHint && $("options").contains($("tip"))
-    && box($("includeHint")).width <= 1 && $("include").getAttribute("aria-describedby") === "includeHint";
-  $("tooltips").click();
-  $("optionsOk").click();
-  hover(items[0].node, cx, cy);
-  const silent = $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "false"
-    && (recall("tooltips") === "false" || attempt(() => localStorage) === null);
-  $("optionsButton").click();
-  keyDown($("tooltips"), " ");
-  $("optionsOk").click();
-  return { tipped, hinted, silent: silent && $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "true" };
-}
-
 function toolLooks() {
   const head = $("clear").parentElement.parentElement;
   const left = box(head).left + parseFloat(getComputedStyle(head).paddingLeft);
@@ -276,50 +222,6 @@ function toolLooks() {
     problems.push(...wrong());
     $("collapseAll").click();
   }
-  return problems;
-}
-
-async function confirming() {
-  const [start, other] = [language, codes().find((code) => code !== language)];
-
-  const draft = () => {
-    if (!$("options").open) $("optionsButton").click();
-    $("include").click();
-    $("languageButton").click();
-    options().find((option) => option.dataset.language === other).click();
-    return checked("include") && $("languageName").textContent === data.languages[other].name;
-  };
-
-  const asBefore = () => !include && language === start && !checked("include")
-    && $("languageName").textContent === data.languages[start].name;
-
-  const reopen = () => {
-    $("optionsButton").click();
-    return asBefore();
-  };
-
-  $("optionsButton").click();
-  const buttons = [...$("optionsOk").parentElement.children].filter(rendered);
-  const [form, [cancel, ok]] = [box($("optionsOk").parentElement), buttons.map(box)];
-  const problems = [
-    ...need(same(buttons.map((el) => el.id), ["optionsCancel", "optionsOk"]), `${buttons.map(describe)} in the window`),
-    ...need(Math.abs(ok.right - form.right) < 1 && cancel.right <= ok.left && Math.abs(cancel.top - ok.top) < 0.5
-      && Math.abs(cancel.width - ok.width) < 0.5, "Cancel and OK are not side by side on the right"),
-    ...await cornered(cancel, ok),
-    ...buttons.filter(cut).map((el) => `${describe(el)} is not the whole button picture`),
-    ...[...document.querySelectorAll("button")].filter(shaded).map((el) => `${describe(el)} has a text shadow`),
-    ...need(draft() && !include && language === start, "changes took effect before OK"),
-  ];
-  $("optionsCancel").click();
-  problems.push(...need(reopen(), "Cancel did not throw the changes away"));
-  draft();
-  $("options").close();
-  problems.push(...need(reopen(), "closing the window without OK did not throw the changes away"));
-  draft();
-  $("optionsOk").click();
-  problems.push(...need(include && language === other && !$("options").open, "OK did not apply the changes and close"));
-  setInclude(false);
-  pick(start);
   return problems;
 }
 
@@ -394,6 +296,10 @@ async function barLooks() {
   problems.push(...await strayBars("in Options"));
   setMenu(true);
   problems.push(...await strayBars("with the language list open"));
+  const [menu, from, entry] = [$("languageList"), $("languageList").scrollTop, options()[0].offsetHeight];
+  menu.dispatchEvent(new WheelEvent("wheel", { bubbles: true, cancelable: true, deltaY: 100 }));
+  problems.push(...need(Math.abs(menu.scrollTop - Math.min(from + entry, menu.scrollHeight - menu.clientHeight)) < 1,
+    `the wheel over the language list scrolled it to ${menu.scrollTop}, not by one language at once`));
   reset();
   setSimple(true);
   problems.push(...ownBars("auto"), ...await strayBars("with Simple UI"));
@@ -414,26 +320,24 @@ export async function pictureTests() {
     + "crossed or chosen, every item and top-level group its icon between its box and name, outlined as "
     + "colour_key.csv says, and every civilisation its icon, each icon its cell of its atlas, which holds its folder's "
     + "pictures by file name, row by row", !boxes.length && !icons.length, [...boxes, ...icons].join(", "));
-  const looks = { ...findLooks(), ...tipLooks() };
+  const [looks, untipped] = [{ ...findLooks(), ...tipLooks() }, await tipGaps()];
   check("options: without Simple UI, the Find box shows a search icon or a cross that clears it, and a tooltip "
-    + "follows the mouse over the tree, and over Include with its description, unless Tooltips is unticked",
-    Object.values(looks).every(Boolean), Object.entries(looks).map(([name, ok]) => `${name} ${ok}`).join(", "));
+    + "follows the mouse over the tree and over every other control or link, with Include's description hidden, "
+    + "unless Tooltips is unticked", Object.values(looks).every(Boolean) && !untipped.length,
+    [...Object.entries(looks).map(([name, ok]) => `${name} ${ok}`), ...untipped].join(", "));
   reset();
   await document.fonts.ready;
   expect("options: without Simple UI, the tree's buttons are Clear and Expand all, which is Collapse all while a top "
     + "branch is open, side by side as wide as the pane, each the whole button picture, the same in every language",
     toolLooks());
   reset();
-  expect("options: without Simple UI, Options has Cancel and OK side by side below its panel, as far from the "
-    + "parchment's right edge as from its bottom edge, each the whole button picture, and no button's text has a "
-    + "shadow; changes wait for OK, and Cancel or closing the window throws them away", await confirming());
-  reset();
   expect("options: Simple UI takes away every image and civilisation link on OK, and unticking it gives them back on "
     + "OK, neither changing the page before OK nor moving its box", simpleSwitch());
   reset();
   expect("options: without Simple UI, a list that scrolls has the pictures' scroll bar along its right edge, its "
     + "arrows, body and knob equally wide and in their own proportions, the knob where the list is scrolled to; there "
-    + "is none where nothing scrolls or with Simple UI, its room is always kept, and its arrows and the wheel scroll",
+    + "is none where nothing scrolls or with Simple UI, its room is always kept, and its arrows and the wheel scroll; "
+    + "the language list's bar has the combo box's arrows, and the wheel scrolls the list a language at a time",
   await barLooks());
   reset();
   setSimple(true);

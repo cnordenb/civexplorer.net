@@ -54,16 +54,16 @@ html.pictures[data-assets="4k"] :is(.civs a, .foot a), html.pictures[data-assets
   font-family: "Civ Times"; font-weight: 700; font-display: swap;
   src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"), url("../assets/fonts/timesbd.ttf") format("truetype");
 }
-.pictures .tool:not(.icon, .report .tool) {
+.pictures .tool:not(.icon, .report .tool, .language .tool) {
   position: relative; border: 0; border-radius: 0; color: #f2d2b6; font-family: "Civ Georgia", Georgia, serif; font-weight: 700;
   background: url("../assets/images/ui/buttons/button_sd.webp") 0 0 / 100% 300% no-repeat;
 }
-.pictures .tool:not(.icon, .report .tool)::before, .pictures .tool:not(.icon, .report .tool)::after { content: ""; position: absolute; top: 0; bottom: 0; aspect-ratio: 12 / 50; background: inherit; background-size: auto 300%; }
-.pictures .tool:not(.icon, .report .tool)::before { left: 0; background-position-x: 0; }
-.pictures .tool:not(.icon, .report .tool)::after { right: 0; background-position-x: 100%; }
-.pictures .tool:not(.icon, .report .tool):hover { background-position: 0 50%; }
-.pictures .tool:not(.icon, .report .tool):active { background-position: 0 100%; }
-.pictures[data-assets="4k"] .tool:not(.icon, .report .tool) { background-image: url("../assets/images/ui/buttons/button_4k.webp"); }
+.pictures .tool:not(.icon, .report .tool, .language .tool)::before, .pictures .tool:not(.icon, .report .tool, .language .tool)::after { content: ""; position: absolute; top: 0; bottom: 0; aspect-ratio: 12 / 50; background: inherit; background-size: auto 300%; }
+.pictures .tool:not(.icon, .report .tool, .language .tool)::before { left: 0; background-position-x: 0; }
+.pictures .tool:not(.icon, .report .tool, .language .tool)::after { right: 0; background-position-x: 100%; }
+.pictures .tool:not(.icon, .report .tool, .language .tool):hover { background-position: 0 50%; }
+.pictures .tool:not(.icon, .report .tool, .language .tool):active { background-position: 0 100%; }
+.pictures[data-assets="4k"] .tool:not(.icon, .report .tool, .language .tool) { background-image: url("../assets/images/ui/buttons/button_4k.webp"); }
 
 .loading { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; max-width: none; margin: 0; padding: 16px; background: #595959; color: #fff; font: 700 1.25rem/1.5 "Civ Georgia", Georgia, serif; text-align: center; }
 .spinner { width: 96px; height: 96px; }
@@ -100,16 +100,49 @@ html.pictures[data-assets="4k"] :is(.civs a, .foot a), html.pictures[data-assets
   --wi: max(var(--wd) * 1.22556, (var(--hd) - var(--lid)) * 1.23719);
 }
 .pictures .options {
-  overflow: visible; border-color: transparent; border-radius: 0; background: none; color: #2a0f14; font-family: "Civ Georgia", Georgia, serif;
-  font-weight: 700;
+  --side: 60px;
+  overflow: visible; padding-inline: calc(var(--side) - 1px); border-color: transparent; border-radius: 0; background: none; color: #2a0f14;
+  font-family: "Civ Georgia", Georgia, serif; font-weight: 700;
 }
+.pictures[data-assets="4k"] .options { --side: calc(120 * var(--pixel, 1px)); }
 .pictures .options::before {
-  content: ""; grid-area: 1 / 1 / 5 / 3; margin: -17px; border: 1px solid transparent;
+  content: ""; grid-area: 1 / 1 / 5 / 3; margin: -17px calc(-1 * var(--side)); border: 1px solid transparent;
   border-image: url("../assets/images/ui/panels/nodes9slice.webp") 64 fill / 30px repeat;
 }
 .pictures .options h2 { grid-row: 1; }
 .pictures .option:hover { background: rgb(255 255 255 / 0.25); }
-.pictures .language-list { border-color: #391c1b; background: none; }
+.pictures .language-button {
+  position: relative; justify-self: end; width: 219px; max-width: 100%; min-width: 0; min-height: 0; aspect-ratio: 219 / 35; padding: 0; border: 0; border-radius: 0;
+  container-type: inline-size; color: #391c1b; font-family: "Civ Georgia", Georgia, serif; font-weight: 700;
+  background: url("../assets/images/ui/buttons/combobox_background.webp") 0 0 / 100% 100% no-repeat;
+}
+.pictures .language-button .caption { margin: 0 calc(100cqi * 35 / 219) 0 calc(100cqi * 10 / 219); font-size: min(1rem, 100cqi * 16 / 219); }
+.pictures .language-button .chevron {
+  position: absolute; top: 50%; right: 2px; width: 19px; height: 14px; border: 0; transform: none; translate: 0 -50%;
+  background: url("../assets/images/ui/buttons/combobox_arrow_atlas.webp") 0 100% / 300% 200% no-repeat;
+}
+.pictures[data-assets="4k"] .language-button .chevron {
+  right: calc(4 * var(--pixel, 1px)); width: calc(35 * var(--pixel, 1px)); height: calc(28 * var(--pixel, 1px));
+}
+.pictures .language-button[aria-expanded="true"] .chevron { background-position-y: 0; }
+.pictures .language-button:hover .chevron { background-position-x: 50%; }
+.pictures .language-button:active .chevron { background-position-x: 100%; }
+.pictures .language-list {
+  --edge: 1px; --entry: calc(1.25em + 8px);
+  z-index: 1; grid-area: 3 / 2; justify-self: end; align-self: start; width: 219px; max-width: 100%;
+  height: calc(7 * var(--entry) + 2 * var(--edge)); max-height: calc(100% + 8px); margin-top: -8px;
+  grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0; border: var(--edge) solid #201819; border-radius: 0; background: #d7b394;
+  scroll-snap-type: y mandatory;
+}
+.pictures[data-assets="4k"] .language-list { --edge: 2px; }
+.pictures .language-list + .bar { z-index: 2; }
+.pictures .language-option {
+  min-width: 0; height: var(--entry); min-height: 0; padding: 4px 10px; border: 0; border-radius: 0; background: none; box-shadow: none;
+  color: #391c1b; font-family: "Civ Georgia", Georgia, serif; font-weight: 700; scroll-snap-align: start;
+}
+.pictures .language-option[aria-current="true"] { color: #ab1c1b; }
+.pictures .language-option:hover { color: #399c9a; }
+.pictures .language-option:focus-visible { outline-color: #201819; }
 @media (height >= 588px) {
   .pictures .options { --drop: calc((var(--wd) + var(--lid) - var(--hd)) / 2 + var(--wi) * 0.00537); padding-block: calc(var(--hd) / 2 + var(--lid) + 36px - var(--wi) * 0.46166) calc(12rem * 50 / 290 + 32px - var(--drop)); }
   .pictures .options::before { grid-row: 2 / 4; }
@@ -199,8 +232,7 @@ html.pictures[data-assets="4k"] :is(.civs a, .foot a), html.pictures[data-assets
 .pictures[data-assets="4k"] { --knob: var(--bar); }
 .pictures :is(body, .pane) { position: relative; }
 .pictures :is(.scroll, .ticked, .language-list, .settings, .content) { scrollbar-width: none; }
-.pictures :is(.scroll, .settings) { padding-right: var(--bar); }
-.pictures .language-list { padding-right: calc(8px + var(--bar)); }
+.pictures :is(.scroll, .settings, .language-list) { padding-right: var(--bar); }
 .pictures .ticked { padding-right: calc(6px + var(--bar)); }
 @media (max-height: 499px), (max-width: 719px) and (max-height: 639px) { .pictures .content { padding-right: var(--bar); } }
 .pictures .bar {
@@ -222,3 +254,8 @@ html.pictures[data-assets="4k"] :is(.civs a, .foot a), html.pictures[data-assets
 }
 .pictures[data-assets="4k"] :is(.bar-up, .bar-down) { background-image: url("../assets/images/ui/buttons/scrollbarendings_x2.webp"); }
 .pictures[data-assets="4k"] .bar-knob { background-image: url("../assets/images/ui/buttons/scrollbarknob_x2.webp"); }
+.pictures .language-list + .bar :is(.bar-up, .bar-down) {
+  align-self: center; width: 19px; height: 14px; background-image: url("../assets/images/ui/buttons/combobox_arrow_atlas.webp");
+}
+.pictures[data-assets="4k"] .language-list + .bar :is(.bar-up, .bar-down) { width: calc(35 * var(--pixel, 1px)); height: calc(28 * var(--pixel, 1px)); }
+.pictures .language-list + .bar :is(.bar-up, .bar-down, .bar-knob) { background-position-x: 0; }
