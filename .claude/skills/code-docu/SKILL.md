@@ -101,7 +101,7 @@ Below, `REPO` is the repository's folder and `WORK` the work folder; run the com
    ```
 
    The line `uml: …` that `build.mjs` prints gives the UML page, the direction of the diagram and its text size in
-   points; at A4 it was 4.3 points on 2026-10-31.
+   points; at A4 it was 4.3 points on 2026-10-31, and 3.2 points on 2026-11-01, with 14 scripts in the diagram.
 
 5. **Install it.** Copy `$WORK/code_docu.pdf` over `documentation/code_docu.pdf`.
 

@@ -15,6 +15,11 @@ Small tools the test files share: recording results, finding and measuring eleme
   went wrong.
 - same: Tells whether two lists are equal, item by item. Used to compare lists of civilisations.
 - codes: Lists the language codes from data.json.
+- nodeOf: The row of an item's box and name, from the tree's view, which keeps the elements away from the items.
+- twistyOf: The arrow of an item's row, if it has one.
+- labelOf: The name in an item's row.
+- englishFirst: Tells whether a first visit, with no saved choice and a German browser, starts in the language the
+  address names, or else in English (Req. 10). Puts the saved choice back afterwards.
 - ui: Returns the page's texts in the current language.
 - box: Short for an element's `getBoundingClientRect()`: its place and size on the screen.
 - keys: Lists every item in the full tree.
@@ -35,9 +40,8 @@ Small tools the test files share: recording results, finding and measuring eleme
   fhd and qhd and the `_4k` and `_x2` ones with uhd and ultrawide.
 - files: Reads the addresses out of a CSS value.
 - urlsOf: Lists the picture addresses in an element's style: background, border image, list marker, content and cursor.
-- tabIcons: Lists the tab icons the page asks for, leaving out the empty icon `data:,`, which is no picture.
-- pictures: Lists every picture on the page: images, tab icons and everything CSS draws with a picture, the page's own
-  background included. Simple UI must leave it empty (Req. 33).
+- pictures: Lists every picture on the page: images and everything CSS draws with a picture, the page's own background
+  included. Simple UI must leave it empty (Req. 33).
 - picturesOn: Tells whether the main pictures show: those of the page, of its body and of the Options button.
 - rgb: Reads the numbers of a CSS colour.
 - yellow: Tells whether a colour is yellow: red and green high and close, blue clearly lower (Req. 20).
@@ -135,12 +139,16 @@ The maintainability and data tests: they read the page's own files as text and c
 - unspun: Takes the loading picture's spin out of the style sheets' text, the only animation allowed, before they are
   searched for others.
 - badImages: Tells whether any picture breaks the rules: media elements, images outside templates or with an address in
-  them, a tab icon in index.html, a picture in CSS outside a `.pictures` rule or outside `assets/images/`, or a font
+  them, a picture in CSS outside a `.pictures` rule or outside `assets/images/`, or a font
   outside `assets/fonts/` (Rules 9, 22).
+- mvcProblems: Lists what breaks model, view and controller: a model script importing a view or a controller, a view
+  importing a controller or saving a setting, a controller touching the page, a model.js that does not share
+  `subscribe` and `unsubscribe`, shares `notify` or holds texts, another script than page.js observing the model, and,
+  once the tests have run, an item holding a page element (Test 85).
 - sourceTests: The rules tests: no comments; no CSS or HTML in the scripts, which hand CSS only numbers; where the files
   are and what they import, the tests named `_test.js` and loading only when testing, and no two of the files with one
-  name (Rule 29); the size limits; which scripts touch the page or store data; images, fonts, sounds, animations and
-  dependencies; and no game data in the scripts.
+  name (Rule 29); the size limits; which scripts touch the page or store data, and model, view and controller kept
+  apart (mvcProblems()); images, fonts, sounds, animations and dependencies; and no game data in the scripts.
 - textTests: Checks that every language has all of the page's text, and names every item and civilisation.
 - tagTests: Checks that every language has a name and a valid language tag (WCAG 3.1.1).
 - alike: Tells whether two values are equal, by their JSON.

@@ -16,33 +16,33 @@ Every name of a folder, a file or a function links to its chapter, subchapter or
 @ index.html
 The page's structure, and all of its HTML (Rule 2). It holds no text of its own: the scripts fill in every word in the
   chosen language, and copy its templates instead of writing HTML.
-- [Head 1-21]: Sets the language, character set, viewport, light and dark colour schemes, title and description, and
+- [Head 1-20]: Sets the language, character set, viewport, light and dark colour schemes, title and description, and
   what link previews show: the `og:` tags give a title, a description, `assets/images/preview.jpg` and the page's
-  address. It links base.css, pictures.css and script.js, as a module. The tab icon starts as the empty `data:`, so no
-  picture loads before the scripts run (Req. 33).
-- [Loading screen 23]: The screen shown without Simple UI until every picture has loaded, with its text. showLoading()
+  address. It links base.css, pictures.css and script.js, as a module. It names no tab icon: browsers fetch
+  favicon.ico from the main folder by themselves.
+- [Loading screen 22]: The screen shown without Simple UI until every picture has loaded, with its text. showLoading()
   adds the turning picture from its template.
-- [Header 24-27]: Holds the title twice: the full sentence of Req. 2 for Simple UI, and "Civ Explorer" for the pictures
+- [Header 23-26]: Holds the title twice: the full sentence of Req. 2 for Simple UI, and "Civ Explorer" for the pictures
   (Req. 0). Then the cogwheel Options button (Req. 6), a text character with a hidden label. Hidden until the page
   starts.
-- [Messages 28-29]: A noscript line for browsers without JavaScript, and a load error shown if data.json cannot be
+- [Messages 27-28]: A noscript line for browsers without JavaScript, and a load error shown if data.json cannot be
   loaded, so a visitor is never left with a blank page.
-- [Tree pane 30-51]: The start of the content, then the left pane, in the order of Req. 3: heading, Clear, Expand all
+- [Tree pane 29-50]: The start of the content, then the left pane, in the order of Req. 3: heading, Clear, Expand all
   and Collapse all, the Find field with its label, clearing cross and live match count, the must have and must lack
   legend, and the empty tree.
-- [Civilisations pane 52-65]: The right pane (Req. 4): heading, live count, the Filters list (Req. 22), the civilisation
+- [Civilisations pane 51-64]: The right pane (Req. 4): heading, live count, the Filters list (Req. 22), the civilisation
   list and the hint shown when it is empty. It scrolls on its own, so the page never does (Rule 12).
-- [Footer 66-67]: Names and links the data source and its date (Req. 5), then Microsoft's notice, in English, with links
+- [Footer 65-66]: Names and links the data source and its date (Req. 5), then Microsoft's notice, in English, with links
   to its rules and to the project. The code writes the sentence around the links.
-- [Options window 68-84]: A dialog (Req. 7, 8, 32): title, the language label, button and list, then the settings:
+- [Options window 67-83]: A dialog (Req. 7, 8, 32): title, the language label, button and list, then the settings:
   Simple UI, Include Unique and Universal with its description, Include Regionals, Civ view and Tooltips; and Cancel and
   OK.
-- [Report window 85-93]: A dialog for the reports of the tests and the updater: title, live status, result list,
+- [Report window 84-92]: A dialog for the reports of the tests and the updater: title, live status, result list,
   download links and Close. Always in English, so it is marked `lang="en"`.
-- [Templates 94-103]: Markup for tree rows, Filters buttons, civilisations, whose links open in a new tab, the loading
+- [Templates 93-102]: Markup for tree rows, Filters buttons, civilisations, whose links open in a new tab, the loading
   picture, the icons of civilisations and of the tree, language options, report lines, downloads and the scroll bar. The
   code copies these instead of writing HTML (Rule 2).
-- [Tooltip 104]: The note that follows the mouse without Simple UI: over the tree, over every control, each naming its
+- [Tooltip 103]: The note that follows the mouse without Simple UI: over the tree, over every control, each naming its
   text with `data-tip`, and over a link, with its address. Hidden otherwise.
 
 @ css/base.css
@@ -217,9 +217,17 @@ Everything about data: loading, the chosen language and its text, sets of civili
 
 @ js/model/model.js
 The tree and its rules: which items are shown, how marks pass on, what is greyed out, which civilisations fit, and what
-  Filters shows. It never touches the page.
-- setIncluded: Turns Include Unique and Universal on or off for the next rebuild().
-- setRegionals: Turns Include Regionals on or off for the next rebuild().
+  Filters shows. It is the subject of the Observer pattern: only its own functions change it, and each then tells its
+  observer, page.js, what changed. It never touches the page.
+- subscribe: Adds an observer, which notify() then calls after every change. Only page.js subscribes (Test 85).
+- unsubscribe: Takes an observer away again.
+- notify: Tells every observer what kind of change was made, once and as soon as `matching` is up to date: `"marks"`,
+  `"tree"` or `"language"`. The observers read the rest from the model themselves. It is the model's own, so nothing
+  else can announce a change.
+- setIncluded: Turns Include Unique and Universal on or off, builds the tree again, keeping marks, and tells the page
+  that the tree changed.
+- setRegionals: Turns Include Regionals on or off, builds the tree again, keeping marks, and tells the page that the
+  tree changed.
 - collect: Turns the shown part of data.json's tree into the items the page uses, each with its key, a path that tells
   copies apart, its set of civilisations (all, for a group) and its links. Stops with an error for an item without
   availability.
@@ -246,8 +254,12 @@ The tree and its rules: which items are shown, how marks pass on, what is greyed
   round.
 - siblings: Adds to the alternatives of an item that stands in for others the other items that stand in for the same, so
   marking the Folwark greys out the Settlement too.
-- rebuild: Builds the items afresh from data.json and the Include options, links copies, rivals and alternatives, and
-  keeps every mark by its path. Runs at the start and whenever an Include option changes.
+- rebuild: Builds the items afresh from data.json and the Include options, links copies, rivals and alternatives,
+  keeps every mark by its path, and works out `matching` again (fit()). Runs at the start and whenever an Include
+  option changes.
+- startModel: Takes the saved Include choices and the language, and builds the tree once, telling no one: the page is
+  drawn afterwards, all at once, with `page.update("start")`. Runs once, from start().
+- chooseLanguage: Makes a language the one the tree's names are in, and tells the page that the language changed.
 - barred: Tells whether an item is greyed out: not marked must have itself, while one of its alternatives or opponents
   is (Req. 37).
 - within: Tells whether an item lies anywhere under another.
@@ -271,8 +283,11 @@ The tree and its rules: which items are shown, how marks pass on, what is greyed
   also clears must have below that depended on it.
 - reached: The rows a mark reached, which marking opens: down to the first fork, and the rows it passed to or everything
   inside.
+- reach: The rows a mark will reach, or none if it clears the item. The controller opens the way to them before it
+  marks, so they come into sight before the greyed-out branches close (Req. 28, 31).
 - mark: Marks an item must have or must lack, or clears it if it already has that mark, passes must have up to its
-  prerequisites, and returns the rows to open.
+  prerequisites, works out `matching` again and tells the page that the marks changed.
+- clear: Clears every mark (Req. 17 to 19), works out `matching` again and tells the page that the marks changed.
 - boxState: What a row's box shows: a unit's or technology's own mark, or a dash if a row below has another; otherwise
   state().
 - fit: Works out the civilisations that fit every mark, as `matching`, and returns the marked items.
@@ -287,8 +302,8 @@ The tree and its rules: which items are shown, how marks pass on, what is greyed
 - held: Tells whether a mark keeps an item's own entry in Filters: must have on an item that alone() picks.
 - filtersOf: Works out the entries of Filters: one per marked building, group or line, but none for what a marked row
   above covers, and the unique items' own entries, in the tree's order.
-- share: Notes the names that more than one row uses, so that Filters can say which one is meant.
-- chipName: Names an entry of Filters: a line after its deepest item with must have, a shared name "in" its parent, and
-  "Full" before a building or group marked in full with more than one row (Req. 24).
+- chipOf: What an entry of Filters names: a line's deepest item with must have, unless the item keeps its own entry, and
+  whether it reads "Full": a building or group marked in full, with more than one row (Req. 24). chipName() puts it
+  into words.
 - unmarkLine: Clears what an entry of Filters stands for: the marks of its kind along its line, or the item and
-  everything in it, keeping the unique items' own entries.
+  everything in it, keeping the unique items' own entries, and tells the page that the marks changed.

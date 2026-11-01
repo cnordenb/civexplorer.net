@@ -7,7 +7,7 @@ Rule 5: Must keep up-to-date MAINTAINER.md which explains pedagogically for huma
 Rule 6: Must be as easy as possible for humans to maintain with as few steps as possible.  
 Rule 7: No comments allowed in the code.  
 Rule 8: Document development and changes in DEVLOG.md.  
-Rule 9: No images allowed.  
+Rule 9: No images allowed. This rule does not apply to favicon.ico.  
 Rule 10: No sounds allowed.  
 Rule 11: No animations allowed. This rule may be exceptionally flouted by a small loading icon upon loading the site.  
 Rule 12: No page scrolling allowed (landing page, all collapsed).  

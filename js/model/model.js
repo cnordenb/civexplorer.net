@@ -1,18 +1,33 @@
-import { data, ALL, setOf, size, words, nameOf, fill } from "./datahandler.js";
+import { data, ALL, setOf, size, useLanguage } from "./datahandler.js";
 
 export const items = [];
 export const roots = [];
 export let include = false;
 export let regional = true;
 export let matching = 0n;
-export let shared = new Set();
+
+const observers = new Set();
+
+export const subscribe = (observer) => {
+  observers.add(observer);
+};
+
+export const unsubscribe = (observer) => {
+  observers.delete(observer);
+};
+
+const notify = (change) => observers.forEach((observer) => observer.update(change));
 
 export const setIncluded = (on) => {
   include = on;
+  rebuild();
+  notify("tree");
 };
 
 export const setRegionals = (on) => {
   regional = on;
+  rebuild();
+  notify("tree");
 };
 
 function collect(nodes, parent) {
@@ -103,7 +118,7 @@ function siblings() {
   }
 }
 
-export function rebuild() {
+function rebuild() {
   const marks = new Map(items.map((item) => [item.path, item.self]));
   items.length = 0;
   roots.length = 0;
@@ -115,7 +130,20 @@ export function rebuild() {
   siblings();
   for (const item of items) item.self = marks.get(item.path) ?? null;
   twin();
+  fit();
 }
+
+export function startModel(included, regionals, code) {
+  include = included;
+  regional = regionals;
+  useLanguage(code);
+  rebuild();
+}
+
+export const chooseLanguage = (code) => {
+  useLanguage(code);
+  notify("language");
+};
 
 export const barred = (item) => item.self !== "has"
   && [...item.alternatives, ...item.opponents].some((other) => other.self === "has");
@@ -124,7 +152,7 @@ const within = (item, top) => !!item.parent && (item.parent === top || within(it
 
 export const locked = (item) => barred(item) && !item.rivals.some((rival) => within(rival, item));
 
-export function setMark(item, mark, top = item) {
+function setMark(item, mark, top = item) {
   if (!item.group) item.self = mark;
   for (const kid of item.kids) if (!kid.rivals.includes(top)) setMark(kid, mark, top);
 }
@@ -169,11 +197,20 @@ function put(item, kind) {
 
 const reached = (item) => [...chainOf(item), ...(isUnitOrTech(item) ? passedTo(item) : descendants(item))];
 
+export const reach = (item, kind) => (current(item) === kind ? [] : reached(item));
+
 export function mark(item, kind) {
   const next = current(item) === kind ? null : kind;
   put(item, next);
   if (next === "has") prerequisites(item).forEach((each) => { each.self = "has"; });
-  return next ? reached(item) : [];
+  fit();
+  notify("marks");
+}
+
+export function clear() {
+  roots.forEach((item) => setMark(item, null));
+  fit();
+  notify("marks");
 }
 
 export function boxState(item) {
@@ -181,7 +218,7 @@ export function boxState(item) {
   return descendants(item).every((each) => !each.self || each.self === item.self) ? item.self : "mixed";
 }
 
-export function fit() {
+function fit() {
   const marked = items.filter((item) => item.self);
   matching = marked.reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
   return marked;
@@ -234,21 +271,10 @@ export function filtersOf() {
     .sort((a, b) => a.item.i - b.item.i);
 }
 
-export function share() {
-  const seen = new Map();
-  for (const item of items.filter((each) => !each.original)) seen.set(nameOf(item), (seen.get(nameOf(item)) ?? 0) + 1);
-  shared = new Set([...seen].filter(([, n]) => n > 1).map(([name]) => name));
-}
-
-export function chipName(item, kind, own = false) {
-  const unit = isUnitOrTech(item);
-  const named = (kind === "has" && !own && lineOf(item).findLast((each) => each.self === "has" && !alone(each)))
-    || item;
-  const name = shared.has(nameOf(named)) && named.parent
-    ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) })
-    : nameOf(named);
-  return !unit && item.kids.length > 1 && state(item) === "has" ? fill(words.ui.full, { name }) : name;
-}
+export const chipOf = (item, kind, own = false) => ({
+  named: (kind === "has" && !own && lineOf(item).findLast((each) => each.self === "has" && !alone(each))) || item,
+  full: !isUnitOrTech(item) && item.kids.length > 1 && state(item) === "has",
+});
 
 export function unmarkLine(item, kind, own = false) {
   const kept = own ? [] : items.filter((each) => held(each, each.self));
@@ -257,4 +283,6 @@ export function unmarkLine(item, kind, own = false) {
   else if (line.length > 1) line.filter((each) => each.self === kind).forEach((each) => { each.self = null; });
   else setMark(item, null);
   kept.forEach((each) => { each.self = "has"; });
+  fit();
+  notify("marks");
 }

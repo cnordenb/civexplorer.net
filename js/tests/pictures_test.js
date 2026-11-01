@@ -2,12 +2,13 @@ import { data, size, attempt, recall, nameOf, civFile, language } from "../model
 import { items } from "../model/model.js";
 import { $, simple } from "../view/stringbuilder.js";
 import { bars, LINE } from "../view/scrollbars.js";
-import { setOpen } from "../controller/nodetree.js";
-import { options, setInclude, setSimple, setMenu } from "../controller/optionshandler.js";
+import { setOpen } from "../view/treeview.js";
+import { options, setMenu } from "../view/optionsview.js";
+import { setInclude, setSimple } from "../controller/optionshandler.js";
 import {
-  root, check, expect, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges,
-  spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, tabIcons, drawn, ui, box, fixtures, codes,
-  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, painted, barProblems, tipGaps, tipLooks,
+  root, check, expect, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges, labelOf,
+  spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, drawn, ui, box, fixtures, codes,
+  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, painted, barProblems, tipGaps, tipLooks, nodeOf, twistyOf,
 } from "./helpers_test.js";
 
 const rows = { has: 50, lacks: 100 };
@@ -70,7 +71,7 @@ function pictureLooks() {
   const [wanted, { background, assets }] = [fitted(), root.dataset];
   const button = getComputedStyle($("optionsButton"));
   expect("options: without Simple UI, the background, pictures and cursors suit the screen's resolution, each in one "
-    + "size, the Options button and the tab show theirs, and the page fits the parchment", [
+    + "size, the Options button shows its, and the page fits the parchment", [
     ...need(background === wanted && assets === GRADES[wanted], `${background} and ${assets}, not ${wanted}`),
     ...misjudged(),
     ...need(picture(style, `ui/backgrounds/${wanted}`), `${style.backgroundImage.split("/").pop()}, not ${wanted}`),
@@ -80,7 +81,6 @@ function pictureLooks() {
     ...need(picture(button, `ui/buttons/options_${grade()}`), `${button.backgroundImage.split("/").pop()} on Options`),
     ...need(button.backgroundPosition.split(" ").every((part) => parseFloat(part) === 0), "Options is not at rest"),
     ...need(button.boxShadow === "rgb(238, 157, 5) 0px 0px 0px 2px", "Options has no ring"),
-    ...need(tabIcons().map((link) => link.getAttribute("href")).join() === data.icons.favicon, "the tab has no icon"),
     ...need(root.scrollHeight <= innerHeight && root.scrollWidth <= innerWidth, "the page scrolls"),
     ...need(spans(), "the footer does not span the page"),
   ]);
@@ -135,11 +135,11 @@ async function unpictured() {
   const [outlines, grids] = [await edges(), new Map()];
   const wrong = items.filter((item) => {
     const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
-    const icon = item.node.querySelector(".node-icon");
+    const icon = nodeOf(item).querySelector(".node-icon");
     if (!own) return !!icon;
     const [look, path] = [icon && getComputedStyle(icon), `icons/nodes/${own.kind}/atlas/${own.kind}icon_atlas`];
     return !icon || offCell(icon, cellIn(data.icons.atlas[own.kind], own.picture, 48), path, grids)
-      || icon.previousElementSibling !== item.node.querySelector(".box") || icon.nextElementSibling !== item.label
+      || icon.previousElementSibling !== nodeOf(item).querySelector(".box") || icon.nextElementSibling !== labelOf(item)
       || look.width !== "44px" || look.height !== "44px" || Math.abs(parseFloat(look.borderTopWidth) - 2) >= 1
       || look.borderTopStyle !== "solid"
       || look.borderTopColor !== (item.group ? "rgba(0, 0, 0, 0)" : outlines.get(`${own.kind} ${own.reach}`));
@@ -205,8 +205,8 @@ function toolLooks() {
       && Math.abs(box(first).top - box(last).top) < 0.5 && Math.abs(box(first).width - box(last).width) < 0.5,
     `the buttons are at ${idle}, not side by side from ${Math.round(left)} to ${Math.round(right)}`),
   ];
-  tap(items.find((item) => !item.group && !item.kids.length).node);
-  setOpen(items.find((item) => item.twisty && item.parent), true);
+  tap(nodeOf(items.find((item) => !item.group && !item.kids.length)));
+  setOpen(items.find((item) => twistyOf(item) && item.parent), true);
   problems.push(...showing(["clear", "expandAll"], "with a mark, or a branch open inside a closed one"));
   $("expandAll").focus();
   $("expandAll").click();
@@ -226,7 +226,7 @@ function toolLooks() {
 }
 
 function simpleSwitch() {
-  tap(items.find((item) => !item.group && size(item.set) > 0).node);
+  tap(nodeOf(items.find((item) => !item.group && size(item.set) > 0)));
   $("optionsButton").click();
   const before = { pictures: pictures(), spot: simpleSpot(), basics: picturesOn() };
   before.basics &&= civLinks() === $("civs").children.length;
@@ -282,7 +282,7 @@ async function barLooks() {
 
   const problems = [...ownBars("none"), ...await strayBars("with every branch closed")];
   $("expandAll").click();
-  tap(items.find((item) => !item.group).node);
+  tap(nodeOf(items.find((item) => !item.group)));
   problems.push(...await strayBars("with every branch open and a filter"), ...need(!bar.hidden, "the tree has no bar"),
     ...need(box($("tree")).width === wide, "the tree got narrower as its bar came"));
   list.scrollTop = list.scrollHeight;
@@ -311,8 +311,8 @@ export async function pictureTests() {
   setSimple(false);
   pictureLooks();
   const { partial, other } = fixtures();
-  tap(partial.node);
-  keyDown(other.node, "x");
+  tap(nodeOf(partial));
+  keyDown(nodeOf(other), "x");
   const boxes = wrongBoxes();
   reset();
   const icons = await unpictured();

@@ -1,31 +1,22 @@
 import {
-  data, ALL, size, fill, attempt, recall, remember, params, language, nameOf, preferredLanguage, words, plain,
+  data, ALL, size, fill, attempt, recall, language, nameOf, words, plain,
 } from "../model/datahandler.js";
 import { items, roots, lineOf, lineEnd } from "../model/model.js";
 import { $ } from "../view/stringbuilder.js";
-import { isOpen, setOpen, shown } from "../controller/nodetree.js";
-import { options, setInclude, setSimple } from "../controller/optionshandler.js";
+import { isOpen, setOpen, shown } from "../view/treeview.js";
+import { options } from "../view/optionsview.js";
+import { setInclude, setSimple } from "../controller/optionshandler.js";
 import { openReport, report } from "../view/report.js";
 import { audit } from "./audit_test.js";
 import {
   root, check, expect, same, tidy, codes, keys, describe, everything, nameFor, visibleTexts, keyDown, tap, pick,
   reset, listed, expected, fixtures, shownKeys, uniqueKeys, regionalKeys, outside, keptPath, byPath, spans, ui, box,
-  chainOf, type, rendered,
+  chainOf, type, rendered, nodeOf, twistyOf, labelOf, englishFirst,
 } from "./helpers_test.js";
-
-function englishFirst() {
-  const stored = recall("language");
-  remember("language", null);
-  Object.defineProperty(navigator, "languages", { value: ["de-DE", "de"], configurable: true });
-  const first = preferredLanguage();
-  delete navigator.languages;
-  remember("language", stored);
-  return first === (codes().includes(params.get("lng")) ? params.get("lng") : codes()[0]);
-}
 
 export function menuTests({ partial }) {
   reset();
-  tap(partial.node);
+  tap(nodeOf(partial));
   const button = $("languageButton");
   $("optionsButton").focus();
   $("optionsButton").click();
@@ -81,8 +72,9 @@ export function languageTests(code, { partial, other }) {
 
   note("languages: the page's text is in the chosen language", [...document.querySelectorAll("[data-text]")]
     .filter((el) => el.textContent !== text.ui[el.dataset.text]).map((el) => el.dataset.text));
-  note("languages: the tree is in the chosen language", items.filter((item) => item.label.textContent !== nameOf(item)
-    || nameOf(item) !== (item.group ? text.groups[item.key] : text.items[item.key])).map((item) => item.key));
+  note("languages: the tree is in the chosen language", items.filter((item) => labelOf(item).textContent
+    !== nameOf(item) || nameOf(item) !== (item.group ? text.groups[item.key] : text.items[item.key]))
+    .map((item) => item.key));
   note("languages: no placeholders are left in the text",
     visibleTexts(document.body).filter((value) => /[{}]/.test(value)));
   const notice = fill(data.source.notice, { rules: data.source.rules.name, project: data.source.project.name });
@@ -92,8 +84,8 @@ export function languageTests(code, { partial, other }) {
     && tidy($("notice").textContent) === tidy(notice) && ["rules", "project"].every((key) =>
       $("notice").contains($(`${key}Link`)) && $(`${key}Link`).getAttribute("href") === data.source[key].url)
     && $("notice").lang === "en" && spans(), code);
-  tap(partial.node);
-  keyDown(other.node, "x");
+  tap(nodeOf(partial));
+  keyDown(nodeOf(other), "x");
   check("languages: the civilisations are listed in the language and in order",
     same(listed(), expected(partial.set & ~other.set & ALL)), code);
   reset();
@@ -110,7 +102,7 @@ export function optionTests() {
       || (!item.group && size(item.set) > 1 && size(item.set) < data.civs.length - 1)));
   const defaults = shownKeys();
   const path = keptPath();
-  tap(byPath(path).node);
+  tap(nodeOf(byPath(path)));
   const listedBefore = listed();
   const button = $("optionsButton");
   const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
@@ -160,7 +152,7 @@ export function optionTests() {
 
 function menuAudit({ partial }) {
   reset();
-  tap(partial.node);
+  tap(nodeOf(partial));
   $("optionsButton").click();
   $("languageButton").click();
   audit("language menu open");
@@ -190,8 +182,8 @@ function languageAudits(code, { partial, other }) {
   reset();
   const focus = code === codes()[0];
   audit(code, { focus });
-  tap(partial.node);
-  keyDown(other.node, "x");
+  tap(nodeOf(partial));
+  keyDown(nodeOf(other), "x");
   audit(`${code}, filters`, { focus });
   $("expandAll").click();
   audit(`${code}, all open`, { focus });
@@ -200,7 +192,7 @@ function languageAudits(code, { partial, other }) {
 
 function spacingTests({ partial }) {
   reset();
-  tap(partial.node);
+  tap(nodeOf(partial));
   root.classList.add("text-spacing-test");
   expect("layout: with wider text spacing, nothing sticks out sideways", [
     ...(root.scrollWidth > innerWidth ? [`the page is ${root.scrollWidth} pixels wide`] : []),
@@ -215,7 +207,7 @@ function optionKeys() {
   const unique = uniqueKeys();
   const regional = regionalKeys();
   const path = keptPath();
-  tap(byPath(path).node);
+  tap(nodeOf(byPath(path)));
   const listedBefore = listed();
   const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
   $("optionsButton").click();
@@ -250,8 +242,8 @@ function optionAudits() {
 
 function filterFocus({ other, third }) {
   reset();
-  keyDown(other.node, "x");
-  keyDown(third.node, "x");
+  keyDown(nodeOf(other), "x");
+  keyDown(nodeOf(third), "x");
   const firstChip = $("chips").querySelector(".chip");
   const cleared = items[firstChip.dataset.i];
   const left = cleared === other ? third : other;
@@ -268,32 +260,32 @@ function filterFocus({ other, third }) {
 
 function keyboard({ line }) {
   reset();
-  keyDown(line.node, "ArrowRight");
+  keyDown(nodeOf(line), "ArrowRight");
   check("keyboard: Right opens a line all the way down", chainOf(line).length > 1
     && items.every((each) => isOpen(each) === chainOf(line).includes(each)));
   $("collapseAll").click();
-  roots[0].node.focus();
-  keyDown(roots[0].node, "ArrowUp");
-  const top = document.activeElement === roots[0].node;
-  keyDown(roots[0].node, "ArrowDown");
-  const down = top && document.activeElement === roots[1].node;
-  keyDown(roots[1].node, "ArrowRight");
+  nodeOf(roots[0]).focus();
+  keyDown(nodeOf(roots[0]), "ArrowUp");
+  const top = document.activeElement === nodeOf(roots[0]);
+  keyDown(nodeOf(roots[0]), "ArrowDown");
+  const down = top && document.activeElement === nodeOf(roots[1]);
+  keyDown(nodeOf(roots[1]), "ArrowRight");
   const opens = isOpen(roots[1]);
-  keyDown(roots[1].node, "ArrowRight");
-  const into = document.activeElement === roots[1].kids[0].node;
-  keyDown(roots[1].kids[0].node, "ArrowLeft");
-  const back = document.activeElement === roots[1].node;
-  keyDown(roots[1].node, "ArrowLeft");
+  keyDown(nodeOf(roots[1]), "ArrowRight");
+  const into = document.activeElement === nodeOf(roots[1].kids[0]);
+  keyDown(nodeOf(roots[1].kids[0]), "ArrowLeft");
+  const back = document.activeElement === nodeOf(roots[1]);
+  keyDown(nodeOf(roots[1]), "ArrowLeft");
   check("keyboard: Right opens a branch and goes into it, and Left goes back out and closes it",
     opens && into && back && !isOpen(roots[1]));
-  keyDown(roots[1].node, "End");
-  const end = document.activeElement === roots[roots.length - 1].node;
+  keyDown(nodeOf(roots[1]), "End");
+  const end = document.activeElement === nodeOf(roots[roots.length - 1]);
   keyDown(document.activeElement, "Home");
   check("keyboard: Down and Up step between items, stopping at the top, and End and Home go to the last and first",
-    down && end && document.activeElement === roots[0].node);
-  roots[0].twisty.focus();
-  keyDown(roots[0].twisty, "ArrowDown");
-  check("keyboard: on an arrow, Down goes to the next arrow", document.activeElement === roots[1].twisty);
+    down && end && document.activeElement === nodeOf(roots[0]));
+  twistyOf(roots[0]).focus();
+  keyDown(twistyOf(roots[0]), "ArrowDown");
+  check("keyboard: on an arrow, Down goes to the next arrow", document.activeElement === twistyOf(roots[1]));
   document.activeElement.blur();
 }
 
@@ -302,7 +294,7 @@ function findKey({ partial }) {
   type(nameOf(partial));
   keyDown($("find"), "Enter");
   check("find: Enter goes to the first match", document.activeElement
-    === items.find((item) => plain(nameOf(item)).includes(plain(nameOf(partial)))).node);
+    === nodeOf(items.find((item) => plain(nameOf(item)).includes(plain(nameOf(partial))))));
   reset();
 }
 
@@ -372,21 +364,21 @@ export function uniqueFilterTests() {
 
   for (const each of [item, whole]) for (let p = each.parent; p; p = p.parent) setOpen(p, true);
   const end = lineOf(item).at(-1);
-  tap(item.node);
+  tap(nodeOf(item));
   const both = same(names(), [nameOf(item), nameOf(end)].sort());
   unmark(nameOf(item));
   const first = item.self === null && end.self === "has" && same(names(), [nameOf(end)]);
   $("clear").click();
-  tap(item.node);
+  tap(nodeOf(item));
   unmark(nameOf(end));
   const second = item.self === "has" && end.self === null && same(names(), [nameOf(item)]);
   $("clear").click();
-  tap(roots.find((top) => item.path.startsWith(`${top.path}|`)).node);
+  tap(nodeOf(roots.find((top) => item.path.startsWith(`${top.path}|`))));
   const full = names().filter((text) => text !== nameOf(item));
   full.forEach(unmark);
   const grouped = full.length === 1 && item.self === "has" && same(names(), [nameOf(item)]);
   $("clear").click();
-  tap(lineEnd(whole).node);
+  tap(nodeOf(lineEnd(whole)));
   const exempt = same(names(), [nameOf(lineEnd(whole))]);
   check(name, both && first && second && grouped && exempt, `${both}, ${first}, ${second}, ${grouped}, ${exempt}`);
   reset();
@@ -405,18 +397,18 @@ export function headingTests() {
     return;
   }
   for (let p = heading.parent; p; p = p.parent) setOpen(p, true);
-  const bare = !heading.node.matches("[role], [tabindex], [aria-checked]") && !heading.node.querySelector(".box");
-  heading.label.click();
+  const bare = !nodeOf(heading).matches("[role], [tabindex], [aria-checked]") && !nodeOf(heading).querySelector(".box");
+  labelOf(heading).click();
   const opened = isOpen(heading);
-  heading.twisty.click();
+  twistyOf(heading).click();
   const closed = !isOpen(heading);
   const right = { bubbles: true, pointerId: 9, pointerType: "mouse", button: 2 };
-  ["pointerdown", "pointerup"].forEach((type) => heading.label.dispatchEvent(new PointerEvent(type, right)));
+  ["pointerdown", "pointerup"].forEach((type) => labelOf(heading).dispatchEvent(new PointerEvent(type, right)));
   const rows = items.filter(shown);
   const above = rows[rows.indexOf(heading) - 1];
-  above.node.focus();
-  keyDown(above.node, "ArrowDown");
-  const reached = document.activeElement === heading.twisty;
+  nodeOf(above).focus();
+  keyDown(nodeOf(above), "ArrowDown");
+  const reached = document.activeElement === twistyOf(heading);
   check(name, bare && opened && closed && reached && items.every((item) => item.self === null),
     `${bare}, ${opened}, ${closed}, ${reached}`);
   document.activeElement.blur();

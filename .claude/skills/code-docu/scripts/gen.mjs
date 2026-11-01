@@ -72,7 +72,8 @@ function countOf(c) {
   if (mod) {
     const n = mod.entries.filter((e) => e.kind === "function").length;
     const objs = mod.entries.length - n;
-    return c.file === "js/script.js" ? "start-up code" : `${plural(n, "function")}${objs ? `, ${objs} object` : ""}`;
+    const others = objs ? `, ${plural(objs, "object")}` : "";
+    return c.file === "js/script.js" ? "start-up code" : `${plural(n, "function")}${others}`;
   }
   if (/\.json$/.test(c.file)) return `${jsonKeys(c.file).keys.filter((k) => !k.key.includes(".")).length} keys`;
   return `${(desc[c.file]?.items ?? []).filter((i) => i.part).length} parts`;

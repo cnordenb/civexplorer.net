@@ -2,6 +2,7 @@
 
 - [2026-10-30](#2026-10-30)
 - [2026-10-31](#2026-10-31)
+- [2026-11-01](#2026-11-01)
 
 Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions made in the log are listed in
 [DECISIONS.md](../DECISIONS.md).
@@ -717,3 +718,121 @@ Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions ma
   page, the contents, the UML page, the `data.json` page, both pages of `pictures.css`, the subchapter of
   `pictures.js`, a page of `helpers_test.js` and the first page of the index were looked at.
 - **Documents.** The descriptions in `.claude/skills/code-docu/desc/`.
+
+## 2026-11-01
+
+### 03:00:32: model, view and controller as in Head First Design Patterns
+
+#### What changed
+
+- **Why.** `DECISIONS.md` and `MAINTAINER.md` said that the scripts follow model, view and controller, but only their
+  folders did: the controllers drew the tree and the Options window and redrew the page after each change, the
+  tree's elements were kept on the model's items, `model.js` built the names of the filter buttons from the texts, and
+  `pictures.js` and `report.js` saved settings and ran the updater. The scripts were made to follow the compound
+  pattern of *Head First Design Patterns* (Freeman and Robson, 2nd edition). The page looks and works as before.
+- **Observer.** `model.js` is the subject, with `subscribe()`, `unsubscribe()` and a `notify()` it keeps to itself.
+  Only its own functions change it: `mark()`, `clear()`, `unmarkLine()`, `setIncluded()`, `setRegionals()` and
+  `chooseLanguage()`. Each brings `matching` up to date, then notifies once and at once, with the kind of change:
+  `"marks"`, `"tree"` or `"language"`. `reach()` gives the rows that a mark will reach before it is made, so that
+  their parents open before the locked branches close, as before. `startModel()` takes the saved settings and the
+  language and builds the tree once, without notice. `rebuild()`, `setMark()` and `fit()` are no longer shared.
+- **Composite.** The new `js/view/page.js` holds the views of the texts, Options, the tree, the civilisations and
+  **Filters**, in that order, and is the model's only observer. It passes each change to all of them; `"start"`,
+  which draws the page at the start, and `"look"`, which redraws it after Simple UI, are not the model's.
+- **Strategy.** The new `js/view/treeview.js` draws the tree, keeps each row's elements in a map of its own
+  (`rowOf()`), holds which branches are open, and hands clicks, touches and keys to the actions of `nodetree.js`. The
+  new `js/view/optionsview.js` draws the Options window and hands its opening and **OK** to those of
+  `optionshandler.js`. Each checks at the start, with `demand()` in `stringbuilder.js`, that no action is missing.
+  `nodetree.js` and `optionshandler.js` no longer touch the page.
+- **What moved.**
+  - From `nodetree.js` to `treeview.js`: building, dressing, naming, counting and painting the rows, opening and
+    closing, the focus, what **Find** found, and telling a long press from a click. `update()` is gone and
+    `replant()` is the tree view's own: the views redraw on the model's notice, and **Find** runs again after a
+    change only while its box is filled.
+  - From `optionshandler.js` to `optionsview.js`: the language menu, the boxes, and how the window reads and shows each
+    setting. To `pictures.js`: the pictures' loading (`finishLoading()`, `pictureFiles()`, `screenPictures()`), the
+    tab icon, and the page's part of Simple UI, as `applySimple()`. `choices` holds only `now` and `set` of each
+    setting, in the order as before, with the civilisations' view and Tooltips, which `pictures.js` added before;
+    their `set` saves the setting, which `setView()` and `setTips()` no longer do.
+  - From `model.js` to `stringbuilder.js`: `chipName()`, `share()` and `shared`. The model keeps `chipOf()`, which
+    gives the item a filter button names and whether it reads "Full".
+  - From `report.js` to the new `js/controller/updatehandler.js`: running the updater. `report.js` only shows it.
+- **Tests.** Only imports changed, and the rows' elements are reached through `nodeOf()`, `twistyOf()` and
+  `labelOf()` in `helpers_test.js`, or `rowOf()`. `englishFirst()` moved from `interface_test.js` to
+  `helpers_test.js`, so that the first stays within 400 lines of code. No assertion changed, and there are still 99
+  tests. Test 85 also checks that the model imports no view or controller, that no view imports a controller or saves
+  a setting, that no controller touches the page, that `model.js` shares `subscribe` and `unsubscribe` but not
+  `notify` and holds no texts, that only `page.js` subscribes, and that no item holds a page element once the tests
+  have run.
+- **Checked.** All 99 tests passed in each of the six windows GitHub runs them in: light and dark colours, at 1920 by
+  1080, 1000 by 1000 and 720 by 1280. The same 39 steps of clicks, keys, a long press, **Find**, **Filters** and every
+  setting, run on the old and the new scripts, left the same page, focus and saved settings after each step; the
+  model notified once for each change, and no item held a page element, where up to 507 did before. `?update` showed the
+  same report. In a copy with the rules broken on purpose in eight ways, Test 85 failed for each, and no other test
+  failed.
+- **Documents.** `MAINTAINER.md`: the files, the UML diagram drawn again from the imports, the scripts and their
+  order, and how model, view and controller work together. `DECISIONS.md`. `TESTS.md`: Test 85, and the lines of the
+  tests that moved.
+
+#### Not done
+
+- `code_docu.pdf`, as in the entries before. It and its descriptions in `.claude/skills/code-docu/desc/` describe the
+  scripts as they were.
+- The page was not tried by hand with Simple UI on and off, with only a keyboard, at 400% zoom, with a screen reader,
+  or with a long press on a touch screen.
+- Kept as they are: `datahandler.js` reading `location`, the model's state shared as `export let`, and the updater's
+  code in `datahandler.js`.
+
+### 10:57:53: the tab icon as favicon.ico in the main folder
+
+#### What changed
+
+- **The icon.** `assets/images/favicon.ico` moved to the main folder as `favicon.ico`, where browsers fetch it by
+  themselves, and the code about the tab icon was removed: the empty icon `<link rel="icon" href="data:,">` in
+  `index.html`, `favicon` in `icons` in `data.json`, and `showIcon()` in `js/view/pictures.js` with its calls in
+  `applySimple()` and in `start()` in `js/controller/optionshandler.js`. The icon now shows with Simple UI too, which
+  Rule 9 and Req. 33 allow for `favicon.ico`.
+- **Tests.** `tabIcons()` was removed from `helpers_test.js`, and with it the tab icon in `pictures()`, which Test 51
+  uses, and in Test 76's list of media. Test 47 no longer checks the tab's icon, and Test 86 no longer checks the
+  empty icon in `index.html` or that the icon lies in `assets/images/`. There are still 99 tests.
+- **GitHub.** `.github/workflows/tests.yml` allows `favicon.ico` in the main folder, which now holds 7 files, and no
+  longer allows `.ico` files in `assets/images/`. Its `\.github/.*`, given twice, is given once, so that the line
+  stays within 120 characters.
+- **Documents.** `MAINTAINER.md`: the files, `icons` in the data, `pictures.js`, Simple UI and the assets.
+  `DECISIONS.md`. `TESTS.md`: Tests 47, 51, 76 and 86, and the lines of the tests that moved.
+
+#### Not done
+
+- The tests were not run and the page was not tried in a browser; the scripts were only checked to parse.
+- `code_docu.pdf`, as in the entries before.
+- Nothing open on Req. 33: it allows `favicon.ico` with Simple UI, as Rule 9 does.
+
+### 11:10:22: code_docu.pdf up to date with model, view and controller
+
+#### What changed
+
+- **The PDF.** `code_docu.pdf` was made again from the code as it stands after the entries of 03:00:32 and 10:57:53:
+  77 pages, 1.8 MB, 8 chapters, 25 subchapters, 387 functions and 8 objects, and 3840 links.
+- **Descriptions.** `layout.json` gained `treeview.js`, `optionsview.js` and `page.js` in `js/view/`, and
+  `updatehandler.js` in `js/controller/`. In `desc/`, the functions that moved took their descriptions with them: from
+  `nodetree.js` to `treeview.js`, from `optionshandler.js` to `optionsview.js` and `pictures.js`, from `model.js` to
+  `stringbuilder.js`, from `report.js` to `updatehandler.js`, and from `interface_test.js` to `helpers_test.js`. The
+  new functions were described, those that are gone dropped, and the folders `js/model/`, `js/view/` and
+  `js/controller/` described again. The tab icon left the descriptions of `index.html`, whose parts moved up a line,
+  of `icons` in `data.json`, and of the tests.
+- **The UML page.** Its paragraph is the one above the diagram in `MAINTAINER.md`, which linked to "How model, view and
+  controller work together"; the PDF showed the link as text, so the paragraph names the section without a link. The
+  parts of `model`, `page`, `nodetree` and `optionshandler` in model, view and controller are labels on their boxes
+  instead of notes, which lays the diagram out top to bottom. Its text is 3.2 points, down from 4.3, as the diagram
+  holds 14 scripts, four more than before; with the notes it was 3.0.
+- **Counts.** A subchapter with more than one object said "3 object"; `chapters.mjs` and `gen.mjs` now say
+  "3 objects".
+- **Checked.** `verify.py`: no link without a target, every chapter, subchapter and function in place, every header
+  right, 471 bookmarks, and all 77 pages A4. The title page, the contents, the UML page, the first pages of `js/view/`
+  and of `index.html`, the pages of `treeview.js` and `page.js`, and the index were looked at as pictures.
+- **Skills.** `code-docu/SKILL.md` and `code-docu-uml/SKILL.md` give the UML's new text size, and the names without a
+  section of their own, now with `page.parts`.
+
+#### Not done
+
+- Open: the UML page stays A4, at 3.2 points. A3, as before 2026-10-31, would make its text about 1.4 times as large.

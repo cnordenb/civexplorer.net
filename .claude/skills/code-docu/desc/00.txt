@@ -12,15 +12,16 @@ Where the scripts start: script.js, which index.html loads as a module. Every ot
 
 @ js/model/
 The data and the tree's rules: datahandler.js looks after the data and the languages, and model.js holds the tree and
-  its rules.
+  its rules, and tells the page when they change. Neither touches the page.
 
 @ js/view/
-What the page shows: stringbuilder.js writes its text, pictures.js holds what only the pictures need, scrollbars.js
-  draws the game's scroll bars, and report.js shows the report window.
+What the page shows: stringbuilder.js writes its text, treeview.js draws the tree, optionsview.js the Options window,
+  page.js holds them all as one view of the whole page, pictures.js holds what only the pictures need, scrollbars.js
+  draws the game's scroll bars, and report.js shows the report window. No view imports a controller.
 
 @ js/controller/
-What happens when the visitor clicks, touches or types: nodetree.js handles the tree, and optionshandler.js the Options
-  window.
+What the visitor's clicks, touches and keys mean: nodetree.js for the tree, optionshandler.js for the Options window,
+  and updatehandler.js for the updater. They change the model or ask a view to change, and never touch the page.
 
 @ js/tests/
 The tests, loaded only when the address ends in `?test`. run_test.js runs them and helpers_test.js holds the tools they

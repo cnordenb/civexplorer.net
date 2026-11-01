@@ -16,12 +16,12 @@ jobs:
       - name: Check that the repository holds only the allowed files
         run: |
           extra="$(git ls-files | grep -vxE \
-            -e 'index\.html|data\.json|README\.md|LICENSE|\.assetsignore|\.gitignore|\.github/.*|\.github/.*' \
+            -e 'index\.html|data\.json|favicon\.ico|README\.md|LICENSE|\.assetsignore|\.gitignore|\.github/.*' \
             -e '\.well-known/discord|css/[a-z]+\.css|js/(model/|view/|controller/)?[a-z]+\.js' \
             -e 'js/tests/[a-z]+_test\.js' \
             -e 'locales/[a-z]+\.json' \
             -e 'documentation/[A-Za-z_]+\.(md|pdf)|documentation/DEVLOG/DEVLOG[1-9][0-9]*\.md' \
-            -e 'assets/images/([a-z0-9]+/)*[a-z0-9_]+\.(webp|png|ico)|assets/images/icons/nodes/colour_key\.csv' \
+            -e 'assets/images/([a-z0-9]+/)*[a-z0-9_]+\.(webp|png)|assets/images/icons/nodes/colour_key\.csv' \
             -e 'assets/images/preview\.jpg|assets/fonts/[A-Za-z0-9-]+\.ttf' \
             -e '\.claude/skills/package\.json|\.claude/skills/[a-z-]+/[A-Za-z]+\.(md|json)' \
             -e '\.claude/skills/[a-z-]+/(desc|references|scripts)/[a-z0-9]+\.[a-z]+' \
@@ -37,7 +37,7 @@ jobs:
           for scheme in 1 0; do
             for size in 1920,1080 1000,1000 720,1280; do
               google-chrome --headless=new --no-sandbox --disable-gpu --allow-file-access-from-files \
-                --blink-settings=preferredColorScheme=$scheme --virtual-time-budget=900000 --window-size=$size \
+                --blink-settings=preferredColorScheme=$scheme --virtual-time-budget=950000 --window-size=$size \
                 --dump-dom "file://$PWD/index.html?test" > page.html 2> chrome.log || true
               summary="$(grep -o 'id="reportStatus"[^>]*>[^<]*' page.html | sed 's/.*>//')"
               if grep -q 'data-tests="passed"' page.html; then

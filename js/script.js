@@ -1,8 +1,8 @@
 import { params, load, useData, loadLanguage, loadLanguages, preferredLanguage } from "./model/datahandler.js";
 import { showLoadError, showLoading } from "./view/stringbuilder.js";
-import { start, setSimple, savedSimple, finishLoading } from "./controller/optionshandler.js";
-import { runUpdate } from "./view/report.js";
-import { startPictures } from "./view/pictures.js";
+import { startPictures, finishLoading } from "./view/pictures.js";
+import { start, setSimple, savedSimple } from "./controller/optionshandler.js";
+import { runUpdate } from "./controller/updatehandler.js";
 
 setSimple(savedSimple());
 load("data.json").then((raw) => {

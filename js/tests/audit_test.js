@@ -1,10 +1,11 @@
 import { data, tag, nameOf } from "../model/datahandler.js";
 import { items } from "../model/model.js";
 import { $ } from "../view/stringbuilder.js";
-import { options } from "../controller/optionshandler.js";
+import { rowOf } from "../view/treeview.js";
+import { options } from "../view/optionsview.js";
 import {
   TAG, root, check, describe, rendered, everything, styles, pictured, focusables, tidy, nameFor, squash, visibleTexts,
-  tabIcons,
+  twistyOf,
 } from "./helpers_test.js";
 
 const MEDIA = "img, svg, canvas, picture, video, audio, object, embed, iframe, source, track, map, area";
@@ -104,7 +105,7 @@ function controlChecks(list) {
   list("accessibility: checkboxes, branches and the language menu say what state they are in", [
     ...[...document.querySelectorAll("[role=checkbox]")]
       .filter((el) => !["true", "false", "mixed"].includes(el.getAttribute("aria-checked"))).map(describe),
-    ...items.filter((item) => item.twisty && !expanded(item.twisty, item.list)).map(nameOf),
+    ...items.filter((item) => twistyOf(item) && !expanded(twistyOf(item), rowOf(item).list)).map(nameOf),
     ...(expanded($("languageButton"), $("languageList")) ? [] : [describe($("languageButton"))]),
   ]);
   const controls = focusables().filter((el) => el.matches("a, button, input, [role=checkbox]"));
@@ -159,8 +160,7 @@ function mediaChecks(all, list) {
     || style.transitionDuration.split(",").some((time) => parseFloat(time) > 0);
 
   list("rules: no images, sounds, video or animations on the page or in its styles", [
-    ...[...document.querySelectorAll(MEDIA), ...tabIcons(), ...[root, document.body, ...all].filter(pictured)]
-      .map(describe),
+    ...[...document.querySelectorAll(MEDIA), ...[root, document.body, ...all].filter(pictured)].map(describe),
     ...(document.getAnimations().length ? [`${document.getAnimations().length} running`] : []),
     ...all.filter((el) => styles(el).some(moving)).map(describe),
   ]);

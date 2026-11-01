@@ -2,7 +2,8 @@ import {
   data, load, setOf, civsOf, pack, unpack, addLanguage, localeFile, toJson, availabilityOf, pictureOf, fromExtra,
   joinLines, missingText,
 } from "../model/datahandler.js";
-import { TAG, check, expect, same, codes, keys } from "./helpers_test.js";
+import { items } from "../model/model.js";
+import { TAG, check, expect, same, codes, keys, need } from "./helpers_test.js";
 
 const slash = "/";
 const here = new URL(".", location.href).href;
@@ -188,8 +189,35 @@ function badImages(page, sheets) {
 
   return /<(svg|canvas|picture|video|audio|object|embed)\b/i.test(page) || /<img\b/i.test(outside)
     || inside.some((part) => /<img\b[^>]*\ssrc(set)?=/i.test(part))
-    || !/<link rel="icon" href="data:,"/.test(page) || !data.icons.favicon.startsWith("assets/images/")
     || sheets.some(({ path, code }) => [...code.matchAll(/([^{}]*)\{([^{}]*)\}/g)].some(misplaced(path)));
+}
+
+const PAGE = /\b(document|window)\b|getElementById|querySelector|addEventListener/;
+const ELEMENTS = /\.classList|\.dataset|setAttribute|textContent/;
+
+function mvcProblems(files) {
+  const within = (folder) => files.filter(({ path }) => path.startsWith(folder));
+
+  const reaching = (file, wrong) => file.imports.map(({ target }) => target.slice(here.length)).filter(wrong)
+    .map((path) => `${file.path} imports ${path}`);
+
+  const model = files.find(({ path }) => path === "js/model/model.js")?.code ?? "";
+
+  const exporting = (name) => new RegExp(`export\\s+(const|let|function)\\s+${name}\\b`).test(model);
+
+  return [
+    ...within("js/model/").flatMap((file) => reaching(file, (path) => !path.startsWith("js/model/"))),
+    ...within("js/view/").flatMap((file) => reaching(file, (path) => path.startsWith("js/controller/"))),
+    ...within("js/controller/").filter(({ code }) => PAGE.test(code) || ELEMENTS.test(code))
+      .map(({ path }) => `${path} touches the page`),
+    ...within("js/view/").filter(({ code }) => code.includes("remember(")).map(({ path }) => `${path} stores data`),
+    ...need(exporting("subscribe") && exporting("unsubscribe") && !exporting("notify")
+      && !/\b(words|fill)\b/.test(model), "model.js does not tell its observers of its changes, or holds texts"),
+    ...files.filter(({ path, code }) => /\bsubscribe\(/.test(code) && path !== "js/view/page.js")
+      .map(({ path }) => `${path} observes the model`),
+    ...need(!items.some((item) => Object.values(item).some((value) => value instanceof Element)),
+      "an item holds a page element"),
+  ];
 }
 
 export function sourceTests(page, sheets, files) {
@@ -224,12 +252,13 @@ export function sourceTests(page, sheets, files) {
   ]);
   expect(`rules: no file has over ${FILE_LIMIT} lines of code, no function over ${FUNCTION_LIMIT}, `
     + `and no line of a script over ${LINE_LIMIT} characters`, sizeProblems(page, sheets, files));
-  expect("rules: script.js, datahandler.js and model.js never touch the page, "
-    + "and only datahandler.js and the tests load or store data", [
-    ...named((file) => PAGE_FREE.includes(file.path)
-      && /\b(document|window)\b|getElementById|querySelector|addEventListener/.test(file.code)),
+  expect("rules: model, view and controller: the model imports neither, views never import controllers, "
+    + "script.js, the model and the controllers never touch the page, views never store data, the model tells only "
+    + "page.js of its changes and holds no page elements, and only datahandler.js and the tests load or store data", [
+    ...named((file) => PAGE_FREE.includes(file.path) && PAGE.test(file.code)),
     ...named((file) => !testing(file) && file.path !== "js/model/datahandler.js"
       && /XMLHttpRequest|localStorage|\bfetch\s*\(/.test(file.code)),
+    ...mvcProblems(files),
   ]);
   expect("rules: images only from assets/images/, in templates or CSS, only without Simple UI, fonts only from "
     + "assets/fonts/, and no sounds, animations but the loading spin, or dependencies in the sources", failing({

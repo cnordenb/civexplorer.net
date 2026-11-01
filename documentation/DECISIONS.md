@@ -272,8 +272,11 @@ link.
 - **Icons** come from atlases, the civilisations' in two sizes; the tree's icons have outlines coloured as in
   `colour_key.csv`. [2026-10-21](DEVLOG/DEVLOG2.md#icons-in-the-tree) [2026-10-27](DEVLOG/DEVLOG4.md#icons-from-atlases)
   [2026-10-27](DEVLOG/DEVLOG4.md#the-civilisations-atlas-in-two-sizes)
-- **No tab icon with Simple UI**: `index.html` gives the empty icon `data:,`.
+- **The tab icon is `favicon.ico` in the main folder**, where browsers fetch it by themselves, so no code names it, and
+  it shows with Simple UI too (Rule 9 and Req. 33 allow it). Replaced: no tab icon with Simple UI, with the empty icon
+  `data:,` in `index.html` and the icon in `assets/images/`.
   [2026-10-22](DEVLOG/DEVLOG3.md#compliance-with-rulesmd-and-requirementsmd-and-jsuijs-split-in-three)
+  [2026-11-01 10:57:53](DEVLOG/DEVLOG5.md#105753-the-tab-icon-as-faviconico-in-the-main-folder)
 - **The Options window** sits on its own parchment. Its contents keep 60 pixels from the panel's left and right edges,
   120 screen pixels on 4K screens; the panel stays as wide as the window.
   [2026-10-21](DEVLOG/DEVLOG2.md#the-options-window-on-its-own-parchment)
@@ -302,10 +305,25 @@ link.
 
 - **ES modules**; the tests are loaded only with `?test`, by dynamic import.
   [2026-10-19](DEVLOG/DEVLOG1.md#scriptjs-split-into-modules-in-js-rule-16)
-- **Model, view and controller**: the scripts are in `js/model/`, `js/view/` and `js/controller/`, and `script.js` is in
-  `js/`. Replaced: `script.js` in the main folder.
+- **Model, view and controller** as *Head First Design Patterns* describes them: the scripts are in `js/model/`,
+  `js/view/` and `js/controller/`, and `script.js` is in `js/`. `model.js` is the subject (Observer), `js/view/page.js`
+  its only observer and the composite of the views (Composite), and `nodetree.js` and `optionshandler.js` the
+  strategies of `treeview.js` and `optionsview.js` (Strategy). A view never imports a controller and never changes the
+  model, a controller never touches the page, and Test 85 checks it. Replaced: `script.js` in the main folder; the
+  scripts split by folder only, with the controllers drawing the page and the tree's elements kept on the model's
+  items.
   [2026-10-19](DEVLOG/DEVLOG1.md#a-documentation-folder-and-scriptjs-in-the-main-folder)
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)
+  [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
+- **The model sends the kind of change, and the views read the rest**: `"marks"`, `"tree"` or `"language"`, once for
+  each change, and each view then takes what it needs from the model.
+  [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
+- **Simple UI, the civilisations' view and Tooltips stay outside the model**: they are only how the page looks, so the
+  controller saves them and tells the view at once. Simple UI then redraws the views with `page.update("look")`.
+  [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
+- **Which branches are open stays in the tree view**, as the page's state, not the model's. The controller only asks
+  the view to open or close a branch.
+  [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
 - **Two style sheets**: `css/base.css`, the layout and Simple UI, and `css/pictures.css`, every rule with a picture or a
   font.
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)

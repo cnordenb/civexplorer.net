@@ -1,9 +1,12 @@
 import {
-  data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language, recall, attempt,
+  data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language, recall, remember, attempt, params,
+  preferredLanguage,
 } from "../model/datahandler.js";
-import { items, whole, lineOf, lineEnd, shared } from "../model/model.js";
-import { $ } from "../view/stringbuilder.js";
-import { setMenu, options, screenPictures } from "../controller/optionshandler.js";
+import { items, whole, lineOf, lineEnd } from "../model/model.js";
+import { $, shared } from "../view/stringbuilder.js";
+import { rowOf } from "../view/treeview.js";
+import { setMenu, options } from "../view/optionsview.js";
+import { screenPictures } from "../view/pictures.js";
 
 export const TAG = /^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i;
 export const root = document.documentElement;
@@ -33,6 +36,22 @@ export const need = (ok, problem) => (ok ? [] : [problem]);
 export const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 export const codes = () => Object.keys(data.languages);
+
+export const nodeOf = (item) => rowOf(item).node;
+
+export const twistyOf = (item) => rowOf(item).twisty;
+
+export const labelOf = (item) => rowOf(item).label;
+
+export function englishFirst() {
+  const stored = recall("language");
+  remember("language", null);
+  Object.defineProperty(navigator, "languages", { value: ["de-DE", "de"], configurable: true });
+  const first = preferredLanguage();
+  delete navigator.languages;
+  remember("language", stored);
+  return first === (codes().includes(params.get("lng")) ? params.get("lng") : codes()[0]);
+}
 
 export const ui = () => data.text[language].ui;
 
@@ -90,11 +109,8 @@ const files = (value) => [...value.matchAll(/url\("([^"]+)"\)/g)].map(([, src]) 
 export const urlsOf = (style) => files([style.backgroundImage, style.borderImageSource, style.listStyleImage,
   style.content, style.cursor].join(" "));
 
-export const tabIcons = () => [...document.querySelectorAll("link[rel~=icon]")]
-  .filter((link) => link.getAttribute("href") !== "data:,");
-
-export const pictures = () => [...document.querySelectorAll("img"), ...tabIcons(), root, document.body, ...everything()]
-  .filter((el) => ["IMG", "LINK"].includes(el.tagName) || pictured(el)).map(describe);
+export const pictures = () => [...document.querySelectorAll("img"), root, document.body, ...everything()]
+  .filter((el) => el.tagName === "IMG" || pictured(el)).map(describe);
 
 export const picturesOn = () => [describe(root), "body", describe($("optionsButton"))]
   .every((name) => pictures().includes(name));
@@ -220,7 +236,7 @@ export const itemAbove = (item) => {
 export const chainOf = (item) => {
   const chain = [item];
   while (chain.at(-1).kids.length === 1) chain.push(chain.at(-1).kids[0]);
-  return chain.filter((each) => each.twisty);
+  return chain.filter((each) => twistyOf(each));
 };
 
 const KINDS = { unit: "unit", building: "building", technology: "tech" };
@@ -301,7 +317,7 @@ const untipped = (scope) => [...scope.querySelectorAll(CONTROLS)]
 
 export async function tipGaps() {
   $("expandAll").click();
-  tap(fixtures().partial.node);
+  tap(nodeOf(fixtures().partial));
   type("a");
   await painted();
   const gaps = untipped(document.body);
@@ -316,8 +332,8 @@ export async function tipGaps() {
 }
 
 export function tipLooks() {
-  const [cx, cy] = [box(items[0].node).left + 5, box(items[0].node).top + 5];
-  hover(items[0].node, cx, cy);
+  const [cx, cy] = [box(nodeOf(items[0])).left + 5, box(nodeOf(items[0])).top + 5];
+  hover(nodeOf(items[0]), cx, cy);
   const tip = box($("tip"));
   const reach = 32;
   const tipped = !$("tip").hidden && $("tip").textContent === ui().nodeTip
@@ -332,7 +348,7 @@ export function tipLooks() {
     && box($("includeHint")).width <= 1 && $("include").getAttribute("aria-describedby") === "includeHint";
   $("tooltips").click();
   $("optionsOk").click();
-  hover(items[0].node, cx, cy);
+  hover(nodeOf(items[0]), cx, cy);
   const silent = $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "false"
     && (recall("tooltips") === "false" || attempt(() => localStorage) === null);
   $("optionsButton").click();

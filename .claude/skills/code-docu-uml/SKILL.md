@@ -26,7 +26,8 @@ To change the diagram, change it in `MAINTAINER.md`: the PDF draws whatever is t
   page's width, less `SAFETY_MM` (4 mm), so that the diagram never spills onto a second page. The largest scale wins,
   and the section takes that page's name.
 - `window.umlReport`, printed by `print.mjs` as `uml: {…}`, gives the page, the direction, the text's size in points
-  and the names that found no link. On 2026-10-31 it was the upright page, `TB`, at 4.3 points.
+  and the names that found no link. On 2026-10-31 it was the upright page, `TB`, at 4.3 points; on 2026-11-01, with
+  14 scripts and their parts in model, view and controller as labels, the upright page, `TB`, at 3.2 points.
 
 If the text gets too small to read, as the diagram grows, the choices are to make the diagram in `MAINTAINER.md`
 smaller, or to give the page more room; ask before changing the page's size, as A4 was a decision.
@@ -37,8 +38,8 @@ smaller, or to give the page more room; ask before changing the page's size, as 
   `tests` stands for `js/tests/` and links to its chapter, and the label `data.json` links to its subchapter.
 - Each name in a box that starts with `+` or `-` links to its section. Names that are not top-level functions or
   objects, such as `model.items`, have no section: `uml.js` links them to their script's subchapter instead, and
-  lists them as `missing`. On 2026-10-31 those were `model.items`, `datahandler.data`, `pictures.view` and
-  `scrollbars.bars`, all values rather than functions, which is as it should be. A new name in that list is either
+  lists them as `missing`. On 2026-11-01 those were `page.parts`, `model.items`, `datahandler.data`, `pictures.view`
+  and `scrollbars.bars`, all values rather than functions, which is as it should be. A new name in that list is either
   such a value or a name in `MAINTAINER.md` that no longer matches the code.
 
 ## When it fails

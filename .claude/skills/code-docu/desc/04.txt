@@ -39,8 +39,6 @@ The tests of the tree: marking, Filters, the counts, opening and closing, and Fi
 @ js/tests/interface_test.js
 The tests of the language menu, the languages, the Options window, the keyboard and the report window, and the runs of
   the accessibility audit.
-- englishFirst: Tells whether a first visit, with no saved choice and a German browser, starts in the language the
-  address names, or else in English (Req. 10). Puts the saved choice back afterwards.
 - menuTests: Tests the language menu: in Options, every language in its own language, closing on Escape, a click or
   leaving it, a window that never resizes, the language changed on OK and kept in the address, English first, and marks
   kept (Tests 33 to 37; Req. 8 to 12).
@@ -90,7 +88,7 @@ The tests of the pictures, run with Simple UI off. There the page need not meet 
 - wrongSizes: Lists the pictures that do not suit the parchment chosen, trying every parchment in turn: `_sd` and `_x1`
   pictures with fhd and qhd, `_4k` and `_x2` ones with uhd and ultrawide.
 - pictureLooks: Tests the pictures as a whole: the choice for each screen, background, cursors, the Options button and
-  its ring, the tab icon, the parchment and the footer (Test 47).
+  its ring, the parchment and the footer (Test 47).
 - wrongBoxes: Lists the checkboxes without the sheet's picture for their state, empty, ticked or crossed, or with a
   drawn mark other than the dash, the radio buttons without theirs, and any state with no box (Test 48).
 - cellIn: Works out where a picture's cell is in its atlas: the files sorted by name, row by row, in a square grid.
@@ -105,7 +103,7 @@ The tests of the pictures, run with Simple UI off. There the page need not meet 
 - toolLooks: Lists what is wrong with the tree's buttons: not Clear and Expand all, or Collapse all while a branch is
   open, not side by side as wide as the pane, not the whole button picture, text cut, moved, focus not handed over, or
   different in another language (Test 50).
-- simpleSwitch: Ticks and unticks Simple UI, and lists what went wrong: a picture, tab icon or link left, the box moved,
+- simpleSwitch: Ticks and unticks Simple UI, and lists what went wrong: a picture or link left, the box moved,
   the choice not remembered, or something not back (Test 51).
 - strayBars: Lists the lists whose scroll bar is wrong: one shown where nothing scrolls or with Simple UI, none where
   the list scrolls, or one that barProblems() finds fault with.
@@ -139,7 +137,7 @@ The accessibility audit: checks the page as it stands against WCAG 2.2 AAA, wher
   70, 71; WCAG 1.4.6, 1.4.11).
 - layoutChecks: Checks 44 by 44 targets, no page scrolling, nothing sticking out sideways, and unjustified text with 1.5
   line spacing (Tests 72 to 75; WCAG 2.5.5, 1.4.10, 1.4.8; Rule 12).
-- mediaChecks: Checks that the page shows no media, tab icon or CSS picture, and runs no animations or transitions (Test
+- mediaChecks: Checks that the page shows no media or CSS picture, and runs no animations or transitions (Test
   76; Rules 9, 10, 11, 22).
 - audit: Checks the page as it stands through the checks above, and the focus checks if asked, under a name that says
   the state. Called in many states and languages.
@@ -158,8 +156,8 @@ An item is named by its English name throughout: the tree, `availability`, `pict
   its hyphens at line ends are merged. English comes first.
 - civs: The civilisations, in the order whose bits the sets use. A set is a number with one bit per civilisation
   (bit()).
-- icons: Where the pictures are: the tab icon, the file names of civilisations that differ from their names, and the
-  folder of the tree's icons.
+- icons: Where the pictures are: the file names of civilisations that differ from their names, and the folder of the
+  tree's icons.
 - icons.groups: The icon of each top-level group, by kind and picture.
 - icons.atlas: For each kind, the pictures in its atlas, which cellIn() places by file name.
 - tree: The tree as nested objects: `{"group": …}` for a top-level group or a group in a building, `{"item": …}` for an

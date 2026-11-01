@@ -103,7 +103,8 @@ function scriptCounts(c, mod) {
   const fns = mod.entries.filter((e) => e.kind === "function").length;
   const objs = mod.entries.length - fns;
   const exported = mod.entries.filter((e) => e.exported).length;
-  return `${fns} function${fns === 1 ? "" : "s"}${objs ? `, ${objs} object` : ""}, ${exported} exported`;
+  const others = objs ? `, ${objs} object${objs === 1 ? "" : "s"}` : "";
+  return `${fns} function${fns === 1 ? "" : "s"}${others}, ${exported} exported`;
 }
 
 function scriptChapter(c) {

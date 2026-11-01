@@ -4,6 +4,7 @@
 2. [How the code works](#how-the-code-works)
    - [Files and folders](#files-and-folders)
    - [UML diagram](#uml-diagram)
+   - [How model, view and controller work together](#how-model-view-and-controller-work-together)
    - [The data](#the-data)
    - [How marking works](#how-marking-works)
    - [Simple UI and the pictures](#simple-ui-and-the-pictures)
@@ -101,11 +102,12 @@ why a game update changes only those files, and sometimes adds an icon.
 | `css/base.css` | How the page looks with Simple UI, and its layout either way: big and small screens, light and dark colours. |
 | `css/pictures.css` | How the page looks without Simple UI: every rule with a picture or a font, the loading screen, the tooltip and the scroll bars. |
 | `js/script.js` | Where the page starts. |
-| `js/model/` | The data and the tree's rules: `datahandler.js` and `model.js`. |
-| `js/view/` | What the page shows: `stringbuilder.js`, `pictures.js`, `scrollbars.js` and `report.js`. |
-| `js/controller/` | What the visitor does: `nodetree.js` (the tree) and `optionshandler.js` (Options). |
+| `js/model/` | The data and the tree's rules, which tell the page when they change: `datahandler.js` and `model.js`. |
+| `js/view/` | What the page shows: `stringbuilder.js`, `treeview.js` (the tree), `optionsview.js` (Options), `page.js` (the whole page), `scrollbars.js`, `pictures.js` and `report.js`. |
+| `js/controller/` | What the visitor's clicks, touches and keys mean: `nodetree.js` (the tree), `optionshandler.js` (Options) and `updatehandler.js` (the updater). |
 | `js/tests/` | The tests, loaded only when the address ends in `?test`; see [Tests](#tests). |
 | `data.json` | The data and the English text; see [The data](#the-data). |
+| `favicon.ico` | The tab icon. Browsers fetch it from the main folder by themselves, so no code names it. |
 | `locales/` | One file per other language, such as `de.json` for German. |
 | `assets/` | Pictures and fonts, used only when Simple UI is off; see [Assets](#assets). |
 | `documentation/` | This guide, `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DECISIONS.md`, `code_docu.pdf`, and the development log in `DEVLOG/`. |
@@ -126,7 +128,8 @@ itself never does.
 ### UML diagram
 
 Each arrow points from a script to a script it uses. `+` marks what a script shares with others, `-` what it keeps to
-itself.
+itself. The labels of `model`, `page`, `nodetree` and `optionshandler` give their parts in model, view and
+controller, which "How model, view and controller work together" below explains.
 
 ```mermaid
 classDiagram
@@ -135,49 +138,89 @@ classDiagram
     <<module>>
   }
   class optionshandler {
-    <<module>>
+    <<strategy of optionsview>>
     +start()
     +setLanguage(code)
     +setInclude(on)
     +setRegional(on)
     +setSimple(on)
     +savedSimple()
-    +screenPictures(width, height, ratio)
-    +finishLoading()
-    +pictureFiles()
-    +tick(id, on)
-    +choices
+    -choices
+    -apply()
+    -reset()
     -choose(code)
   }
   class nodetree {
-    <<module>>
+    <<strategy of treeview>>
     +startTree()
-    +setOpen(item, open)
-    +update()
-    +find()
-    +replant()
-    +dress(item)
+    +refind()
     -toggle(item, kind)
+    -branch(item)
+    -key(item, typed)
+    -find(typed)
+  }
+  class updatehandler {
+    <<module>>
+    +runUpdate()
+  }
+  class page {
+    <<observer, composite>>
+    +page
+    +startPage()
+    -parts
+  }
+  class treeview {
+    <<module>>
+    +treeView
+    +startTreeView(actions)
+    +rowOf(item)
+    +isOpen(item)
+    +setOpen(item, open)
+    +focus(item, onTwisty)
+    +highlight(found, searched)
+    +findText()
+    -replant()
+    -paint()
+  }
+  class optionsview {
+    <<module>>
+    +optionsView
+    +startOptionsView(actions)
+    +shown(id)
+    +show(id, value)
+    +tick(id, on)
+    +buildLanguages()
+    +setMenu(open, focus)
   }
   class stringbuilder {
     <<module>>
+    +textsView
+    +civsView
+    +filtersView
+    +chipName(item, kind, own)
+    +demand(actions, names)
     +clone(id)
     +simple()
-    +writeTexts()
-    +label()
-    +listCivs(marked)
-    +listFilters()
     +showLoading(shown)
-    +place(icon, cell)
+    +showPage()
   }
   class model {
-    <<module>>
+    <<subject>>
     +items
-    +rebuild()
+    +subscribe(observer)
+    +unsubscribe(observer)
+    +startModel(included, regionals, code)
     +mark(item, kind)
-    +fit()
+    +reach(item, kind)
+    +clear()
+    +unmarkLine(item, kind, own)
+    +setIncluded(on)
+    +setRegionals(on)
+    +chooseLanguage(code)
     +filtersOf()
-    +chipName(item, kind)
+    +chipOf(item, kind, own)
+    -notify(change)
+    -rebuild()
   }
   class datahandler {
     <<module>>
@@ -201,6 +244,10 @@ classDiagram
     <<module>>
     +view
     +setView(choice)
+    +setTips(on)
+    +applySimple(on)
+    +finishLoading()
+    +screenPictures(width, height, ratio)
     +startPictures()
     -wireTip()
   }
@@ -213,74 +260,139 @@ classDiagram
   }
   class report {
     <<module>>
-    +runUpdate()
     +openReport(title, status)
     +report(line)
+    +showUpdating()
+    +showUpdate(result)
+    +showUpdateFailed(error)
   }
   script ..> optionshandler
-  script ..> stringbuilder
-  script ..> report
+  script ..> updatehandler
   script ..> pictures
+  script ..> stringbuilder
   script ..> datahandler
   script ..> tests : only with ?test
   optionshandler ..> nodetree
+  optionshandler ..> pictures
+  optionshandler ..> page
+  optionshandler ..> optionsview
   optionshandler ..> stringbuilder
   optionshandler ..> model
   optionshandler ..> datahandler
-  nodetree ..> stringbuilder
+  nodetree ..> treeview
   nodetree ..> model
   nodetree ..> datahandler
-  stringbuilder ..> model
-  stringbuilder ..> datahandler
-  pictures ..> optionshandler
-  pictures ..> nodetree
-  pictures ..> stringbuilder
-  pictures ..> datahandler
+  updatehandler ..> report
+  updatehandler ..> datahandler
+  pictures ..> page
+  pictures ..> optionsview
+  pictures ..> treeview
   pictures ..> scrollbars
+  pictures ..> stringbuilder
+  pictures ..> model
+  pictures ..> datahandler
+  page ..> optionsview
+  page ..> treeview
+  page ..> stringbuilder
+  page ..> model
+  treeview ..> stringbuilder
+  treeview ..> model
+  treeview ..> datahandler
+  optionsview ..> stringbuilder
+  optionsview ..> datahandler
   scrollbars ..> stringbuilder
   scrollbars ..> datahandler
   report ..> stringbuilder
   report ..> datahandler
+  stringbuilder ..> model
+  stringbuilder ..> datahandler
   model ..> datahandler
   tests ..> optionshandler
-  tests ..> nodetree
-  tests ..> stringbuilder
+  tests ..> treeview
+  tests ..> optionsview
   tests ..> pictures
   tests ..> scrollbars
   tests ..> report
+  tests ..> stringbuilder
   tests ..> model
   tests ..> datahandler
   note for datahandler "reads data.json and locales/"
 ```
 
 The scripts are in three folders: `js/model/` holds the data and the rules, `js/view/` what the page shows, and
-`js/controller/` what happens when the visitor clicks, touches or types. `js/script.js` starts them.
+`js/controller/` what the visitor's clicks, touches and keys mean. `js/script.js` starts them.
 
 - **`js/script.js`** turns Simple UI on or off as the visitor last chose (off on a first visit), which puts up the
   loading screen without it, loads `data.json` and the visitor's language, starts the page, and lets the loading
-  screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the updater.
+  screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the updater. It never
+  touches the page itself.
 - **`js/model/datahandler.js`** looks after the data: loading `data.json` and the language files, the chosen
   language, which civilisations have what, the visitor's saved choices, and the updater's fetching and file writing.
 - **`js/model/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
-  [How marking works](#how-marking-works)), which civilisations fit, and what **Filters** shows. It never touches the
-  page.
-- **`js/view/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the names in
-  the tree, the list of civilisations and **Filters**.
-- **`js/controller/nodetree.js`** draws the tree and handles it: opening and closing, counts, marking by click,
-  touch and key, **Find**, and the buttons above it.
-- **`js/controller/optionshandler.js`** runs the Options window: the language menu, the Include boxes and Simple UI,
-  with the loading screen that comes with leaving Simple UI. Each setting is one of its `choices`;
-  `js/view/pictures.js` adds the civilisations' view and Tooltips.
-- **`js/view/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, and the
-  tooltip. It starts the scroll bars.
+  [How marking works](#how-marking-works)), which civilisations fit, and what **Filters** shows. Only its own
+  functions change it (`mark`, `clear`, `unmarkLine`, `setIncluded`, `setRegionals` and `chooseLanguage`), and each
+  then tells the page what changed. It never touches the page.
+- **`js/view/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the list of
+  civilisations and **Filters**, with the names of its buttons. It also holds the helpers the other views share.
+- **`js/view/treeview.js`** draws the tree: its rows, names, boxes and counts, which branches are open, what **Find**
+  found, and where the focus goes. It hands the clicks, touches and keys in the tree, its buttons and **Filters** to
+  `js/controller/nodetree.js`.
+- **`js/view/optionsview.js`** draws the Options window: the language menu, the boxes and the civilisations' view, as
+  the visitor ticks and picks them before **OK**. Opening the window and **OK** go to
+  `js/controller/optionshandler.js`.
+- **`js/view/page.js`** is the whole page: it holds the other views and passes each change to all of them.
 - **`js/view/scrollbars.js`** draws the pictures' scroll bars (see [Simple UI and the
   pictures](#simple-ui-and-the-pictures)).
+- **`js/view/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, the tooltip,
+  and the pictures and loading screen that come with leaving Simple UI. It starts the scroll bars.
 - **`js/view/report.js`** shows the report window of the updater and the tests. Its title, its summary and its
   **Close** button stay in view, and only the list between them scrolls. **Close** sits on the right and is the plain
   button of Simple UI, even with the pictures on.
+- **`js/controller/nodetree.js`** says what the visitor did in the tree: marking by click, touch and key, opening and
+  closing, the arrow keys, **Find**, the buttons above the tree, and the buttons of **Filters**.
+- **`js/controller/optionshandler.js`** says what **OK** in the Options window does. Each setting is one of its
+  `choices`, with what it is now and how to set it, and **OK** sets each one that the window shows changed. It saves
+  the settings, loads a language the first time it is chosen, and starts the page.
+- **`js/controller/updatehandler.js`** runs the updater (`?update`): it fetches the new data and has
+  `js/view/report.js` show what changed.
 
-A script only uses the scripts below it in this order: `datahandler.js`, `model.js`, `stringbuilder.js`,
-`nodetree.js`, `optionshandler.js`. Keep it so, so that the arrows never go round in a circle.
+A script only uses the scripts before it in this order: `datahandler.js`, `model.js`, `stringbuilder.js`,
+`treeview.js`, `optionsview.js`, `page.js`, `scrollbars.js`, `pictures.js`, `report.js`, `nodetree.js`,
+`optionshandler.js`, `updatehandler.js`, `script.js`. Keep it so, so that the arrows never go round in a circle.
+
+### How model, view and controller work together
+
+The scripts follow model, view and controller as *Head First Design Patterns* (Freeman and Robson, the chapter on
+compound patterns) describes it: three patterns, each with its part.
+
+- **The model tells the page when it changes (Observer).** At the start, `js/view/page.js` calls `subscribe(page)` in
+  `model.js`. After every change, `model.js` calls `page.update(change)` once, with the kind of change: `"marks"`
+  (the marks changed), `"tree"` (the tree was built again, with new items) or `"language"`. The views then read
+  whatever else they need from the model themselves.
+- **Each view hands what the visitor did to its controller (Strategy).** `treeview.js` is started with the actions of
+  `nodetree.js`, and `optionsview.js` with those of `optionshandler.js`, and each checks at the start that none is
+  missing. A click on a row only calls `toggle(item, "has")`: the controller decides what that means, changes the
+  model, and may ask the view to open a branch or move the focus.
+- **The page holds the smaller views (Composite).** `page.js` holds the views of the texts, Options, the tree, the
+  civilisations and **Filters**, and passes every change to each of them, always in that order. `page.update("start")`
+  draws the whole page once at the start.
+
+How this differs from the book's classic model, view and controller:
+
+1. There are no classes: each part is a module or a plain object, and an interface is a list of action names, which
+   the view checks when it starts.
+2. The model sends only the kind of change, and the views read the rest: it pushes a hint, and they pull the data.
+3. The browser's elements are already the Composite of widgets, as Swing's components are in the book. `page.js` adds
+   a small Composite of views, so that one notice updates every view in a fixed order.
+4. What only a widget does stays in its view: the language menu and the boxes before **OK**, the tooltip, the scroll
+   bars, and telling a long press from a click. Whatever changes the model, a setting or which branches are open goes
+   through a controller.
+5. Simple UI, the civilisations' view and Tooltips are only how the page looks: the controller saves them and tells
+   the view at once, without the model. Simple UI then redraws the views with `page.update("look")`.
+6. It is the classic model, view and controller of one page, not the book's Model 2 for web servers.
+
+The rule to keep: a view never imports a controller and never changes the model; a controller never touches the page;
+only `model.js` tells the views that the model changed.
 
 ### The data
 
@@ -291,7 +403,7 @@ A script only uses the scripts below it in this order: `datahandler.js`, `model.
 - `languages`: the 17 languages, English first. Each has its `name`, its `tag` (such as `pt-BR`) and two settings the
   updater uses to tidy the game's names.
 - `civs`: the civilisations, by their English names.
-- `icons`: where the tree's icons are, the tab icon, the civilisations whose icon has another name than theirs, and
+- `icons`: where the tree's icons are, the civilisations whose icon has another name than theirs, and
   in `atlas` the pictures each atlas of the tree's icons holds. **The updater adds new pictures to `atlas`.**
 - `tree`: the rows of the left pane, where a group can be marked `"unique": true` or `"lines": true`, and an item
   can be marked `"own": true`, or name an item it `"excludes"`, or the items it `"replaces"` (see
@@ -411,18 +523,18 @@ Unticking **Include Regionals** also leaves out the items aoe2techtree calls reg
 
 ### Simple UI and the pictures
 
-**Simple UI**, a box in the Options window, turns every picture off: the page then uses no images at all, not even
-the tab icon, and a visitor who chose it never downloads a picture or a font. The page's look and its accessibility
+**Simple UI**, a box in the Options window, turns every picture off: the page then uses no images but the tab icon,
+`favicon.ico`, which the browser shows by itself (Rule 9 and Req. 33 allow it), and a visitor who chose it never
+downloads another picture or a font. The page's look and its accessibility
 rules are the ones `REQUIREMENTS.md` and WCAG 2.2 AAA ask for with Simple UI on (requirement 0, Rule 22); the way
 marking works is the same in both modes.
 
 It works through one class: with Simple UI off, `<html>` has the class `pictures`. Every rule that uses a picture or a
 font is in `css/pictures.css` and starts with `.pictures`, so none of them applies with Simple UI on. The icons in the
-tree and the list are only made while the class is there, and the tab icon in `index.html` is empty (`data:,`) until
-`js/controller/optionshandler.js` sets it with Simple UI off.
+tree and the list are only made while the class is there.
 
 Which pictures the page uses depends on the screen, worked out once as the page opens (`screenPictures()` in
-`js/controller/optionshandler.js`) from its resolution in device pixels: `screen.width` and `screen.height` times
+`js/view/pictures.js`) from its resolution in device pixels: `screen.width` and `screen.height` times
 `devicePixelRatio`, so a 1920 by 1080 screen at 200 % counts as 3840 by 2160. `<html>` gets the answer in two
 attributes, set before the `pictures` class:
 
@@ -448,7 +560,7 @@ Simple UI shows the screen in the same way, unless all of them have loaded alrea
 browser's disk cache, as on a new visit, still take a moment, and the screen shows for that moment. With Simple UI it
 never shows, and the loading picture is not on the page.
 
-`setSimple()` and `finishLoading()` in `js/controller/optionshandler.js` run it. `setSimple()` puts the loading picture
+`applySimple()` and `finishLoading()` in `js/view/pictures.js` run it. `applySimple()` puts the loading picture
 on the page before the `pictures` class, so it is the first picture the browser asks for. The template in `index.html`
 names it in `data-src`, not `src`, and `showLoading()` sets `src`: Firefox downloads the `src` of an `<img>` in a
 template before any script runs, which would download the picture with Simple UI too. `finishLoading()` finds the
@@ -458,7 +570,7 @@ the page's pictures there and then, before the loading picture. It loads each pi
 the browser soon forgets pictures nothing uses and would load them again, and lets the screen go before anything is
 drawn when every one is already complete. Each picture is to be asked for once: Firefox lists a picture again, from its
 cache, when something new starts using it after it has loaded. So `finishLoading()` leaves out the loading picture,
-which the screen does not wait for, and `setSimple()` makes the `Image` of each picture of `<html>` and `<body>`, the
+which the screen does not wait for, and `applySimple()` makes the `Image` of each picture of `<html>` and `<body>`, the
 background and the cursor, with the `pictures` class, while the browser is still loading them. The text is in
 `index.html` in English, as it shows before the language files load, and then in the visitor's language (`loading` in
 the texts). The picture turns unless the visitor asks for reduced motion; its turn is the page's only animation, as Rule
@@ -541,7 +653,6 @@ is #201819, as the list's is.
 | `assets/images/ui/loading.webp` | The turning picture of the loading screen. |
 | `assets/images/icons/civs/` | The civilisations' icons, and in `atlas/` the atlas the page shows them from. |
 | `assets/images/icons/nodes/` | The tree's icons, in `building/`, `unit/`, `tech/` and `misc/`, each with its atlas in `atlas/`, and `colour_key.csv`. |
-| `assets/images/favicon.ico` | The tab icon. |
 | `assets/fonts/` | Georgia, Times New Roman Bold and Trajan Pro Bold, used only with the pictures. |
 
 - Most pictures come in two sizes, `_sd` and `_4k`, and the cursors, the civilisations' atlas and the scroll bars'
@@ -614,6 +725,10 @@ and with a screen reader.
   does; the tests check that every script is in one of them, but for `js/script.js`.
 - No two files with the same name. Every file in `js/tests/` ends in `_test.js`, so that, for example,
   `js/tests/pictures_test.js` and `js/view/pictures.js` stay apart.
+- A view never imports a controller and never changes the model; a controller never touches the page; only
+  `model.js` tells the views that the model changed (see
+  [How model, view and controller work together](#how-model-view-and-controller-work-together)). Test 85 checks
+  it.
 - No comments in the code, and a blank line before and after every function.
 - No pictures outside `assets/` and `.pictures` rules, and no sounds, animations, libraries, build steps or Python.
 - No button, box or other control may move on the screen while the visitor uses it, and the page itself never
