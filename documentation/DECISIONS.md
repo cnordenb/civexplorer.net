@@ -367,6 +367,9 @@ link.
 - **Tests run in the page**, at `index.html?test`, and on GitHub on every push and pull request, in the Chrome of
   GitHub's Ubuntu runners, with no GitHub Actions (Rule 14).
   [2026-10-18](DEVLOG/DEVLOG1.md#translations-and-making-the-project-follow-rulesmd)
+- **On GitHub the tests run in real time**, and the workflow reads their report from Chrome's log, as virtual time
+  jumped past the waits for files and pictures and cut the tests short.
+  [2026-11-01 18:06:02](DEVLOG/DEVLOG5.md#180602-the-tests-on-github-run-in-real-time)
 - **At most 100 tests** (Rule 17), merged where needed. [2026-10-19](DEVLOG/DEVLOG1.md#at-most-100-tests-rule-17)
 - **The tests run in the order of `TESTS.md`'s categories**: functional, accessibility, maintainability.
   [2026-10-19](DEVLOG/DEVLOG1.md#the-tests-run-in-the-order-of-testsmds-categories)

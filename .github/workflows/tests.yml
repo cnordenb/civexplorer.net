@@ -34,19 +34,28 @@ jobs:
       - name: Run the tests in Chrome, in light and dark colours and at several window sizes
         run: |
           status=0
+          limit=120
           for scheme in 1 0; do
             for size in 1920,1080 1000,1000 720,1280; do
               google-chrome --headless=new --no-sandbox --disable-gpu --allow-file-access-from-files \
-                --blink-settings=preferredColorScheme=$scheme --virtual-time-budget=950000 --window-size=$size \
-                --dump-dom "file://$PWD/index.html?test" > page.html 2> chrome.log || true
-              summary="$(grep -o 'id="reportStatus"[^>]*>[^<]*' page.html | sed 's/.*>//')"
-              if grep -q 'data-tests="passed"' page.html; then
-                echo "$summary"
+                --blink-settings=preferredColorScheme=$scheme --window-size=$size --enable-logging=stderr --v=0 \
+                "file://$PWD/index.html?test" 2> chrome.log &
+              for second in $(seq $limit); do
+                grep -qE ':CONSOLE[^]]*] "tests: (passed|failed)"' chrome.log && break
+                kill -0 $! 2> /dev/null || break
+                sleep 1
+              done
+              kill $! 2> /dev/null || true
+              wait $! 2> /dev/null || true
+              report="$(sed -n 's/^.*:CONSOLE[^]]*] "tests: \(.*\)", source: .*$/\1/p' chrome.log)"
+              outcome="$(printf '%s\n' "$report" | tail -n 1)"
+              if [ "$outcome" = passed ] || [ "$outcome" = failed ]; then
+                printf '%s\n' "$report" | tail -n 2 | head -n 1
+                printf '%s\n' "$report" | head -n -2 | sed 's/^/  /'
               else
-                echo "${summary:-The tests did not finish in a window of $size pixels.}"
-                grep -o 'Test [0-9]* failed\|Failed: [^<]*' page.html | sed 's/^/  /' || true
-                status=1
+                echo "The tests did not finish in $limit seconds in a window of ${size/,/ by } pixels."
               fi
+              [ "$outcome" = passed ] || status=1
             done
           done
           exit $status

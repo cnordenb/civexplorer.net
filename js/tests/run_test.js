@@ -30,8 +30,11 @@ const merge = (where) => {
 const reportLine = (result, tools) => fill(!result.number ? tools.aborted : result.ok ? tools.pass : tools.fail,
   result);
 
+const announce = (lines) => lines.forEach((line) => console.log(`tests: ${line.replace(/\s+/g, " ")}`));
+
 export function loadFailed() {
   root.dataset.tests = "failed";
+  announce(["the page could not load its data", "failed"]);
 }
 
 function prepare() {
@@ -99,10 +102,12 @@ export async function runTests() {
   const failed = merged.filter((result) => !result.ok);
   root.dataset.tests = failed.length ? "failed" : "passed";
   const tools = data.tools;
-  openReport(tools.testTitle, fill(failed.length ? tools.testFailed : tools.testPassed, {
+  const status = fill(failed.length ? tools.testFailed : tools.testPassed, {
     failed: failed.length, n: merged.length, window: where,
     colours: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-  }));
+  });
+  openReport(tools.testTitle, status);
   for (const result of [...failed, ...merged.filter((r) => r.ok)]) report(reportLine(result, tools));
+  announce([...failed.map((result) => reportLine(result, tools)), status, root.dataset.tests]);
   $("report").querySelector("form button").addEventListener("click", () => location.assign(location.pathname));
 }

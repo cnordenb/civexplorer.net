@@ -575,7 +575,7 @@ window sizes in light and dark colours, and also checks the file names and that 
 
 | File in `js/tests/` | Tests |
 | --- | --- |
-| `run_test.js` | Runs the rounds, shows the report, and checks that there are at most 100 tests. |
+| `run_test.js` | Runs the rounds, shows the report and writes it to the console, where GitHub reads it, and checks that there are at most 100 tests. |
 | `helpers_test.js` | No tests: shared helpers, and the sample items the tests use, picked from the data so that the tests survive game updates. |
 | `behaviour_test.js` | Marking, **Filters**, counts, opening and closing, and **Find**. |
 | `interface_test.js` | The keyboard, the language menu, every language, the Options window, the filters of unique items, and the runs of the accessibility audit. |

@@ -1205,7 +1205,7 @@ Keep the report window usable: title, count and Close stay put and only the list
 ## Test 99
 
 ### File residence:
-`js/tests/run_test.js`, lines 94-95
+`js/tests/run_test.js`, lines 97-98
 
 ### Purpose:
 Enforce Rule 17: at most 100 tests.

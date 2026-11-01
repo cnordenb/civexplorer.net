@@ -951,3 +951,40 @@ Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions ma
 - The tests were not run, as no file they read changed.
 - Each box of the overview ends in an empty strip, mermaid's place for methods, which it hides only in a box that
   lists nothing.
+
+### 18:06:02: the tests on GitHub run in real time
+
+#### What changed
+
+- **The fault.** On GitHub the tests often did not finish: 4 of the last 13 runs failed in the test step. No test was
+  at fault. Chrome was started with `--virtual-time-budget=950000` and dumped the page once that virtual time was
+  spent, but virtual time does not wait for a file read from `file://` or a picture's `decode()`. While the page waits
+  for one with no timer set, Chrome jumps to the end of the budget at once and dumps the page as it is. It was dumped
+  while the tests were being imported, while the loading screen waited for its pictures, and in Test 49 at
+  `atlas.decode()`. The tests themselves spend about 3 seconds of virtual time.
+- **Reproduced** with the workflow's command in headless Chrome 156 on Windows: 5 of 48 runs did not finish, and 13
+  of 48 with eight at once. A log of each step showed virtual time going from under a second to 950 seconds at one of
+  those waits. At 10% a window, a run of six windows fails about every second time.
+- **The fix.** `.github/workflows/tests.yml` starts Chrome without `--virtual-time-budget` and `--dump-dom`, with its
+  log on, reads the log once a second for at most 120 seconds a window, and then stops Chrome. The tests run in real
+  time, as at `index.html?test` in a browser. `runTests()` in `run_test.js` writes each failed test, the count and
+  then `passed` or `failed` to the console, each line starting with `tests: `, and `loadFailed()` writes that the
+  data could not load. The workflow prints the count and the failed tests with their details, or names the window
+  whose tests did not finish.
+- **Kept** from the commit before, with no entry of its own: `fitBars()` in `helpers_test.js` fits the scroll bars at
+  once, where `painted()` waited for a frame, and `loaded()` no longer leaves its 10-second timer behind.
+- **Tests.** There are still 99, none changed. Test 99 is now at lines 97 and 98 of `run_test.js`.
+- **Checked.** The step as it stands in the workflow, run with `bash -e` as on GitHub: all 99 tests passed in all six
+  windows, in 213 seconds. Run three times at once, it passed all nine light windows before it was stopped for want
+  of memory. With a test broken on purpose it printed the count and the failed test with its detail, and failed;
+  with tests that never end it named the window and failed. No Chrome was left running.
+- **Documents.** `MAINTAINER.md`: what `run_test.js` does. `TESTS.md`: Test 99's lines. `DECISIONS.md`.
+
+#### Not done
+
+- The workflow has not yet run on GitHub. The step reads the console from the log as Chrome writes it on Windows,
+  `INFO:CONSOLE:<line>] "<text>", source: <file>`; if Chrome on Ubuntu writes it otherwise, no window finishes.
+- `code_docu.pdf` was not made again; it lacks `announce()` in `run_test.js`.
+- With Ubuntu's DejaVu fonts in place of Windows' and the page as large as on GitHub, Test 50 failed at 720 by 1193
+  pixels, as Malay's Expand all was cut. It failed the same way in a commit whose tests passed on GitHub, so GitHub's
+  fonts differ from those; it was not followed further.
