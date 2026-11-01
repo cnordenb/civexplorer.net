@@ -7,7 +7,7 @@ Small tools the test files share: recording results, finding and measuring eleme
 - wait: Waits a number of milliseconds. Used to hold a long press.
 - settled: Waits until an image has loaded or failed.
 - loaded: Waits until every image has loaded or failed, or ten seconds have passed, so the tests check pictures only
-  once they are there.
+  once they are there, and then stops its own timer.
 - phone: Tells whether the window uses the phone layout: narrower than 720 px and at least 640 px tall.
 - width: Measures the width of the first element a selector finds.
 - spans: Tells whether the footer is as wide as the panes, or hidden in the phone layout.
@@ -79,7 +79,8 @@ Small tools the test files share: recording results, finding and measuring eleme
 - hex: Turns a colour written as six hex digits into the `rgb()` form the browser reports.
 - edges: Reads `colour_key.csv` into the outline colour of each kind and reach of tree icon, so the tests compare the
   page with the file.
-- painted: Waits until the browser has drawn the page once more, so that the scroll bars have been fitted.
+- fitBars: Fits every scroll bar to its list at once, as resizing the window does, so that the tests need not wait for
+  the browser to draw the page again.
 - frameShape: The height of one picture in a sheet divided by its width, from the sheet's own size, so a test can tell a
   picture drawn in proportion from a stretched one.
 - sprite: Describes how an element draws its picture: the file, its size, its repeat and its position.

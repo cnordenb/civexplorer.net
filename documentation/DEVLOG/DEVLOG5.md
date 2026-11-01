@@ -988,3 +988,13 @@ Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions ma
 - With Ubuntu's DejaVu fonts in place of Windows' and the page as large as on GitHub, Test 50 failed at 720 by 1193
   pixels, as Malay's Expand all was cut. It failed the same way in a commit whose tests passed on GitHub, so GitHub's
   fonts differ from those; it was not followed further.
+
+### 19:14:45: `code_docu.pdf` made again
+
+#### What changed
+
+- **`code_docu.pdf`** made again, describing `announce()`, and `fitBars()` in place of `painted()`, with `loadFailed()`,
+  `runTests()` and `loaded()` brought up to date in `desc/`: 82 pages, 1.4 MB, 4095 links, none without a target, 484
+  bookmarks, and every page A4. The title page, the contents, the four UML pages, `data.json`'s page, the first page of
+  `js/model/`, the pages of `run_test.js` and `fitBars()`, and the first page of the index were looked at. The form is
+  unchanged, so `DECISIONS.md`, `MAINTAINER.md` and `form.md` are too.

@@ -266,12 +266,15 @@ Runs the tests and shows the report. Loaded only when the address ends in `?test
 - merge: Combines the results into one line per test, failed if any of its checks failed, with the first details and the
   window's size. A test may check in several states and languages.
 - reportLine: Writes a test's report line, such as "Test 15 failed: ...", from its number, name and details.
-- loadFailed: Marks the tests as failed when the page could not load, so CI never waits for a result that cannot come.
+- announce: Writes lines of the report to the console, one by one and each starting with `tests:`, where the workflow
+  on GitHub reads them from Chrome's log.
+- loadFailed: Marks the tests as failed when the page could not load, and says so in the console, so CI never waits for
+  a result that cannot come.
 - prepare: Notes the visitor's language, options and saved choices, then sets the tests' starting point: Include
   unticked, Include Regionals ticked, Simple UI and Tooltips on.
 - restore: Puts back the visitor's language, options, view, address and saved choices after the tests.
 - rounds: Runs every test in three rounds, functional, accessibility and maintainability, in the order TESTS.md lists
   them, picking sample items afresh where the tree was rebuilt.
 - runTests: Runs the tests, numbers them in the order they first ran, checks the 100-test limit (Rule 17), marks the
-  page passed or failed for CI, and shows the report, failures first. Its Close leaves the tests: it opens the page's
-  own address, without `?test`.
+  page passed or failed, and shows the report, failures first. For CI it then has announce() write the failed tests,
+  the count and whether they passed. Its Close leaves the tests: it opens the page's own address, without `?test`.
