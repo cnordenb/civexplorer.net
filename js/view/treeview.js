@@ -1,8 +1,8 @@
-import { data, words, numbers, size, plural, fill, nameOf, cellOf } from "../model/datahandler.js";
-import { items, roots, matching, boxState, barred, locked } from "../model/model.js";
+import { data, words, numbers, plural, fill, nameOf, cellOf } from "../model/datahandler.js";
+import { items, roots, boxState, barred, locked, countOf } from "../model/model.js";
 import { $, clone, simple, place, compose, demand } from "./stringbuilder.js";
 
-const NEEDS = ["toggle", "branch", "key", "find", "enter", "clear", "expandAll", "collapseAll", "unchip"];
+const NEEDS = ["gesture", "branch", "key", "find", "enter", "clear", "expandAll", "collapseAll", "unchip", "redrawn"];
 
 const rows = new Map();
 let actions = null;
@@ -96,8 +96,7 @@ function label() {
 
 function count(item) {
   const row = rows.get(item);
-  const own = size(matching & (item.group ? item.all : item.set));
-  const all = size(matching & item.all);
+  const { own, all } = countOf(item);
   if (!item.parent && !own) {
     row.count.textContent = "";
     row.civCount.textContent = "";
@@ -144,6 +143,7 @@ export const treeView = {
     items.filter(locked).forEach((item) => setOpen(item, false));
     paint();
     items.forEach(count);
+    actions.redrawn(change);
   },
 };
 
@@ -193,7 +193,7 @@ function onRelease(e) {
   const { item, ready } = press;
   endPress();
   if (!ready || itemAt(e.target) !== item) return;
-  actions.toggle(item, "lacks");
+  actions.gesture(item, "hold");
   swallowClick = true;
 }
 
@@ -202,7 +202,7 @@ function onMenu(e) {
   if (!item) return;
   e.preventDefault();
   if (e.button === 2 || press || performance.now() - touchEnded < 600) return;
-  actions.toggle(item, "lacks");
+  actions.gesture(item, "menu");
 }
 
 function onClick(e) {
@@ -210,7 +210,7 @@ function onClick(e) {
   const branch = items[(twisty ?? e.target.closest(".node"))?.dataset.i];
   if (branch && (twisty || heading(branch))) return actions.branch(branch);
   const item = itemAt(e.target);
-  if (item && !swallowClick) actions.toggle(item, "has");
+  if (item && !swallowClick) actions.gesture(item, "click");
 }
 
 function onChip(e) {

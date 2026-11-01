@@ -18,10 +18,11 @@ fs.mkdirSync(WORK, { recursive: true });
 const wanted = fs.readFileSync(path.join(SKILLS, "package.json"), "utf8");
 const manifest = path.join(WORK, "package.json");
 const current = fs.existsSync(manifest) ? fs.readFileSync(manifest, "utf8") : null;
-const installed = ["acorn", "mermaid"].every((name) => fs.existsSync(path.join(WORK, "node_modules", name)));
+const names = Object.keys(JSON.parse(wanted).dependencies);
+const installed = names.every((name) => fs.existsSync(path.join(WORK, "node_modules", name)));
 if (current !== wanted || !installed) {
   fs.writeFileSync(manifest, wanted);
-  console.log(`installing acorn and mermaid in ${WORK}`);
+  console.log(`installing ${names.join(", ")} in ${WORK}`);
   const npm = spawnSync("npm", ["install", "--no-audit", "--no-fund", "--no-package-lock", "--loglevel=error"],
     { cwd: WORK, shell: true, stdio: "inherit" });
   if (npm.status !== 0) problems.push(`npm install failed in ${WORK}`);

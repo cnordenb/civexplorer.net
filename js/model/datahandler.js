@@ -20,6 +20,12 @@ export const remember = (key, value) => attempt(() => (value === null
   ? localStorage.removeItem(key)
   : localStorage.setItem(key, value)));
 
+export const keepInAddress = (key, value) => attempt(() => {
+  const search = new URLSearchParams(location.search);
+  search.set(key, value);
+  history.replaceState(history.state, "", `?${search}${location.hash}`);
+});
+
 export const load = (url) => new Promise((resolve, reject) => {
   const request = new XMLHttpRequest();
   request.open("GET", url);

@@ -1,7 +1,7 @@
 import {
-  data, words, tag, collator, plural, fill, nameOf, civName, civsOf, civFile, cellOf,
+  data, words, tag, collator, plural, fill, nameOf, civName, civFile, cellOf,
 } from "../model/datahandler.js";
-import { items, matching, filtersOf, chipOf } from "../model/model.js";
+import { items, filtersOf, chipOf, matchingCivs } from "../model/model.js";
 
 export const $ = (id) => document.getElementById(id);
 
@@ -76,7 +76,7 @@ export function chipName(item, kind, own = false) {
 const civIcon = (civ) => place(clone("civIconTemplate"), cellOf(data.civs, civ, civFile));
 
 function listCivs() {
-  const civs = civsOf(matching).map((civ) => [civName(civ), civ]);
+  const civs = matchingCivs().map((civ) => [civName(civ), civ]);
   $("count").textContent = plural("compatible", civs.length);
   $("civs").replaceChildren(...civs.sort(([a], [b]) => collator.compare(a, b)).map(([name, civ]) => {
     const li = clone("civTemplate");

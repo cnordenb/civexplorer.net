@@ -23,8 +23,8 @@ The page's text: the fixed texts, the texts of the chosen language, the list of 
   building or group marked in full (Req. 24).
 - civIcon: Makes a civilisation's icon from its template, showing its cell of the civilisations' atlas. Only used
   without Simple UI.
-- listCivs: Lists the civilisations that fit the marks, translated and sorted (Req. 4), with icons and links to
-  aoe2techtree.net without Simple UI; writes the count, and the hint when the list is empty.
+- listCivs: Lists the civilisations that fit the marks (matchingCivs()), translated and sorted (Req. 4), with icons
+  and links to aoe2techtree.net without Simple UI; writes the count, and the hint when the list is empty.
 - civsView: The view of the civilisations: lists them again after every change.
 - listFilters: Makes one Filters button per entry (Req. 22, 23), with its mark and name, and a label telling screen
   readers what a click clears. Hides Filters when nothing is marked.
@@ -60,14 +60,14 @@ The tree on the left as the visitor sees it: its rows with their names, boxes, i
 - replant: Draws the tree from the model again, keeping the branches that were open open by their paths, and dresses
   each row. Runs at the start and whenever the tree is built again.
 - label: Writes every row's name in the current language.
-- count: Writes an item's count of civilisations that fit the marks: its own number, or "own–all" when it is closed with
-  items under it, and a spoken version for screen readers.
+- count: Writes an item's count of civilisations that fit the marks, from the model's countOf(): its own number, or
+  "own–all" when it is closed with items under it, and a spoken version for screen readers.
 - setOpen: Opens or closes an item's branch, and rewrites its count, since a closed item shows two numbers.
 - paint: Updates every box: its state for the eye, `aria-checked` for screen readers, the hidden "must lack" words, the
   bold of a row's own mark, and greyed-out rows and arrows.
 - treeView: The view of the tree: draws it again when the tree was built again, dresses its rows when Simple UI
   changes, names them when the language changes, then closes greyed-out items, paints the boxes and writes every
-  count.
+  count. Then it hands the change to its controller's redrawn(), so that Find follows the tree as it is drawn now.
 - focus: Moves focus to an item's row, or to its arrow when asked and it has one.
 - highlight: Highlights the items Find found, and announces how many there are, or that there are none (Req. 20, 21).
 - reveal: Scrolls the tree's own list just enough to show a row, and nothing around it, so the Find box being typed in
@@ -77,12 +77,12 @@ The tree on the left as the visitor sees it: its rows with their names, boxes, i
   has focus, and stops the browser's own action when the controller used the key (WCAG 2.1.1).
 - onPress: Starts a right-click, or a touch that becomes a long press after half a second, which marks must lack (Req.
   3). The row shows as pressed when the long press is ready.
-- onRelease: Ends a press: marks the item must lack if the press was ready and ends on the same item, and swallows the
-  click that follows.
-- onMenu: Stops the browser's own menu over the tree, and marks must lack on the menu key. Right-clicks and long presses
-  are left to onPress() and onRelease().
-- onClick: Opens or closes a branch from its arrow, or a heading from its name, or marks an item must have (Req. 3),
-  unless the click ends a long press.
+- onRelease: Ends a press: reports a hold on the item to the controller if the press was ready and ends on the same
+  item, and swallows the click that follows.
+- onMenu: Stops the browser's own menu over the tree, and reports the menu key to the controller. Right-clicks and long
+  presses are left to onPress() and onRelease().
+- onClick: Opens or closes a branch from its arrow, or a heading from its name, or reports a click on an item to the
+  controller, unless the click ends a long press. What a gesture marks is the controller's to decide.
 - onChip: Has the controller clear the marks behind a Filters button, and moves focus to the next button, or to the
   heading after the last one (WCAG 2.4.3).
 - wireTools: Connects Expand all and Collapse all, which hand focus to each other without Simple UI, Clear (Req. 17 to
@@ -122,13 +122,16 @@ The Options window as the visitor sees it: the language menu, the boxes and Civ 
 - wireLanguages: Connects the language menu: its button, a click on a language or anywhere else in the list (Req. 11,
   12), its keys, and closing when focus or a click goes elsewhere. Runs once at the start.
 - startOptionsView: Starts the Options window's view with its controller's actions, checked with demand(), and
-  connects the language menu and the window. Runs once, from start().
+  connects the language menu and the window. Runs once, from startOptions().
 
 @ js/view/page.js
 The whole page as one view (Composite), and the model's only observer (Observer). It holds the views of the texts,
-  Options, the tree, the civilisations and Filters, and passes each change to all of them, always in that order.
-- page: Passes a change to every view, in order: the model's `"marks"`, `"tree"` and `"language"`, `"start"` once at
+  Options, the tree, the civilisations and Filters, and passes each change to all of them, always in that order. Its
+  update, draw(), is only for the model's notices; redraw() draws the page for the start and for Simple UI.
+- draw: Passes a change to every view, in order: the model's `"marks"`, `"tree"` and `"language"`, `"start"` once at
   the start, and `"look"` after Simple UI changes.
+- redraw: Draws the page again without a change of the model: `"start"` once, from start(), and `"look"` when Simple
+  UI changes, from applySimple().
 - startPage: Has the model tell the page of its changes. Runs once, from start().
 
 @ js/view/scrollbars.js
@@ -188,7 +191,7 @@ What only the pictures need: Civ view, list or tiles, the tooltip, and the pictu
   Simple UI only; a later call takes over from an earlier one.
 - applySimple: The page's part of switching Simple UI (Req. 32, 33): the first time it picks the screen's pictures and
   sets `--pixel`, the size of one screen pixel; it shows the loading screen when leaving Simple UI, adds or removes the
-  `pictures` class, and has the page's views draw themselves again with `"look"`.
+  `pictures` class, and has redraw() draw the page's views again with `"look"`.
 - startPictures: Starts the tooltip and the scroll bars. Runs once, after start().
 
 @ js/view/report.js
@@ -204,34 +207,39 @@ The report window of the updater and the tests. It only shows what they found.
 @ js/controller/nodetree.js
 What the visitor's clicks, touches and keys in the tree mean: marking, opening and closing, the arrow keys, Find, the
   buttons above the tree and the buttons of Filters. These are the actions treeview.js is started with (Strategy).
-  They change the model, or ask the tree's view to open a branch or move the focus, and never touch the page.
-- behind: Tells whether an item lies inside a closed greyed-out item, where Find does not look.
+  They change the model, or ask the tree's view to open a branch or move the focus, and never touch the page. The view
+  hands them each change of the model once it has drawn it, so they never subscribe to the model.
 - expand: Opens an item and each only child below it, so opening Militia shows its whole line in one step, unless the
   item is greyed out and closed. Used by the arrows and the Right key.
 - branch: Opens or closes a branch, from its arrow or a heading's name.
-- toggle: Handles a mark from a click, a key, a right-click or a long press, unless the item is greyed out: opens the
-  way to every row the mark will reach (reach(), Req. 28, 31), then calls mark().
-- find: Runs Find: notes the matching items, but those inside closed greyed-out items, has the view highlight them and
-  say how many there are, opens the branches down to them and shows the first (Req. 20, 21).
-- refind: Runs Find again while its box holds text, since a language or an Include box changes the names or the rows.
-- enter: Moves focus to the first item Find found, on Enter in its box.
+- toggle: Handles a mark from a gesture or a key, unless the item is greyed out: opens the way to every row the mark
+  will reach (reach(), Req. 28, 31), then calls mark().
+- gesture: Turns what the tree's view reports into a mark: a click marks must have (Req. 3), and a long press, a
+  right-click and the menu key must lack, as key() decides for Space and X.
+- search: Notes the items whose names hold Find's text, but those inside closed greyed-out items (behind()), and has
+  the view highlight them and say how many there are (Req. 20, 21).
+- find: Runs Find: searches, opens the branches down to the matches and shows the first (Req. 20, 21).
+- redrawn: Keeps Find up to date once the tree's view has drawn a change: after marks it only searches again, so that
+  no branch opens or closes, and after a new tree, a new language or the start it runs the whole of Find again, since
+  the names or the rows changed. Nothing changes for `"look"`.
+- enter: Opens the branches down to the first item Find found and moves focus to it, on Enter in its box.
 - key: Handles a key in the tree: Space marks must have and X must lack (Req. 3); Up, Down, Home and End move; Right
   and Left open, enter, leave and close branches (WCAG 2.1.1). Tells the view whether it used the key.
 - expandAll: Opens every branch but those of closed greyed-out items.
 - collapseAll: Closes every branch.
 - startTree: Starts the tree's view with these actions, and with the model's clear() and unmarkLine() for Clear and the
-  Filters buttons. Runs once at the start.
+  Filters buttons. Runs once, from start().
 
 @ js/controller/optionshandler.js
 What the settings of the Options window do: the language, the two Include boxes, Simple UI, Civ view and Tooltips, each
-  saved and applied on OK. Its reset() and apply() are the actions optionsview.js is started with (Strategy). It also
-  starts the page with the visitor's saved choices.
-- setLanguage: Makes a language the page's through the model's chooseLanguage(), which tells the page, and runs Find
-  again if it holds text. Runs at the start and when a language is chosen.
+  saved and applied on OK. Its reset() and apply() are the actions optionsview.js is started with (Strategy). The
+  language in use is the model's alone: only the one still loading is kept here, as `pending`.
+- setLanguage: Makes a language the page's through the model's chooseLanguage(), which tells the page. Runs when a
+  language is chosen and its file is loaded.
 - setInclude: Switches Include Unique and Universal (Req. 13 to 15): has the model build the tree again, keeping marks,
-  saves the choice, ticks the box and runs Find again.
-- setRegional: Switches Include Regionals: has the model build the tree again, keeping marks, saves the choice, ticks
-  the box and runs Find again.
+  saves the choice and ticks the box.
+- setRegional: Switches Include Regionals: has the model build the tree again, keeping marks, saves the choice and
+  ticks the box.
 - savedSimple: Reads the saved Simple UI choice: off unless it was saved as on, so a first visit shows the pictures.
 - setSimple: Switches Simple UI (Req. 32, 33): saves the choice, ticks the box and has applySimple() change the page.
   Simple UI is only how the page looks, so it does not go through the model.
@@ -241,11 +249,12 @@ What the settings of the Options window do: the language, the two Include boxes,
   apply() go through it.
 - apply: Applies every setting whose window value differs from the page's, when OK is pressed.
 - reset: Shows the page's values again in the window, dropping what was changed, each time the window opens.
-- choose: Chooses a language: loads its file if needed, shows it, saves the choice, and puts it in the address
-  (`?lng=`), so a shared link keeps it. Shows the load error if the file cannot be loaded.
-- start: Starts the page: gives the model the saved Include choices and the language, starts the views of the tree and
-  of the Options window with their actions, builds the language menu, writes the fixed texts, has the page observe the
-  model and draws it once, restores Civ view and Tooltips, and reveals the page.
+- choose: Chooses a language: loads its file if needed, as `pending` so that only the last one chosen is used, shows
+  it, saves the choice, and has keepInAddress() put it in the address (`?lng=`), so a shared link keeps it. If the
+  file cannot be loaded, it shows the load error and puts the window back on the language in use.
+- startOptions: Starts the Options window: ticks the two Include boxes as the model has them, starts the window's
+  view with reset() and apply(), builds the language menu, and restores Civ view and Tooltips. Runs once, from
+  start().
 
 @ js/controller/updatehandler.js
 Runs the updater, which `?update` opens.

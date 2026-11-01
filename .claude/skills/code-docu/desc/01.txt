@@ -10,8 +10,36 @@ This document explains the code of AoE2 Civ Explorer. Each folder is a chapter, 
   requirements are those of RULES.md and REQUIREMENTS.md.
 Every name of a folder, a file or a function links to its chapter, subchapter or section, and the page header always
   names the chapter and the subchapter. The contents list the chapters, each with its subchapters indented under it. The
-  UML diagram after the contents shows how the scripts use each other, and the index at the end lists every chapter,
-  subchapter and function in alphabetical order.
+  four UML diagrams after the contents show how the parts and the scripts use each other, and the index at the end
+  lists every chapter, subchapter and function in alphabetical order.
+
+@ (uml)
+Four class diagrams show how the scripts use each other. The first, the one in MAINTAINER.md, shows the code in its
+  three parts, model, view and controller, file by file; the other three show the scripts of each part, function by
+  function. In each, an arrow points from what uses to what is used. No arrow crosses or touches another, or runs under
+  a box or a label: making this document checks every diagram for it, and stops if one does. Each box and each name in
+  a box links to its chapter, subchapter or section.
+
+@ (uml overview)
+Each box is a folder, with the scripts in it; `start` is js/, whose script.js starts the page. Each arrow points from a
+  part to a part whose scripts it uses, and says what for. The tests use all three parts as well; those arrows are left
+  out, because with them some arrows would have to cross. A box links to its folder's chapter, and a script to its
+  subchapter.
+
+@ (uml model)
+The scripts of js/model/, each with its functions and objects: `+` marks what a script exports, and `-` what it keeps
+  to itself. The line under a script's name gives its role: its part in model, view and controller, which MAINTAINER.md
+  explains, what it reads, or "module". An arrow points from a script to a script of the same folder that it imports;
+  what the scripts use in other folders is in the overview.
+
+@ (uml view)
+The scripts of js/view/, each with its functions and objects, drawn as in the diagram of the model: `+` for what a
+  script exports, `-` for what it keeps to itself, its role under its name, and an arrow to each script of the folder
+  that it imports.
+
+@ (uml controller)
+The scripts of js/controller/, each with its functions and objects, drawn as in the diagram of the model. None of them
+  imports another of the folder, so there are no arrows: what they use of the view and the model is in the overview.
 
 @ index.html
 The page's structure, and all of its HTML (Rule 2). It holds no text of its own: the scripts fill in every word in the
@@ -119,19 +147,27 @@ How the page looks without Simple UI. Every rule here that shows a picture start
   their first picture.
 
 @ js/script.js
-Where the page starts. It defines no functions; its top-level code runs once.
-- [Start-up 7-24]: Sets Simple UI from the saved choice first, so pictures load at once or never. Loads data.json and
-  the visitor's language (all of them for `?test` or `?update`), then starts the page and its pictures, and lets the
-  loading screen go; `?test` loads the tests and `?update` runs the updater. If loading fails, it shows the load error.
+Where the page starts: its top-level code runs once, and start() starts the parts of the page in their order.
+- [Start-up 24-41]: Sets Simple UI from the saved choice first, so pictures load at once or never. Loads data.json and
+  the visitor's language (all of them for `?test` or `?update`), then has start() start the page, starts its
+  pictures, and lets the loading screen go; `?test` loads the tests and `?update` runs the updater. If loading fails,
+  it shows the load error.
+- start: Starts the page: gives the model the saved Include choices and the language, or the first language when the
+  visitor's could not be loaded, starts the controllers of the tree and of the Options window, writes the fixed texts,
+  has the page observe the model, draws it once with `redraw("start")` and reveals it. Runs once, when data.json and
+  the language have loaded.
 
 @ js/model/datahandler.js
-Everything about data: loading, the chosen language and its text, sets of civilisations, saved choices, and the updater.
+Everything about data: loading, the chosen language and its text, sets of civilisations, saved choices, the address,
+  and the updater.
 - attempt: Runs a function and returns null instead of an error. Used where the browser may refuse, such as storage in a
   private window, so a refusal never breaks the page.
 - recall: Reads a saved choice from the browser's storage, or null. Remembers the visitor's language and options between
   visits.
 - remember: Saves a choice in the browser's storage, or removes it when the value is null. Failures are ignored, as the
   page works without storage.
+- keepInAddress: Puts a choice into the address, as `?lng=` for the language, so that a shared link keeps it, without
+  a new step in the browser's history. The only function that writes the address; failures are ignored.
 - load: Fetches a file as text and returns a promise. It uses XMLHttpRequest because, unlike `fetch()`, it also reads
   files when the page is opened from disk, as the tests in CI do.
 - fill: Replaces `{name}` placeholders in a text with values, leaving unknown ones alone. All text lives in the data
@@ -216,9 +252,9 @@ Everything about data: loading, the chosen language and its text, sets of civili
   that changed, data.json always. So a game update needs only a browser.
 
 @ js/model/model.js
-The tree and its rules: which items are shown, how marks pass on, what is greyed out, which civilisations fit, and what
-  Filters shows. It is the subject of the Observer pattern: only its own functions change it, and each then tells its
-  observer, page.js, what changed. It never touches the page.
+The tree and its rules: which items are shown, how marks pass on, what is greyed out, which civilisations fit and how
+  many, and what Filters shows. It is the subject of the Observer pattern: only its own functions change it, and each
+  then tells its observer, page.js, what changed. It never touches the page.
 - subscribe: Adds an observer, which notify() then calls after every change. Only page.js subscribes (Test 85).
 - unsubscribe: Takes an observer away again.
 - notify: Tells every observer what kind of change was made, once and as soon as `matching` is up to date: `"marks"`,
@@ -258,13 +294,14 @@ The tree and its rules: which items are shown, how marks pass on, what is greyed
   keeps every mark by its path, and works out `matching` again (fit()). Runs at the start and whenever an Include
   option changes.
 - startModel: Takes the saved Include choices and the language, and builds the tree once, telling no one: the page is
-  drawn afterwards, all at once, with `page.update("start")`. Runs once, from start().
+  drawn afterwards, all at once, with `redraw("start")`. Runs once, from start().
 - chooseLanguage: Makes a language the one the tree's names are in, and tells the page that the language changed.
 - barred: Tells whether an item is greyed out: not marked must have itself, while one of its alternatives or opponents
   is (Req. 37).
 - within: Tells whether an item lies anywhere under another.
 - locked: Tells whether a greyed-out item is also closed: unless its own rival is inside it, as the Xolotl Warrior is
   inside the Stable, which stays open so the Xolotl Warrior stays in sight.
+- behind: Tells whether an item lies inside a closed greyed-out item, where Find does not look.
 - setMark: Marks an item and everything under it, groups only through their rows, skipping the rivals of the item
   marked. How a building or group is marked or cleared.
 - state: The mark an item shows: the one its own mark and all its rows share, or `"mixed"` when they differ, leaving out
@@ -291,6 +328,9 @@ The tree and its rules: which items are shown, how marks pass on, what is greyed
 - boxState: What a row's box shows: a unit's or technology's own mark, or a dash if a row below has another; otherwise
   state().
 - fit: Works out the civilisations that fit every mark, as `matching`, and returns the marked items.
+- countOf: The two counts beside an item's name: the civilisations that fit the marks and have the item, or for a
+  group anything in it, and those that fit and have the item or anything under it. The tree's view shows one or both.
+- matchingCivs: The civilisations that fit every mark, for the list on the right.
 - markOf: The mark an item stands for in Filters: the one all of it shows, else its own.
 - lineEnd: The last item of a line of upgrades that does not fork, or null if the item is a group or its line forks.
 - lineOf: The whole line of upgrades an item is on, from its top to its end, or just the item if it is on none. Filters

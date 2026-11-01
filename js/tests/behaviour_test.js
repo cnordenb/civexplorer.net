@@ -5,7 +5,7 @@ import { isOpen, setOpen, shown, rowOf } from "../view/treeview.js";
 import { setInclude } from "../controller/optionshandler.js";
 import {
   root, check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below, drawn, marks, yellow,
-  chainOf, fixtures, ownKeys, alternativesOf, byPath, nodeOf, twistyOf,
+  chainOf, fixtures, ownKeys, alternativesOf, byPath, nodeOf, twistyOf, dropsGreyed,
 } from "./helpers_test.js";
 
 const sameCivs = (item) => {
@@ -395,15 +395,17 @@ function tree() {
   $("collapseAll").click();
 }
 
-function finding({ partial }) {
+function finding({ partial, rival }) {
   reset();
   type(nameOf(partial));
   const matches = items.filter((item) => plain(nameOf(item)).includes(plain(nameOf(partial))));
-  check("find: matches are highlighted in yellow and their number announced beside the box, with branches open down "
-    + "to each", nodeOf(partial).classList.contains("found") && matches.every((item) => shown(item))
+  const lit = nodeOf(partial).classList.contains("found") && matches.every((item) => shown(item))
     && items.every((item) => nodeOf(item).classList.contains("found") === matches.includes(item))
     && matches.every((item) => yellow(getComputedStyle(nodeOf(item)).backgroundColor))
-    && $("found").textContent === plural("found", matches.length) && beside());
+    && $("found").textContent === plural("found", matches.length) && beside();
+  const { dropped, detail } = dropsGreyed(rival);
+  check("find: matches are highlighted in yellow and their number announced beside the box, with branches open down "
+    + "to each, and a match drops out once a mark greys out its branch", lit && dropped, `${lit}, ${detail}`);
   type("qqqqzzzzqqqq");
   const none = $("found").textContent === words.ui.noneFound && !document.querySelector(".found") && beside();
   type("");

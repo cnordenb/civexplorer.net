@@ -18,7 +18,8 @@ What the file holds, as one or more paragraphs. A line that starts at the left m
 ```
 
 - `@ key` starts an entry. The key is a file's path from the repository's folder (`js/view/pictures.js`), a folder
-  in `desc/00.txt` (`js/model/`, or `./` for the main folder), or `(title)` for the title page's introduction.
+  in `desc/00.txt` (`js/model/`, or `./` for the main folder), `(title)` for the title page's introduction, or one of
+  `(uml)`, `(uml overview)`, `(uml model)`, `(uml view)` and `(uml controller)` for the UML pages' (in `desc/01.txt`).
 - A line that is not an item is a paragraph of the entry's introduction.
 - `- name: text` describes the function or object `name` of a script, or the key `name` of `data.json` or
   `locales/de.json`. A key in a key, such as `icons.groups`, gets its own row in the table.

@@ -7,6 +7,8 @@ import { chaptersHtml, jsonKeys } from "./chapters.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SKILLS = path.resolve(HERE, "../..");
 const { inventory } = await import(pathToFileURL(path.join(SKILLS, "code-docu-inventory/scripts/inventory.mjs")).href);
+const { partDiagrams, overviewBoxes, overviewProblems, classOf } = await import(
+  pathToFileURL(path.join(SKILLS, "code-docu-uml/scripts/parts.mjs")).href);
 const UML_JS = pathToFileURL(path.join(SKILLS, "code-docu-uml/scripts/uml.js")).href;
 const REPO = "https://github.com/cnordenb/civexplorer.net/blob/master/";
 const INDEX_INTRO = "Every chapter, subchapter and function, in alphabetical order, one to a line, with the page it "
@@ -73,7 +75,7 @@ function countOf(c) {
     const n = mod.entries.filter((e) => e.kind === "function").length;
     const objs = mod.entries.length - n;
     const others = objs ? `, ${plural(objs, "object")}` : "";
-    return c.file === "js/script.js" ? "start-up code" : `${plural(n, "function")}${others}`;
+    return `${plural(n, "function")}${others}`;
   }
   if (/\.json$/.test(c.file)) return `${jsonKeys(c.file).keys.filter((k) => !k.key.includes(".")).length} keys`;
   return `${(desc[c.file]?.items ?? []).filter((i) => i.part).length} parts`;
@@ -83,41 +85,55 @@ const tocRow = (id, num, label, count, cls) => `<li${cls ? ` class="${cls}"` : "
   + `<span class="tn">${num}</span><span class="tl">${label}</span><span class="tc">${count}</span>`
   + `<span class="dots" aria-hidden="true"></span><span class="tp">${pageOf(id)}</span></a></li>`;
 
-function tocHtml() {
+function tocHtml(diagrams) {
   const fileRows = (f) => CHAPTERS.filter((c) => c.folder === f)
     .map((c) => tocRow(chapterId(c.file), c.num, esc(c.name), countOf(c), "sub"));
   const rows = FOLDERS.map((f) => [tocRow(folderId(f.dir), f.n, esc(f.label), plural(f.files.length, "file"), "ch"),
     ...fileRows(f)].join("\n")).join("\n");
+  const uml = [tocRow("uml", "", "UML diagrams", plural(diagrams.length, "diagram"), "ch"),
+    ...diagrams.map((d) => tocRow(d.id, "", d.title, "", "sub"))].join("\n");
   return `<section class="front" style="page: contents"><h1 id="contents">Contents</h1><ol class="toc">
-${tocRow("uml", "", "UML diagram", "", "")}
+${uml}
 ${rows}
 ${tocRow("index", "", "Index", "", "")}
 </ol></section>`;
 }
 
-function umlHtml() {
+const DATA_LINK = () => `#${chapterId("data.json")}`;
+
+const linksOf = (pairs) => Object.fromEntries(pairs);
+
+function overviewDiagram() {
   const maintainer = fs.readFileSync(path.join(ROOT, "documentation/MAINTAINER.md"), "utf8").replace(/\r/g, "");
-  const at = maintainer.indexOf("### UML diagram");
-  const source = /```mermaid\n([\s\S]*?)```/.exec(maintainer.slice(at))[1];
-  const intro = maintainer.slice(at).split("\n\n")[1].replace(/\n/g, " ");
-  const targets = {};
-  for (const c of CHAPTERS.filter((x) => modules.has(x.file))) {
-    targets[path.posix.basename(c.file, ".js")] ??= { chapter: chapterId(c.file), file: c.file };
-  }
-  targets.tests = { chapter: folderId("js/tests"), file: "js/tests/run_test.js" };
-  const members = Object.fromEntries(Object.entries(targets).map(([cls, t]) => [cls,
-    Object.fromEntries(modules.get(t.file).entries.map((e) => [e.name, `#${fnId(e.key)}`]))]));
-  const files = { "data.json": `#${chapterId("data.json")}`, "locales/": `#${folderId("locales")}` };
-  const data = { umlSource: source, umlTargets: targets, umlMembers: members, umlFiles: files };
-  const script = Object.entries(data).map(([k, v]) => `window.${k} = ${JSON.stringify(v)};`).join(" ");
-  const text = `${linkify(intro.replace(/`/g, ""), null)} Each box links to the subchapter of its script, and each `
-    + "name in it to its section; the box <i>tests</i> stands for the scripts in "
-    + `${folderLink(doc.folderOf.get("js/tests/"))} and links to that chapter.`;
-  return `<section class="front" style="page: uml-portrait"><h1 id="uml">UML diagram</h1>
-<p class="intro">${text}</p>
-<div class="uml" id="umlBox"></div>
-<script>${script}</script>
-</section>`;
+  const source = /```mermaid\n([\s\S]*?)```/.exec(maintainer.slice(maintainer.indexOf("### UML diagram")))[1];
+  warnings.push(...overviewProblems(source, modules, layout.folders));
+  const boxes = overviewBoxes(source);
+  const files = (b) => linksOf(b.files.map((f) => [f, `#${chapterId(`${b.dir}/${f}`)}`]));
+  return { id: "uml-overview", title: "Overview", source, links: { data: DATA_LINK(),
+    classes: linksOf(boxes.map((b) => [b.name, `#${folderId(b.dir)}`])),
+    members: linksOf(boxes.map((b) => [b.name, files(b)])) } };
+}
+
+function umlDiagrams() {
+  const parts = partDiagrams(modules, layout.folders).map((p) => ({ ...p,
+    title: p.part[0].toUpperCase() + p.part.slice(1), links: { data: DATA_LINK(),
+      classes: linksOf(p.files.map((f) => [classOf(f), `#${chapterId(f)}`])),
+      members: linksOf(p.files.map((f) => [classOf(f),
+        linksOf(modules.get(f).entries.map((e) => [e.name, `#${fnId(e.key)}`]))])) } }));
+  return [overviewDiagram(), ...parts];
+}
+
+function umlHtml(diagrams) {
+  const text = (key) => {
+    if (!desc[key]) warnings.push(`no description ${key}`);
+    return (desc[key]?.intro ?? []).map((p) => `<p class="intro">${linkify(p, null)}</p>`).join("\n");
+  };
+  const sections = diagrams.map((d, i) => '<section class="front" style="page: uml-portrait">\n'
+    + (i ? "" : `<h1 id="uml">UML diagrams</h1>\n${text("(uml)")}\n`)
+    + `<h2 class="file" id="${d.id}">${d.title}</h2>\n${text(`(${d.id.replace("-", " ")})`)}\n`
+    + `<div class="uml" id="${d.id}-box"></div>\n</section>`);
+  const data = diagrams.map(({ id, source, classes, edges, links }) => ({ id, source, classes, edges, links }));
+  return `${sections.join("\n")}\n<script>window.umlDiagrams = ${JSON.stringify(data)};</script>`;
 }
 
 function indexEntries() {
@@ -167,12 +183,13 @@ function titleHtml() {
 }
 
 const chapters = chaptersHtml(doc);
-const toc = tocHtml();
-const uml = umlHtml();
+const diagrams = umlDiagrams();
+const toc = tocHtml(diagrams);
+const uml = umlHtml(diagrams);
 const index = indexHtml();
 const title = titleHtml();
-for (const [page, text] of [["title", "Code documentation"], ["contents", "Contents"], ["uml-portrait", "UML diagram"],
-  ["uml-landscape", "UML diagram"], ["index", "Index"]]) header(page, text);
+for (const [page, text] of [["title", "Code documentation"], ["contents", "Contents"], ["uml-portrait", "UML diagrams"],
+  ["uml-landscape", "UML diagrams"], ["index", "Index"]]) header(page, text);
 
 const css = fs.readFileSync(path.join(HERE, "doc.css"), "utf8");
 const html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
@@ -193,7 +210,7 @@ fs.writeFileSync(outFile, html);
 console.log(`wrote ${outFile}: ${byKey.size} entries, ${FOLDERS.length} chapters, ${CHAPTERS.length} subchapters`);
 const unique = [...new Set(warnings)];
 if (unique.length) console.log(unique.join("\n"));
-const BLOCKING = /^(no description|extra description|undescribed key|extra key|layout:|part:)/;
+const BLOCKING = /^(no description|extra description|undescribed key|extra key|layout:|part:|uml:)/;
 const blocking = unique.filter((w) => BLOCKING.test(w));
 if (blocking.length && !allowTodo) {
   console.error(`${blocking.length} problems to fix in desc/ or layout.json before printing`

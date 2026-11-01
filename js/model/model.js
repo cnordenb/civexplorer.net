@@ -1,4 +1,4 @@
-import { data, ALL, setOf, size, useLanguage } from "./datahandler.js";
+import { data, ALL, setOf, size, civsOf, useLanguage } from "./datahandler.js";
 
 export const items = [];
 export const roots = [];
@@ -152,6 +152,8 @@ const within = (item, top) => !!item.parent && (item.parent === top || within(it
 
 export const locked = (item) => barred(item) && !item.rivals.some((rival) => within(rival, item));
 
+export const behind = (item) => !!item.parent && (locked(item.parent) || behind(item.parent));
+
 function setMark(item, mark, top = item) {
   if (!item.group) item.self = mark;
   for (const kid of item.kids) if (!kid.rivals.includes(top)) setMark(kid, mark, top);
@@ -223,6 +225,13 @@ function fit() {
   matching = marked.reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
   return marked;
 }
+
+export const countOf = (item) => ({
+  own: size(matching & (item.group ? item.all : item.set)),
+  all: size(matching & item.all),
+});
+
+export const matchingCivs = () => civsOf(matching);
 
 export const markOf = (item) => (["has", "lacks"].includes(state(item)) ? state(item) : item.self);
 

@@ -24,7 +24,7 @@ ids = set(re.findall(r'\bid="([^"]+)"', html))
 hrefs = set(re.findall(r'href="#([^"]+)"', html))
 report("links to no id in the page", sorted(hrefs - ids))
 report("links to no place in the PDF", sorted(hrefs - set(pages)))
-listed = {i for i in ids if i.startswith(("c-", "d-", "f-")) or i in ("uml", "index")}
+listed = {i for i in ids if i.startswith(("c-", "d-", "f-")) or re.fullmatch(r"uml(-[a-z]+)?|index", i)}
 report("chapters, subchapters or functions with no place in the PDF", sorted(listed - set(pages)))
 
 heads = dict(re.findall(r'@page ch(\d+) \{ @top-left \{ content: "([^"]+)"', html))

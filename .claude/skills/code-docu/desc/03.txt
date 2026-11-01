@@ -66,6 +66,9 @@ Small tools the test files share: recording results, finding and measuring eleme
 - reset: Returns the page to its start: Find empty, no marks, every branch closed, the menu and the Options window
   closed, nothing focused. Tests start from here.
 - beside: Tells whether Find's message is on one line, right of the box and level with it (Req. 21).
+- dropsGreyed: Tests that Find drops a match once a mark greys out its branch: marks a sample's rival, or that rival's
+  own, until a branch is closed and greyed out, searches for an item in it without the mark, marks again, and checks
+  that the match loses its yellow and that the count beside Find agrees (Test 31; Req. 20, 21).
 - listed: Lists the civilisations the page shows.
 - expected: Lists the names a set of civilisations should show, translated and sorted, to compare with listed().
 - below: Tells whether an item sits anywhere under another.
@@ -142,12 +145,15 @@ The maintainability and data tests: they read the page's own files as text and c
   them, a picture in CSS outside a `.pictures` rule or outside `assets/images/`, or a font
   outside `assets/fonts/` (Rules 9, 22).
 - mvcProblems: Lists what breaks model, view and controller: a model script importing a view or a controller, a view
-  importing a controller or saving a setting, a controller touching the page, a model.js that does not share
-  `subscribe` and `unsubscribe`, shares `notify` or holds texts, another script than page.js observing the model, and,
-  once the tests have run, an item holding a page element (Test 85).
+  importing a controller, saving a setting or naming a mark in a call to its controller, a controller touching the
+  page or the address, a script outside js/model/ and the tests working on the model's sets, anything but a test
+  calling `page.update()`, a model.js that does not share `subscribe` and `unsubscribe`, shares `notify` or holds
+  texts, another script than page.js observing the model, and, once the tests have run, an item holding a page element
+  (Test 85).
 - sourceTests: The rules tests: no comments; no CSS or HTML in the scripts, which hand CSS only numbers; where the files
   are and what they import, the tests named `_test.js` and loading only when testing, and no two of the files with one
-  name (Rule 29); the size limits; which scripts touch the page or store data, and model, view and controller kept
+  name (Rule 29); the size limits; which scripts touch the page, store data or write the address, and model, view and
+  controller kept
   apart (mvcProblems()); images, fonts, sounds, animations and dependencies; and no game data in the scripts.
 - textTests: Checks that every language has all of the page's text, and names every item and civilisation.
 - tagTests: Checks that every language has a name and a valid language tag (WCAG 3.1.1).

@@ -3,7 +3,7 @@ import { items } from "../model/model.js";
 import { $, simple, showLoading } from "./stringbuilder.js";
 import { itemAt } from "./treeview.js";
 import { tick, showView } from "./optionsview.js";
-import { page } from "./page.js";
+import { redraw } from "./page.js";
 import { startBars } from "./scrollbars.js";
 
 export let view = "list";
@@ -131,7 +131,7 @@ export function applySimple(on) {
   if (on || coming) showLoading(coming);
   document.documentElement.classList.toggle("pictures", !on);
   if (coming) pictureFiles(rooted).forEach(copy);
-  if (items.length) page.update("look");
+  if (items.length) redraw("look");
   if (coming && items.length) finishLoading();
 }
 

@@ -46,7 +46,7 @@ Functional completeness & correctness tests:
 - [Test 28](#test-28): Counts follow the filters
 - [Test 29](#test-29): Expand all, Collapse all and the arrows work
 - [Test 30](#test-30): Opening a branch opens its only children
-- [Test 31](#test-31): Find highlights in yellow, opens to and counts matches
+- [Test 31](#test-31): Find highlights in yellow, opens to and counts matches, and drops a match once a mark greys out its branch
 - [Test 32](#test-32): Find reports no match, and clears when emptied
 - [Test 33](#test-33): The language menu is in Options, with every language
 - [Test 34](#test-34): The language menu closes on Escape, a click or leaving it, and Options keeps its size
@@ -106,7 +106,7 @@ Maintainability tests:
 - [Test 82](#test-82): No CSS or HTML in the scripts, only numbers for CSS custom properties
 - [Test 83](#test-83): Style sheets in css/, js/script.js and the rest in js/model/, js/view/ and js/controller/, tests named _test.js and on demand, no two files with one name
 - [Test 84](#test-84): No file over 400 lines of code, no function over 60, no line over 120 characters
-- [Test 85](#test-85): Model, view and controller keep apart, and data loading stays in datahandler.js
+- [Test 85](#test-85): Model, view and controller keep apart, views name no mark, only the model does set maths, and only datahandler.js loads, stores or writes the address
 - [Test 86](#test-86): Images and fonts only from assets/ and without Simple UI; no sounds, animations but the loading spin, or dependencies
 - [Test 87](#test-87): No game data in the scripts
 - [Test 88](#test-88): Each item is in the tree once
@@ -125,7 +125,7 @@ Maintainability tests:
 ## Test 1
 
 ### File residence:
-`js/tests/static_test.js`, lines 277-278
+`js/tests/static_test.js`, lines 286-287
 
 ### Purpose:
 Prevent missing interface text in any language.
@@ -136,7 +136,7 @@ Every language has every interface text English has, and a name for every group.
 ## Test 2
 
 ### File residence:
-`js/tests/static_test.js`, lines 279-282
+`js/tests/static_test.js`, lines 288-291
 
 ### Purpose:
 Prevent untranslated items and civilisations in the tree and the civ list.
@@ -455,18 +455,18 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 402-406
+`js/tests/behaviour_test.js`, lines 402-408; `js/tests/helpers_test.js`, lines 222-239
 
 ### Purpose:
-Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them and counts them.
+Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them, counts them, drops greyed-out ones.
 
 ### Assertion expectation:
-Exactly the matches are highlighted in yellow and shown; the number shows on one line right of the search bar.
+Exactly the matches are yellow and shown, counted right of the search bar; a match a mark greys out loses both.
 
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 410-411
+`js/tests/behaviour_test.js`, lines 412-413
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).
@@ -721,7 +721,7 @@ No checkbox role, tab stop or box; its name and arrow open and close it; right-c
 ## Test 55
 
 ### File residence:
-`js/tests/static_test.js`, lines 286-287
+`js/tests/static_test.js`, lines 295-296
 
 ### Purpose:
 Keep the language menu and the page's lang attributes correct (WCAG 3.1.1, 3.1.2).
@@ -1007,7 +1007,7 @@ Space flips both boxes, the tree unchanged till OK, which applies them; flipping
 ## Test 81
 
 ### File residence:
-`js/tests/static_test.js`, lines 236-240
+`js/tests/static_test.js`, lines 244-248
 
 ### Purpose:
 Enforce Rule 7: no comments in the code.
@@ -1018,7 +1018,7 @@ index.html, the style sheets and every script hold no comment markers. The comme
 ## Test 82
 
 ### File residence:
-`js/tests/static_test.js`, lines 241-242
+`js/tests/static_test.js`, lines 249-250
 
 ### Purpose:
 Enforce Rule 2: no CSS or HTML inside the JavaScript.
@@ -1029,7 +1029,7 @@ No inline styles but setProperty("--name", number); no HTML strings, createEleme
 ## Test 83
 
 ### File residence:
-`js/tests/static_test.js`, lines 243-252
+`js/tests/static_test.js`, lines 251-260
 
 ### Purpose:
 Enforce Rules 2, 16 and 29, and keep the tests out of what visitors download.
@@ -1040,7 +1040,7 @@ Sheets in css/; js/script.js, the rest in model/, view/, controller/; imports in
 ## Test 84
 
 ### File residence:
-`js/tests/static_test.js`, lines 46-165 and 253-254
+`js/tests/static_test.js`, lines 46-165 and 261-262
 
 ### Purpose:
 Verify Rules 23, 24 and 25: functions, lines and files stay small enough to read. GitHub checks Rule 26.
@@ -1051,18 +1051,18 @@ index.html, the style sheets, every script: at most 400 lines of code, functions
 ## Test 85
 
 ### File residence:
-`js/tests/static_test.js`, lines 195-221 and 255-262
+`js/tests/static_test.js`, lines 195-229 and 263-271
 
 ### Purpose:
 Keep model, view and controller apart as the MVC of Head First Design Patterns, and data loading in datahandler.js.
 
 ### Assertion expectation:
-Imports follow MVC, the model and controllers touch no page, items hold no elements, only datahandler.js loads data.
+Imports follow MVC; controllers touch no page or address; views name no mark; only the model does set maths or notifies
 
 ## Test 86
 
 ### File residence:
-`js/tests/static_test.js`, lines 172-193 and 263-270
+`js/tests/static_test.js`, lines 172-193 and 272-279
 
 ### Purpose:
 Enforce Rules 9, 10, 11 (but for the loading spin), 14 and 22 in the source files.
@@ -1073,7 +1073,7 @@ img only in templates, no src; url() to assets/images/ in .pictures, assets/font
 ## Test 87
 
 ### File residence:
-`js/tests/static_test.js`, lines 271-272
+`js/tests/static_test.js`, lines 280-281
 
 ### Purpose:
 Enforce Rule 1: game data lives only in data.json.
@@ -1084,7 +1084,7 @@ No civilisation or item name from data.json appears as a quoted string in any sc
 ## Test 88
 
 ### File residence:
-`js/tests/static_test.js`, line 309
+`js/tests/static_test.js`, line 318
 
 ### Purpose:
 Prevent duplicate items in the tree, which would break counts and marking.
@@ -1095,7 +1095,7 @@ Every item appears exactly once in the tree in data.json.
 ## Test 89
 
 ### File residence:
-`js/tests/static_test.js`, lines 319-322
+`js/tests/static_test.js`, lines 328-331
 
 ### Purpose:
 Catch misspelt, stale or misplaced fields in the tree in data.json, such as the retired "optional" flag.
@@ -1106,7 +1106,7 @@ Only known fields; unique and lines are true on groups, own is true on items; ex
 ## Test 90
 
 ### File residence:
-`js/tests/static_test.js`, lines 294-306 and 323-330
+`js/tests/static_test.js`, lines 303-315 and 332-339
 
 ### Purpose:
 Ensure every item's availability names real civilisations and every item has an icon, as extras says for added items.
@@ -1117,7 +1117,7 @@ Availability is "all" or a has or lacks list of known civs; pictures gives kind,
 ## Test 91
 
 ### File residence:
-`js/tests/static_test.js`, lines 338-339
+`js/tests/static_test.js`, lines 347-348
 
 ### Purpose:
 Ensure counted texts have a fallback form for any number.
@@ -1128,7 +1128,7 @@ Every counted (plural) text in every language has an "other" form.
 ## Test 92
 
 ### File residence:
-`js/tests/static_test.js`, lines 340-342
+`js/tests/static_test.js`, lines 349-351
 
 ### Purpose:
 Prevent translations that lose or misspell placeholders such as {n}.
@@ -1139,7 +1139,7 @@ Each interface text has the same {placeholders} in every language as in English.
 ## Test 93
 
 ### File residence:
-`js/tests/static_test.js`, lines 343-345
+`js/tests/static_test.js`, lines 352-354
 
 ### Purpose:
 Catch stale or misspelt name corrections after a game update.
@@ -1150,7 +1150,7 @@ Every key in each language's overrides is a known item or civilisation.
 ## Test 94
 
 ### File residence:
-`js/tests/static_test.js`, lines 346-351
+`js/tests/static_test.js`, lines 355-360
 
 ### Purpose:
 Ensure the footer, the updater and the tests have the data they need (Req. 5).
@@ -1161,7 +1161,7 @@ source has name, url, data, an integer helpOffset and a YYYY-MM date; no tool te
 ## Test 95
 
 ### File residence:
-`js/tests/static_test.js`, lines 365-367
+`js/tests/static_test.js`, lines 374-376
 
 ### Purpose:
 Ensure the updater writes data.json and the locale files without losing or changing data.
@@ -1172,7 +1172,7 @@ Writer outputs data.json plus one locales/ file per other language; reading them
 ## Test 96
 
 ### File residence:
-`js/tests/static_test.js`, lines 371-372
+`js/tests/static_test.js`, lines 380-381
 
 ### Purpose:
 Keep data.json compact and identical to what the updater would write.
@@ -1183,7 +1183,7 @@ Each item's availability is "all", or whichever of the has or lacks lists is sho
 ## Test 97
 
 ### File residence:
-`js/tests/static_test.js`, lines 373-375
+`js/tests/static_test.js`, lines 382-384
 
 ### Purpose:
 Keep stored names identical to what the updater would write.

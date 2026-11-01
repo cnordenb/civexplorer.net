@@ -194,6 +194,9 @@ function badImages(page, sheets) {
 
 const PAGE = /\b(document|window)\b|getElementById|querySelector|addEventListener/;
 const ELEMENTS = /\.classList|\.dataset|setAttribute|textContent/;
+const ADDRESS = /\b(history|location)\b/;
+const SETS = /\bmatching\b|\.(set|all)\b(?!\s*\()/;
+const MARKING = /actions\.\w+\([^)]*["'](has|lacks)["']/;
 
 function mvcProblems(files) {
   const within = (folder) => files.filter(({ path }) => path.startsWith(folder));
@@ -208,9 +211,14 @@ function mvcProblems(files) {
   return [
     ...within("js/model/").flatMap((file) => reaching(file, (path) => !path.startsWith("js/model/"))),
     ...within("js/view/").flatMap((file) => reaching(file, (path) => path.startsWith("js/controller/"))),
-    ...within("js/controller/").filter(({ code }) => PAGE.test(code) || ELEMENTS.test(code))
+    ...within("js/controller/").filter(({ code }) => PAGE.test(code) || ELEMENTS.test(code) || ADDRESS.test(code))
       .map(({ path }) => `${path} touches the page`),
     ...within("js/view/").filter(({ code }) => code.includes("remember(")).map(({ path }) => `${path} stores data`),
+    ...within("js/view/").filter(({ code }) => MARKING.test(code)).map(({ path }) => `${path} decides a mark`),
+    ...files.filter(({ path, code }) => !/^js\/(model|tests)\b/.test(path) && SETS.test(code))
+      .map(({ path }) => `${path} works on the model's sets`),
+    ...files.filter(({ path, code }) => !path.startsWith("js/tests/") && /\bpage\.update\(/.test(code))
+      .map(({ path }) => `${path} calls page.update()`),
     ...need(exporting("subscribe") && exporting("unsubscribe") && !exporting("notify")
       && !/\b(words|fill)\b/.test(model), "model.js does not tell its observers of its changes, or holds texts"),
     ...files.filter(({ path, code }) => /\bsubscribe\(/.test(code) && path !== "js/view/page.js")
@@ -252,12 +260,13 @@ export function sourceTests(page, sheets, files) {
   ]);
   expect(`rules: no file has over ${FILE_LIMIT} lines of code, no function over ${FUNCTION_LIMIT}, `
     + `and no line of a script over ${LINE_LIMIT} characters`, sizeProblems(page, sheets, files));
-  expect("rules: model, view and controller: the model imports neither, views never import controllers, "
-    + "script.js, the model and the controllers never touch the page, views never store data, the model tells only "
-    + "page.js of its changes and holds no page elements, and only datahandler.js and the tests load or store data", [
+  expect("rules: model, view and controller: the model imports neither, views never import controllers or name a "
+    + "mark, script.js, the model and the controllers never touch the page or the address, only the model works on "
+    + "its sets and reaches page.update(), views never store data, the model tells only page.js of its changes and "
+    + "holds no page elements, and only datahandler.js and the tests load or store data", [
     ...named((file) => PAGE_FREE.includes(file.path) && PAGE.test(file.code)),
     ...named((file) => !testing(file) && file.path !== "js/model/datahandler.js"
-      && /XMLHttpRequest|localStorage|\bfetch\s*\(/.test(file.code)),
+      && /XMLHttpRequest|localStorage|\bfetch\s*\(|\bhistory\.\w+State\b/.test(file.code)),
     ...mvcProblems(files),
   ]);
   expect("rules: images only from assets/images/, in templates or CSS, only without Simple UI, fonts only from "

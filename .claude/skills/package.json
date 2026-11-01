@@ -2,6 +2,7 @@
   "name": "code-docu",
   "private": true,
   "dependencies": {
+    "@mermaid-js/layout-elk": "0.1.7",
     "acorn": "8.14.0",
     "mermaid": "11.4.1"
   }

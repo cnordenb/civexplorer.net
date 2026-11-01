@@ -1,10 +1,10 @@
 import { plain, nameOf } from "../model/datahandler.js";
-import { items, mark, reach, clear, unmarkLine, chainOf, barred, locked } from "../model/model.js";
+import { items, mark, reach, clear, unmarkLine, chainOf, barred, locked, behind } from "../model/model.js";
 import { isOpen, shown, setOpen, focus, highlight, reveal, findText, startTreeView } from "../view/treeview.js";
 
-let found = [];
+const GESTURES = { click: "has", hold: "lacks", menu: "lacks" };
 
-const behind = (item) => !!item.parent && (locked(item.parent) || behind(item.parent));
+let found = [];
 
 const expand = (item) => {
   if (!locked(item)) chainOf(item).forEach((each) => setOpen(each, true));
@@ -20,10 +20,16 @@ function toggle(item, kind) {
   mark(item, kind);
 }
 
-function find(typed) {
-  const text = plain(typed);
+const gesture = (item, how) => toggle(item, GESTURES[how]);
+
+function search(text) {
   found = text ? items.filter((item) => !behind(item) && plain(nameOf(item)).includes(text)) : [];
   highlight(found, text);
+}
+
+function find(typed) {
+  const text = plain(typed);
+  search(text);
   if (!found.length) return;
   const open = new Set();
   for (const item of found) for (let p = item.parent; p; p = p.parent) open.add(p);
@@ -31,13 +37,15 @@ function find(typed) {
   reveal(found[0]);
 }
 
-export function refind() {
-  if (findText()) find(findText());
-  else found = [];
-}
+const redrawn = (change) => {
+  if (change === "marks") search(plain(findText()));
+  else if (change !== "look") find(findText());
+};
 
 const enter = () => {
-  if (found.length) focus(found[0]);
+  if (!found.length) return;
+  for (let p = found[0].parent; p; p = p.parent) setOpen(p, true);
+  focus(found[0]);
 };
 
 function key(item, typed) {
@@ -67,5 +75,5 @@ const expandAll = () => items.filter((item) => !locked(item)).forEach((item) => 
 const collapseAll = () => items.forEach((item) => setOpen(item, false));
 
 export const startTree = () => startTreeView({
-  toggle, branch, key, find, enter, clear, expandAll, collapseAll, unchip: unmarkLine,
+  gesture, branch, key, find, enter, clear, expandAll, collapseAll, unchip: unmarkLine, redrawn,
 });

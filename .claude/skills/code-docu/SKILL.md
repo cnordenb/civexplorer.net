@@ -17,9 +17,9 @@ Chrome from an HTML page that `scripts/gen.mjs` builds out of three things:
 - `layout.json`, which folders are chapters and which files are their subchapters, in order;
 - `desc/*.txt`, the hand-written descriptions of every folder, file, function, part and key.
 
-The UML page is drawn by the `code-docu-uml` skill, and printing, page numbers, packing and checking are done by the
-`code-docu-pdf` skill. `scripts/build.mjs` runs all of it in order, so for a normal rebuild these other skills only
-need to be opened when one of their steps fails or has to change.
+The four UML pages are drawn and checked by the `code-docu-uml` skill, and printing, page numbers, packing and
+checking are done by the `code-docu-pdf` skill. `scripts/build.mjs` runs all of it in order, so for a normal rebuild
+these other skills only need to be opened when one of their steps fails or has to change.
 
 ## When
 
@@ -44,8 +44,8 @@ entry in the DEVLOG that changes code without one says "`code_docu.pdf`, as in t
 - Python 3 with `pikepdf`, `pypdf` and `pypdfium2`; `PYTHON` names the interpreter, `python` by default. If they are
   missing: `python -m pip install --user pikepdf pypdf pypdfium2`.
 - A work folder outside the repository, such as `docu-work` in the session's scratchpad. `scripts/preflight.mjs`
-  installs acorn and mermaid there from `.claude/skills/package.json`, at the exact versions it names, and keeps every
-  file of the build there.
+  installs acorn, mermaid and its ELK layout there from `.claude/skills/package.json`, at the exact versions it names,
+  and keeps every file of the build there.
 
 `build.mjs` runs `preflight.mjs` first, which lists everything that is missing and stops.
 
@@ -92,16 +92,17 @@ Below, `REPO` is the repository's folder and `WORK` the work folder; run the com
    today's by default.
 
 4. **Look at it.** `verify.py` checks the links, the headers, the bookmarks and the page sizes, but not how pages
-   look. Render the title page, the contents, the UML page, a chapter's first page, the `data.json` page and the
-   first page of the index, and look at each. `$WORK/pages.json` gives the page of each heading by its id, such as
-   `uml`, `index`, `d-js-model` and `c-data-json`:
+   look. Render the title page, the contents, the four UML pages, a chapter's first page, the `data.json` page and
+   the first page of the index, and look at each. `$WORK/pages.json` gives the page of each heading by its id, such
+   as `uml-overview`, `uml-model`, `uml-view`, `uml-controller`, `index`, `d-js-model` and `c-data-json`:
 
    ```
-   python .claude/skills/code-docu-pdf/scripts/shot.py "$WORK/code_docu.pdf" "$WORK/shot" 1,2,4,5
+   python .claude/skills/code-docu-pdf/scripts/shot.py "$WORK/code_docu.pdf" "$WORK/shot" 1,2,4,5,6,7
    ```
 
-   The line `uml: …` that `build.mjs` prints gives the UML page, the direction of the diagram and its text size in
-   points; at A4 it was 4.3 points on 2026-10-31, and 3.2 points on 2026-11-01, with 14 scripts in the diagram.
+   The lines `uml: …` that `build.mjs` prints give each UML page, its layout, its direction and its text size in
+   points; on 2026-11-01 the view's was the smallest, at 5.6 points. A line `uml problem: …` stops the build: an
+   arrow crosses or touches another, or runs under a box or a label, or a name links nowhere.
 
 5. **Install it.** Copy `$WORK/code_docu.pdf` over `documentation/code_docu.pdf`.
 
@@ -124,5 +125,7 @@ otherwise.
   than two printings; if four are not enough, look at the pages around the heading that keeps moving.
 - **Chrome does not open its debugging port.** Another Chrome is using port 9351, or Chrome is not at `CHROME`.
   `print.mjs` takes the port as its third argument.
+- **A `uml:` warning or a `uml problem:` line.** The overview in `MAINTAINER.md` no longer matches the code, or a
+  diagram's arrows collide; the `code-docu-uml` skill says what to do with each.
 - **The UML text is too small.** The `code-docu-uml` skill explains how the page and the scale are chosen.
 - **The PDF fails `verify.py`.** Its last line names each problem; the `code-docu-pdf` skill explains each check.

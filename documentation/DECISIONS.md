@@ -308,22 +308,49 @@ link.
 - **Model, view and controller** as *Head First Design Patterns* describes them: the scripts are in `js/model/`,
   `js/view/` and `js/controller/`, and `script.js` is in `js/`. `model.js` is the subject (Observer), `js/view/page.js`
   its only observer and the composite of the views (Composite), and `nodetree.js` and `optionshandler.js` the
-  strategies of `treeview.js` and `optionsview.js` (Strategy). A view never imports a controller and never changes the
-  model, a controller never touches the page, and Test 85 checks it. Replaced: `script.js` in the main folder; the
+  strategies of `treeview.js` and `optionsview.js` (Strategy). A view never imports a controller, never changes the
+  model and never names a mark; a controller never touches the page or the address; only the model works on its sets
+  and reaches `page.update()`; Test 85 checks it. Replaced: `script.js` in the main folder; the
   scripts split by folder only, with the controllers drawing the page and the tree's elements kept on the model's
   items.
   [2026-10-19](DEVLOG/DEVLOG1.md#a-documentation-folder-and-scriptjs-in-the-main-folder)
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)
   [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
 - **The model sends the kind of change, and the views read the rest**: `"marks"`, `"tree"` or `"language"`, once for
   each change, and each view then takes what it needs from the model.
   [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
 - **Simple UI, the civilisations' view and Tooltips stay outside the model**: they are only how the page looks, so the
-  controller saves them and tells the view at once. Simple UI then redraws the views with `page.update("look")`.
+  controller saves them and tells the view at once. Simple UI then redraws the views with `redraw("look")`.
   [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
 - **Which branches are open stays in the tree view**, as the page's state, not the model's. The controller only asks
   the view to open or close a branch.
   [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
+- **The tree view hands the model's notice on to its controller after redrawing** (`redrawn`), so that **Find**
+  follows every change. The controller does not subscribe to the model, as the search must wait until the tree has
+  been drawn again, and the book warns against depending on the order of notices. Replaced: `refind()`, called by
+  `optionshandler.js`.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **A view reports the gesture, and its controller picks the mark**: a click is must have, a long press and the
+  menu must lack, decided in `nodetree.js` as the keys are.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **The counts, the greyed-out branches and the matching civilisations come from the model**: `countOf()`,
+  `behind()` and `matchingCivs()`.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **The language in use is the model's alone**; `optionshandler.js` keeps only the language still loading, and a
+  failed load puts Options back on the language in use. Replaced: `chosen`.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **`js/script.js` starts the page**; `optionshandler.js` starts only Options. Replaced: `start()` in
+  `optionshandler.js`.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **`page.update()` is the model's notice alone**; `redraw()` in `page.js` draws the page for `"start"` and
+  `"look"`.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **Only `datahandler.js` writes the address**, with `keepInAddress()`, next to `remember()`.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **The updater stays outside model, view and controller**: `updatehandler.js` hands the one result of
+  `fetchUpdate()` straight to `report.js`, as nothing else waits for it.
+  [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
 - **Two style sheets**: `css/base.css`, the layout and Simple UI, and `css/pictures.css`, every rule with a picture or a
   font.
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)
@@ -367,10 +394,16 @@ link.
   section for each function. Replaced: a chapter for each file. [2026-10-19](DEVLOG/DEVLOG1.md#code_docupdf)
   [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again) [2026-10-31](DEVLOG/DEVLOG5.md#code_docupdf-by-folder)
 - **`code_docu.pdf` is made from `.claude/skills/`**, only when asked, by four skills for Claude Code that keep its
-  steps, scripts and descriptions. Its chapters keep their order, from the main folder to `locales/`, and the UML
+  steps, scripts and descriptions. Its chapters keep their order, from the main folder to `locales/`, and each UML
   diagram is on an A4 page. Replaced: the sources outside the project, and the A3 page.
   [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again)
   [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
+- **Four UML diagrams.** The overview, the only one in `MAINTAINER.md`, shows the code in model, view and controller,
+  file by file; `code_docu.pdf` adds a diagram of each part, function by function, made from the code. No arrow
+  crosses or touches another, or runs under a box or a label, and every build of `code_docu.pdf` checks it, as it
+  checks the overview against the imports. The tests' arrows are left out of the overview, as with them it cannot be
+  drawn without a crossing. Replaced: one diagram of every script and function.
+  [2026-11-01 13:04:46](DEVLOG/DEVLOG5.md#130446-four-uml-diagrams-without-colliding-arrows)
 - **The development log** is in `documentation/DEVLOG/`, in parts of at most 1000 lines that never split a day, each a
   list of days with links; this file lists its decisions.
   [2026-10-31 00:48:46](DEVLOG/DEVLOG5.md#004846-the-log-in-parts)

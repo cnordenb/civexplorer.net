@@ -99,7 +99,6 @@ function refs(calls, callers, ctx) {
 }
 
 function scriptCounts(c, mod) {
-  if (c.file === "js/script.js") return "no functions";
   const fns = mod.entries.filter((e) => e.kind === "function").length;
   const objs = mod.entries.length - fns;
   const exported = mod.entries.filter((e) => e.exported).length;

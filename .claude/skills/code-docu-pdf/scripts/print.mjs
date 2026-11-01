@@ -58,8 +58,10 @@ try {
     if (!ready) await sleep(100);
   }
   if (!ready) throw new Error("the page never set window.docReady");
-  const report = await evaluate("JSON.stringify(window.umlReport ?? null)");
-  if (report !== "null") console.log("uml:", report);
+  const report = JSON.parse(await evaluate("JSON.stringify(window.umlReport ?? null)"));
+  for (const d of report?.diagrams ?? []) console.log("uml:", JSON.stringify(d));
+  for (const p of report?.problems ?? []) console.error("uml problem:", p);
+  if (report?.problems.length) process.exitCode = 1;
   const { data } = await send("Page.printToPDF", { printBackground: true, preferCSSPageSize: true,
     generateDocumentOutline: true, generateTaggedPDF: true, displayHeaderFooter: false,
     transferMode: "ReturnAsBase64" });

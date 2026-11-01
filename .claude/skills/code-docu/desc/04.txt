@@ -33,7 +33,8 @@ The tests of the tree: marking, Filters, the counts, opening and closing, and Fi
 - tree: Tests Expand all, Collapse all and the arrows, and that opening a branch also opens its only children (Tests 29,
   30; Req. 18, 19).
 - finding: Tests that Find highlights its matches in yellow, opens the branches down to them and counts them beside the
-  box, and says when nothing matches (Tests 31, 32; Req. 20, 21).
+  box, drops a match once a mark greys out its branch (dropsGreyed()), and says when nothing matches (Tests 31, 32;
+  Req. 20, 21).
 - behaviourTests: Runs the tests of the tree, in the order TESTS.md lists them.
 
 @ js/tests/interface_test.js

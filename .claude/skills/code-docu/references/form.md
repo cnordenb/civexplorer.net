@@ -9,9 +9,13 @@ changing them, and what to look for on the rendered pages.
 1. Title page: "AoE2 Civ Explorer", "Code documentation", the date, the number of chapters, subchapters, functions
    and objects, and the introduction from `@ (title)` in `desc/01.txt`.
 2. Contents: every chapter with its number, its number of files and its page; under it, indented one level, every
-   subchapter with its number, its number of functions, parts or keys, and its page. The UML diagram and the index
-   have lines of their own, without numbers.
-3. The UML diagram, on one A4 page.
+   subchapter with its number, its number of functions, parts or keys, and its page. The UML diagrams, with a line
+   for each diagram under them, and the index have lines of their own, without numbers.
+3. Four UML diagrams, each on one A4 page, with the introduction from `@ (uml)` above the first and its own from
+   `@ (uml overview)`, `@ (uml model)`, `@ (uml view)` or `@ (uml controller)`: the overview of `MAINTAINER.md`, the
+   code in model, view and controller, file by file; then the scripts of each part, function by function, generated
+   from the code. No arrow crosses or touches another, or runs under a box or a label, and every build checks it
+   (decided 2026-11-01; until then one diagram of all the scripts).
 4. The chapters, one per folder, in the order of `layout.json`:
    1 the main folder (`index.html`, `data.json`), 2 `css/`, 3 `js/` (`script.js`), 4 `js/model/`, 5 `js/view/`,
    6 `js/controller/`, 7 `js/tests/`, 8 `locales/` (`de.json`, standing for every file in `locales/`).
@@ -28,24 +32,26 @@ changing them, and what to look for on the rendered pages.
   "internal", what it does and why, then "Called by" and "Calls", grouped by file, its own file first. A function
   handed on to be called later counts as called by the one that hands it on, and a script's top-level code is named
   where it is the caller. Helpers defined inside a function are part of that function.
-- **`index.html`, the style sheets and `script.js`** are described in parts, each with its title and lines. Together
-  the parts cover every line of the file but blank ones and bare `<html>` and `<body>` tags, and no two overlap.
+- **`index.html`, the style sheets and the top-level code of `script.js`** are described in parts, each with its
+  title and lines. In `index.html` and the style sheets the parts cover every line of the file but blank ones and bare
+  `<html>` and `<body>` tags, and no two overlap.
 - **`data.json`** takes exactly one page: how the file is laid out, and a table of its keys, with their lines and what
   is there, the parts of `icons` and `text` included. `locales/de.json` has a page of its own.
 
 ## Links
 
 - Every mention of a folder, file or function outside its own heading links to its chapter, subchapter or section: in
-  the text, the lists, the contents, the UML diagram and the index. There were 3,425 links on 2026-10-31.
+  the text, the lists, the contents, the UML diagrams and the index. There were 3,425 links on 2026-10-31.
 - Files of the repository that are not chapters, such as `RULES.md`, link to their page on GitHub
   (`https://github.com/cnordenb/civexplorer.net/blob/master/…`).
 - Every link must have a target in the PDF; `verify.py` fails otherwise.
 
 ## Pages
 
-- A4 throughout, the UML page included. It was A3 until 2026-10-31, when A4 was chosen with smaller names.
+- A4 throughout, the UML pages included. It was A3 until 2026-10-31, when A4 was chosen with smaller names. A UML
+  page is turned on its side when its diagram comes out larger that way.
 - The header at the top left names the chapter and the subchapter, such as "4 js/model/ › 4.1 datahandler.js"; the
-  front pages name themselves ("Contents", "UML diagram", "Index"). At the top right: "AoE2 Civ Explorer · Code
+  front pages name themselves ("Contents", "UML diagrams", "Index"). At the top right: "AoE2 Civ Explorer · Code
   documentation". At the bottom right: the page's number and the number of pages.
 - The page numbers in the contents and the index are those where each heading starts, read back from a printing.
 

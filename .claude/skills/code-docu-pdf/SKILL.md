@@ -25,9 +25,10 @@ work folder. Rule 36 allows Python and its packages here, for code_docu.pdf only
 ## Print
 
 `print.mjs` starts Chrome without a window, on its own profile in the work folder and debugging port 9351 by
-default, opens the page, waits until the page sets `window.docReady` (after the UML diagram is drawn), prints the
-UML report and calls `Page.printToPDF` with the page's own sizes, backgrounds, a tagged PDF and an outline, then
-closes Chrome. The page's `@page` rules in `code-docu/scripts/doc.css` and those `gen.mjs` writes give every page its
+default, opens the page, waits until the page sets `window.docReady` (after the UML diagrams are drawn), prints a
+line `uml: …` for each diagram and a line `uml problem: …` for each collision or unlinked name, and calls
+`Page.printToPDF` with the page's own sizes, backgrounds, a tagged PDF and an outline, then closes Chrome. A
+`uml problem:` makes it exit with 1 after printing, so that `build.mjs` stops. The page's `@page` rules in `code-docu/scripts/doc.css` and those `gen.mjs` writes give every page its
 size, margins and header, so Chrome's own header and footer stay off. Node 21 needs `--experimental-websocket`;
 Node 22 and later do not.
 
@@ -49,7 +50,7 @@ file with object streams and compressed streams: about 1.4 MB instead of about 4
 `verify.py` prints what it counted and fails, with "FAILED:" and the name of each check, if:
 
 - a link in the page points to no id, or to no named place in the PDF;
-- a chapter, subchapter, function, the UML page or the index has no named place;
+- a chapter, subchapter, function, UML diagram or the index has no named place;
 - a page between the first chapter and the index does not name its chapter and subchapter in its header;
 - a bookmark runs a number into a name, or repeats a word, as Chrome's own titles did;
 - a link in the PDF has no target;

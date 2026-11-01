@@ -1,8 +1,8 @@
 import {
   data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language, recall, remember, attempt, params,
-  preferredLanguage,
+  preferredLanguage, plural, words,
 } from "../model/datahandler.js";
-import { items, whole, lineOf, lineEnd } from "../model/model.js";
+import { items, whole, lineOf, lineEnd, behind } from "../model/model.js";
 import { $, shared } from "../view/stringbuilder.js";
 import { rowOf } from "../view/treeview.js";
 import { setMenu, options } from "../view/optionsview.js";
@@ -218,6 +218,25 @@ export const beside = () => {
   return note.left >= box.right - 0.5 && note.top < box.bottom && note.bottom > box.top
     && note.height < 1.5 * parseFloat(getComputedStyle($("found")).lineHeight);
 };
+
+export function dropsGreyed(rival) {
+  const by = [rival, rival?.rivals[0]].filter(Boolean).find((each) => {
+    reset();
+    tap(nodeOf(each));
+    return items.some(behind);
+  });
+  const hit = by && items.find(behind);
+  if (!hit) return { dropped: false, detail: "no mark in data.json greys out a branch with items in it" };
+  reset();
+  type(nameOf(hit));
+  const lit = nodeOf(hit).classList.contains("found");
+  tap(nodeOf(by));
+  const n = document.querySelectorAll(".node.found").length;
+  const gone = !nodeOf(hit).classList.contains("found");
+  const counted = $("found").textContent === (n ? plural("found", n) : words.ui.noneFound);
+  reset();
+  return { dropped: lit && gone && counted, detail: `${nameOf(hit)}: ${lit}, ${gone}, ${counted}` };
+}
 
 export const listed = () => [...$("civs").children].map((li) => li.textContent);
 

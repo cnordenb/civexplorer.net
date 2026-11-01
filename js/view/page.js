@@ -5,6 +5,10 @@ import { optionsView } from "./optionsview.js";
 
 const parts = [textsView, optionsView, treeView, civsView, filtersView];
 
-export const page = { update: (change) => parts.forEach((part) => part.update(change)) };
+const draw = (change) => parts.forEach((part) => part.update(change));
+
+export const page = { update: draw };
+
+export const redraw = (reason) => draw(reason);
 
 export const startPage = () => subscribe(page);

@@ -1,8 +1,25 @@
-import { params, load, useData, loadLanguage, loadLanguages, preferredLanguage } from "./model/datahandler.js";
-import { showLoadError, showLoading } from "./view/stringbuilder.js";
+import {
+  params, data, recall, load, useData, loadLanguage, loadLanguages, preferredLanguage,
+} from "./model/datahandler.js";
+import { startModel } from "./model/model.js";
+import { showLoadError, showLoading, writeFixed, showPage } from "./view/stringbuilder.js";
 import { startPictures, finishLoading } from "./view/pictures.js";
-import { start, setSimple, savedSimple } from "./controller/optionshandler.js";
+import { startPage, redraw } from "./view/page.js";
+import { startOptions, setSimple, savedSimple } from "./controller/optionshandler.js";
+import { startTree } from "./controller/nodetree.js";
 import { runUpdate } from "./controller/updatehandler.js";
+
+function start() {
+  const code = preferredLanguage();
+  const first = Object.keys(data.languages)[0];
+  startModel(recall("include") === "true", recall("regional") !== "false", data.text[code] ? code : first);
+  startTree();
+  startOptions();
+  writeFixed();
+  startPage();
+  redraw("start");
+  showPage();
+}
 
 setSimple(savedSimple());
 load("data.json").then((raw) => {

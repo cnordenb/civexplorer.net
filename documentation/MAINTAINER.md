@@ -117,8 +117,8 @@ why a game update changes only those files, and sometimes adds an icon.
 
 `code_docu.pdf` describes the code folder by folder: each folder is a chapter, each file in it a subchapter, and each
 function a section numbered after both, with its lines, the functions that call it and those it calls. Every name of
-a folder, file or function links to its place. It also holds the UML diagram, a page on how `data.json` is laid out,
-and an index.
+a folder, file or function links to its place. It also holds UML diagrams, the one below and one of each part with
+its functions, a page on how `data.json` is laid out, and an index.
 
 It is made again only when asked. Its steps, the descriptions of every function and the scripts that print it are in
 `.claude/skills/`, as skills for Claude Code: asked to make `code_docu.pdf` again, Claude Code follows
@@ -127,209 +127,75 @@ itself never does.
 
 ### UML diagram
 
-Each arrow points from a script to a script it uses. `+` marks what a script shares with others, `-` what it keeps to
-itself. The labels of `model`, `page`, `nodetree` and `optionshandler` give their parts in model, view and
-controller, which "How model, view and controller work together" below explains.
+The diagram shows the code in its three parts. Each box is a folder with its scripts, and `start` is
+`js/script.js`, which starts the page. Each arrow points from a part to a part whose scripts it uses, and says what
+for. The tests use all three parts as well; those arrows are left out, because with them some arrows would have to
+cross. `code_docu.pdf` adds a diagram of each part, function by function.
 
 ```mermaid
 classDiagram
   direction TB
-  class script {
-    <<module>>
+  class start {
+    <<js/>>
+    script.js
   }
-  class optionshandler {
-    <<strategy of optionsview>>
-    +start()
-    +setLanguage(code)
-    +setInclude(on)
-    +setRegional(on)
-    +setSimple(on)
-    +savedSimple()
-    -choices
-    -apply()
-    -reset()
-    -choose(code)
+  class controller {
+    <<js/controller/>>
+    nodetree.js
+    optionshandler.js
+    updatehandler.js
   }
-  class nodetree {
-    <<strategy of treeview>>
-    +startTree()
-    +refind()
-    -toggle(item, kind)
-    -branch(item)
-    -key(item, typed)
-    -find(typed)
-  }
-  class updatehandler {
-    <<module>>
-    +runUpdate()
-  }
-  class page {
-    <<observer, composite>>
-    +page
-    +startPage()
-    -parts
-  }
-  class treeview {
-    <<module>>
-    +treeView
-    +startTreeView(actions)
-    +rowOf(item)
-    +isOpen(item)
-    +setOpen(item, open)
-    +focus(item, onTwisty)
-    +highlight(found, searched)
-    +findText()
-    -replant()
-    -paint()
-  }
-  class optionsview {
-    <<module>>
-    +optionsView
-    +startOptionsView(actions)
-    +shown(id)
-    +show(id, value)
-    +tick(id, on)
-    +buildLanguages()
-    +setMenu(open, focus)
-  }
-  class stringbuilder {
-    <<module>>
-    +textsView
-    +civsView
-    +filtersView
-    +chipName(item, kind, own)
-    +demand(actions, names)
-    +clone(id)
-    +simple()
-    +showLoading(shown)
-    +showPage()
+  class view {
+    <<js/view/>>
+    stringbuilder.js
+    treeview.js
+    optionsview.js
+    page.js
+    scrollbars.js
+    pictures.js
+    report.js
   }
   class model {
-    <<subject>>
-    +items
-    +subscribe(observer)
-    +unsubscribe(observer)
-    +startModel(included, regionals, code)
-    +mark(item, kind)
-    +reach(item, kind)
-    +clear()
-    +unmarkLine(item, kind, own)
-    +setIncluded(on)
-    +setRegionals(on)
-    +chooseLanguage(code)
-    +filtersOf()
-    +chipOf(item, kind, own)
-    -notify(change)
-    -rebuild()
-  }
-  class datahandler {
-    <<module>>
-    +data
-    +useData(raw)
-    +useLanguage(code)
-    +preferredLanguage()
-    +setOf(rule)
-    +civsOf(set)
-    +cellOf(names, name, file)
-    +civFile(civ)
-    +recall(key)
-    +remember(key, value)
-    +fetchUpdate()
+    <<js/model/>>
+    datahandler.js
+    model.js
   }
   class tests {
-    <<js/tests>>
-    +runTests()
+    <<js/tests/>>
+    run_test.js
+    helpers_test.js
+    static_test.js
+    behaviour_test.js
+    interface_test.js
+    pictures_test.js
+    audit_test.js
   }
-  class pictures {
-    <<module>>
-    +view
-    +setView(choice)
-    +setTips(on)
-    +applySimple(on)
-    +finishLoading()
-    +screenPictures(width, height, ratio)
-    +startPictures()
-    -wireTip()
-  }
-  class scrollbars {
-    <<module>>
-    +bars
-    +startBars()
-    +fit(bar, box)
-    -wire(bar, box)
-  }
-  class report {
-    <<module>>
-    +openReport(title, status)
-    +report(line)
-    +showUpdating()
-    +showUpdate(result)
-    +showUpdateFailed(error)
-  }
-  script ..> optionshandler
-  script ..> updatehandler
-  script ..> pictures
-  script ..> stringbuilder
-  script ..> datahandler
-  script ..> tests : only with ?test
-  optionshandler ..> nodetree
-  optionshandler ..> pictures
-  optionshandler ..> page
-  optionshandler ..> optionsview
-  optionshandler ..> stringbuilder
-  optionshandler ..> model
-  optionshandler ..> datahandler
-  nodetree ..> treeview
-  nodetree ..> model
-  nodetree ..> datahandler
-  updatehandler ..> report
-  updatehandler ..> datahandler
-  pictures ..> page
-  pictures ..> optionsview
-  pictures ..> treeview
-  pictures ..> scrollbars
-  pictures ..> stringbuilder
-  pictures ..> model
-  pictures ..> datahandler
-  page ..> optionsview
-  page ..> treeview
-  page ..> stringbuilder
-  page ..> model
-  treeview ..> stringbuilder
-  treeview ..> model
-  treeview ..> datahandler
-  optionsview ..> stringbuilder
-  optionsview ..> datahandler
-  scrollbars ..> stringbuilder
-  scrollbars ..> datahandler
-  report ..> stringbuilder
-  report ..> datahandler
-  stringbuilder ..> model
-  stringbuilder ..> datahandler
-  model ..> datahandler
-  tests ..> optionshandler
-  tests ..> treeview
-  tests ..> optionsview
-  tests ..> pictures
-  tests ..> scrollbars
-  tests ..> report
-  tests ..> stringbuilder
-  tests ..> model
-  tests ..> datahandler
-  note for datahandler "reads data.json and locales/"
+  start ..> view : starts, draws
+  start ..> controller : starts
+  start ..> model : loads, starts
+  controller ..> view : asks
+  controller ..> model : changes
+  view ..> model : observes, reads
+  start ..> tests : loads with ?test
 ```
+
+When a script is added or moved, or starts to use a script of another part, change the diagram to match: making
+`code_docu.pdf` stops and names the box or arrow that no longer fits.
 
 The scripts are in three folders: `js/model/` holds the data and the rules, `js/view/` what the page shows, and
 `js/controller/` what the visitor's clicks, touches and keys mean. `js/script.js` starts them.
 
 - **`js/script.js`** turns Simple UI on or off as the visitor last chose (off on a first visit), which puts up the
-  loading screen without it, loads `data.json` and the visitor's language, starts the page, and lets the loading
-  screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the updater. It never
-  touches the page itself.
+  loading screen without it, and loads `data.json` and the visitor's language. It then starts the model with the
+  saved settings, the tree's and the Options window's controllers and the page, has the page drawn once, and lets the
+  loading screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the
+  updater. It never touches the page itself.
 - **`js/model/datahandler.js`** looks after the data: loading `data.json` and the language files, the chosen
-  language, which civilisations have what, the visitor's saved choices, and the updater's fetching and file writing.
+  language, which civilisations have what, the visitor's saved choices, the language in the address bar, and the
+  updater's fetching and file writing.
 - **`js/model/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
-  [How marking works](#how-marking-works)), which civilisations fit, and what **Filters** shows. Only its own
+  [How marking works](#how-marking-works)), which civilisations fit, the counts beside the names, which branches a
+  mark greys out, and what **Filters** shows. Only its own
   functions change it (`mark`, `clear`, `unmarkLine`, `setIncluded`, `setRegionals` and `chooseLanguage`), and each
   then tells the page what changed. It never touches the page.
 - **`js/view/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the list of
@@ -340,7 +206,8 @@ The scripts are in three folders: `js/model/` holds the data and the rules, `js/
 - **`js/view/optionsview.js`** draws the Options window: the language menu, the boxes and the civilisations' view, as
   the visitor ticks and picks them before **OK**. Opening the window and **OK** go to
   `js/controller/optionshandler.js`.
-- **`js/view/page.js`** is the whole page: it holds the other views and passes each change to all of them.
+- **`js/view/page.js`** is the whole page: it holds the other views and passes each change to all of them, the
+  model's notices as well as `redraw("start")` and `redraw("look")`.
 - **`js/view/scrollbars.js`** draws the pictures' scroll bars (see [Simple UI and the
   pictures](#simple-ui-and-the-pictures)).
 - **`js/view/pictures.js`** holds what only the pictures need: the civilisations as a list or as tiles, the tooltip,
@@ -352,7 +219,8 @@ The scripts are in three folders: `js/model/` holds the data and the rules, `js/
   closing, the arrow keys, **Find**, the buttons above the tree, and the buttons of **Filters**.
 - **`js/controller/optionshandler.js`** says what **OK** in the Options window does. Each setting is one of its
   `choices`, with what it is now and how to set it, and **OK** sets each one that the window shows changed. It saves
-  the settings, loads a language the first time it is chosen, and starts the page.
+  the settings and loads a language the first time it is chosen; if that fails, Options goes back to the language in
+  use.
 - **`js/controller/updatehandler.js`** runs the updater (`?update`): it fetches the new data and has
   `js/view/report.js` show what changed.
 
@@ -371,11 +239,12 @@ compound patterns) describes it: three patterns, each with its part.
   whatever else they need from the model themselves.
 - **Each view hands what the visitor did to its controller (Strategy).** `treeview.js` is started with the actions of
   `nodetree.js`, and `optionsview.js` with those of `optionshandler.js`, and each checks at the start that none is
-  missing. A click on a row only calls `toggle(item, "has")`: the controller decides what that means, changes the
-  model, and may ask the view to open a branch or move the focus.
+  missing. A click on a row only calls `gesture(item, "click")`: the controller decides that a click means must
+  have, as it decides what each key means, changes the model, and may ask the view to open a branch or move the
+  focus. After redrawing, `treeview.js` calls its controller's `redrawn(change)`, which keeps **Find** up to date.
 - **The page holds the smaller views (Composite).** `page.js` holds the views of the texts, Options, the tree, the
-  civilisations and **Filters**, and passes every change to each of them, always in that order. `page.update("start")`
-  draws the whole page once at the start.
+  civilisations and **Filters**, and passes every change to each of them, always in that order. `redraw("start")`
+  draws the whole page once at the start; `page.update()` is only the model's notice.
 
 How this differs from the book's classic model, view and controller:
 
@@ -388,11 +257,16 @@ How this differs from the book's classic model, view and controller:
    bars, and telling a long press from a click. Whatever changes the model, a setting or which branches are open goes
    through a controller.
 5. Simple UI, the civilisations' view and Tooltips are only how the page looks: the controller saves them and tells
-   the view at once, without the model. Simple UI then redraws the views with `page.update("look")`.
+   the view at once, without the model. Simple UI then redraws the views with `redraw("look")`.
 6. It is the classic model, view and controller of one page, not the book's Model 2 for web servers.
+7. The updater (`?update`) is outside the pattern on purpose: `updatehandler.js` hands the one result of
+   `fetchUpdate()` straight to `js/view/report.js`, as nothing else waits for it.
+8. A controller learns of the model's changes from its view, not by subscribing to the model, so that the order is
+   fixed: the tree is drawn again first, and only then does **Find** search it.
 
-The rule to keep: a view never imports a controller and never changes the model; a controller never touches the page;
-only `model.js` tells the views that the model changed.
+The rule to keep: a view never imports a controller, never changes the model and never names a mark; a controller
+never touches the page or the address; only the model works on its sets and reaches `page.update()`; Test 85 checks
+it.
 
 ### The data
 
@@ -725,8 +599,8 @@ and with a screen reader.
   does; the tests check that every script is in one of them, but for `js/script.js`.
 - No two files with the same name. Every file in `js/tests/` ends in `_test.js`, so that, for example,
   `js/tests/pictures_test.js` and `js/view/pictures.js` stay apart.
-- A view never imports a controller and never changes the model; a controller never touches the page; only
-  `model.js` tells the views that the model changed (see
+- A view never imports a controller, never changes the model and never names a mark; a controller never touches the
+  page or the address; only the model works on its sets and reaches `page.update()` (see
   [How model, view and controller work together](#how-model-view-and-controller-work-together)). Test 85 checks
   it.
 - No comments in the code, and a blank line before and after every function.

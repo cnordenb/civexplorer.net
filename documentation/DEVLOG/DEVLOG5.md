@@ -836,3 +836,118 @@ Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions ma
 #### Not done
 
 - Open: the UML page stays A4, at 3.2 points. A3, as before 2026-10-31, would make its text about 1.4 times as large.
+
+### 12:17:45: the rest of model, view and controller put in its place
+
+#### What changed
+
+- **Why.** After the entry at 03:00:32, some work still sat in the wrong part. `treeview.js` decided that a click
+  means must have and a long press must lack, and it worked out the counts and the greyed-out branches from the
+  model's sets, as `stringbuilder.js` did the matching civilisations. `optionshandler.js` started the page, called
+  `page.update("start")`, wrote the address bar, kept a copy of the language of its own (`chosen`), and had
+  `nodetree.js` search again (`refind()`) after a setting changed, but not after a mark, so that **Find** kept a match
+  that a mark had greyed out. The page looks and works as before, except that **Find** now drops and adds matches as
+  marks grey out branches and free them, and that a failed language load puts Options back on the language in use,
+  where it went on showing the language that had failed.
+- **Observer.** No controller subscribes to the model. `treeview.js` passes each notice, after redrawing, to
+  `redrawn(change)` in `nodetree.js`: after `"marks"` it searches again without opening or closing a branch, and after
+  `"tree"`, `"language"` and `"start"` it runs the whole of **Find** again, opening down to the matches. So the search
+  always comes after the tree has been drawn again, which a second observer could not be sure of. `refind()` is gone.
+- **Strategy.** The tree view only reports the gesture, as `gesture(item, "click")`, `"hold"` or `"menu"`, and
+  `GESTURES` in `nodetree.js` makes a click must have and the other two must lack, as `key()` does for Space and x.
+  As **Find** no longer opens branches after a mark, `enter()` opens down to the first match before it moves the
+  focus there.
+- **Composite.** `page.update()` is only the model's notice. `redraw()` in `page.js` passes `"start"` and `"look"`
+  to the same views in the same order; `js/script.js` calls `redraw("start")`, and Simple UI `redraw("look")`.
+- **What moved.**
+  - To `model.js`: `countOf()`, the two counts beside a name; `behind()`, whether a locked branch above greys an item
+    out; and `matchingCivs()`. No view reads `matching`, an item's `set` or its `all` any more.
+  - From `optionshandler.js` to `js/script.js`: starting the page. `start()` starts the model with the saved
+    settings and language, then the tree's controller, Options, the fixed texts and the page, draws the page with
+    `redraw("start")` and shows it. `startOptions()`, which replaced `start()` in `optionshandler.js`, only ticks the
+    boxes, starts the Options window and its language menu, and shows the saved view of the civilisations and
+    Tooltips.
+  - From `optionshandler.js` to `datahandler.js`: writing `?lng=` into the address bar, as `keepInAddress()`, next to
+    `remember()`.
+  - `chosen` is gone: Options reads the language in use from `datahandler.js`, which only `chooseLanguage()` in the
+    model sets, and `optionshandler.js` keeps only `pending`, the language still loading.
+  - The updater stays outside model, view and controller, on purpose: `updatehandler.js` hands the one result of
+    `fetchUpdate()` straight to `report.js`, as nothing else waits for it. Only the documents changed for it.
+- **Tests.** There are still 99 tests. Test 85 now also fails when a controller reads or writes the address bar,
+  when a view names a mark in a call to its controller, when a script outside `js/model/` and the tests works on the
+  model's sets, and when anything but a test calls `page.update()`. Its pattern for the sets ends in `\b`, not `\/`,
+  since its own check for comments fails on two slashes in code. Test 31 also marks a rival so that a match's branch
+  is greyed out, and checks that the match loses its yellow and that the number beside **Find** goes down with it.
+  That part is `dropsGreyed()` in `helpers_test.js`, as `behaviour_test.js` would otherwise pass 400 lines of code.
+- **Checked.** All 99 tests passed in each of the six windows GitHub runs them in: light and dark colours, at 1920 by
+  1080, 1000 by 1000 and 720 by 1280. In a copy with the rules broken on purpose in five ways, Test 31 failed when
+  **Find** no longer searched after a mark, and Test 85 when a controller went back in the history, a view named a mark,
+  a view read an item's `all`, and a view called `page.update()`; no other test failed. In headless Chrome, driven
+  through its debugging protocol from a local web server with real mouse, touch and key events, with Simple UI on and
+  off: Light Cavalry, found, lost its yellow and the count beside **Find** went from 1 to none once Xolotl Warrior was
+  marked must have, and both came back once the mark was taken away; Enter went to the first match and opened its
+  branch. A click marked must have; a long press, a right-click and the menu key must lack; a second right-click took
+  the mark away, and Space and x worked as before. With `locales/de.json` blocked, Deutsch and **OK** showed the load
+  error, the page stayed in English, and Options showed English again; unblocked, Deutsch loaded and `?lng=de` was in
+  the address. A word in **Find** at the start was found once the page was drawn. Include, Include Regionals, Simple UI,
+  the civilisations' view and Tooltips, the last two only without Simple UI, where they show, applied on **OK** and were
+  kept after reloading, and **Cancel** dropped them. `?update` opened the report window.
+- **`code_docu.pdf`.** Made again, with its descriptions in `.claude/skills/code-docu/desc/` brought up to date:
+  78 pages, 1.9 MB and 3928 links, none without a target, and every page A4. `gen.mjs` and `chapters.mjs` count
+  `script.js` as any other script, as it now has a function. In the UML diagram, `script` shows `start()` and
+  `nodetree` `gesture()` and `redrawn()`; its text is 3.0 points, laid out left to right, down from 3.2, which
+  `code-docu/SKILL.md` and `code-docu-uml/SKILL.md` note. The title page, the contents, the UML page and the pages
+  of `script.js`, `page.js`, `nodetree.js` and `optionshandler.js` were looked at.
+- **Documents.** `MAINTAINER.md`: the UML diagram, checked against the imports of every script, the scripts, how
+  model, view and controller work together, with two new ways in which it differs from the book, and the rule to
+  keep. `DECISIONS.md`. `TESTS.md`: Tests 31 and 85, and the lines of the tests that moved.
+
+#### Not done
+
+- Chrome does not fill in **Find** again on reloading, as the box has `autocomplete="off"`, so for the check at the
+  start the word was put into the box before the scripts started.
+- The page was not tried by hand on a real touch screen, with a screen reader, or at 400% zoom.
+
+### 13:04:46: four UML diagrams, without colliding arrows
+
+#### What changed
+
+- **Four diagrams.** The one UML diagram of all 14 scripts, their functions and about 50 arrows became four. The
+  overview, the only one in `MAINTAINER.md`, shows the code in its three parts: a box for each folder of `js/` with its
+  files, and an arrow with a label from each part to each part it uses (`start` starts, draws and loads; `controller`
+  asks `view` and changes `model`; `view` observes and reads `model`). `code_docu.pdf` adds a diagram of each of model,
+  view and controller, function by function, with `+` for what a script exports and `-` for what it keeps to itself,
+  and an arrow between scripts of the same folder.
+- **Without collisions.** No arrow may cross or touch another, end where another ends in the same box, run under or
+  along a box it does not join, or run under a label not its own. `collide.js` in `code-docu-uml` measures each drawn
+  diagram for it, every unit along every arrow, and `print.mjs` stops the build on each one it finds. The tests use all
+  three parts, but those arrows are left out of the overview, and its text says so: with them all five boxes would be
+  joined to each other, which cannot be drawn without a crossing.
+- **Layout.** The overview is drawn by mermaid's own layout (dagre), as on GitHub, and is clean only with
+  `start ..> view` written first. The parts' diagrams are drawn with ELK (`@mermaid-js/layout-elk` 0.1.7, added to
+  `.claude/skills/package.json`), which draws arrows at right angles; with dagre the view's diagram crossed in each of
+  40 orders tried. `uml.js` tries the arrows in their order, reversed, and in up to ten shuffled orders, top to bottom
+  and left to right, and keeps the first clean one. Text is at most 9 points, so that the controller's three boxes do
+  not fill a lying page at 15.7.
+- **From the code.** `parts.mjs` writes the parts' diagrams from the inventory, so they cannot fall behind the code.
+  The overview is written by hand, and `gen.mjs` stops with a `uml:` warning when a box's files differ from its
+  folder, when a part uses another without an arrow, or when an arrow stands for no import.
+- **The PDF.** Made again: 82 pages, 1.4 MB, 4090 links. The contents list "UML diagrams" with a line for each; each
+  diagram has its own page, with its introduction from `desc/01.txt` (`(uml)`, `(uml overview)` and so on). Text:
+  overview 8.3 points, model 7.4, view 5.6 and controller 9, all on upright pages; the one diagram before was 3.0.
+- **Documents.** `MAINTAINER.md`: the overview, its paragraph, and what to change when a script is added or moved.
+  `DECISIONS.md`. The skills `code-docu`, `code-docu-uml` (rewritten) and `code-docu-pdf`, with `form.md` and
+  `descriptions.md`.
+- **Checked.** `verify.py`: no link without a target, every chapter, subchapter, function and diagram in place, every
+  header right, 483 bookmarks, and all 82 pages A4. The title page, the contents and the four UML pages were looked at
+  as pictures, the view's at four times the size. With the tests' three arrows added to the overview, printing stopped
+  on two crossings; with an arrow taken out of the overview or one too many, or a file taken out of a box or one too
+  many, `gen.mjs` named each.
+
+#### Not done
+
+- GitHub's drawing of the overview in `MAINTAINER.md` was not checked, only mermaid 11.4.1 with the same layout. If
+  GitHub runs another version of mermaid, its boxes may lie differently.
+- The tests were not run, as no file they read changed.
+- Each box of the overview ends in an empty strip, mermaid's place for methods, which it hides only in a box that
+  lists nothing.
