@@ -8,7 +8,7 @@ import { setInclude, setSimple } from "../controller/optionshandler.js";
 import {
   root, check, expect, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges, labelOf,
   spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, drawn, ui, box, fixtures, codes,
-  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, painted, barProblems, tipGaps, tipLooks, nodeOf, twistyOf,
+  pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, fitBars, barProblems, tipGaps, tipLooks, nodeOf, twistyOf,
 } from "./helpers_test.js";
 
 const rows = { has: 50, lacks: 100 };
@@ -261,7 +261,7 @@ function simpleSwitch() {
 }
 
 async function strayBars(when) {
-  await painted();
+  fitBars();
   const problems = [];
   for (const [list, bar] of bars) {
     const shows = !simple() && rendered(list) && list.scrollHeight - list.clientHeight >= 1;
@@ -320,7 +320,7 @@ export async function pictureTests() {
     + "crossed or chosen, every item and top-level group its icon between its box and name, outlined as "
     + "colour_key.csv says, and every civilisation its icon, each icon its cell of its atlas, which holds its folder's "
     + "pictures by file name, row by row", !boxes.length && !icons.length, [...boxes, ...icons].join(", "));
-  const [looks, untipped] = [{ ...findLooks(), ...tipLooks() }, await tipGaps()];
+  const [looks, untipped] = [{ ...findLooks(), ...tipLooks() }, tipGaps()];
   check("options: without Simple UI, the Find box shows a search icon or a cross that clears it, and a tooltip "
     + "follows the mouse over the tree and over every other control or link, with Include's description hidden, "
     + "unless Tooltips is unticked", Object.values(looks).every(Boolean) && !untipped.length,

@@ -455,7 +455,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 402-408; `js/tests/helpers_test.js`, lines 222-239
+`js/tests/behaviour_test.js`, lines 402-408; `js/tests/helpers_test.js`, lines 228-245
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them, counts them, drops greyed-out ones.
@@ -510,7 +510,7 @@ The menu closes, refocuses its button and names the language, the page unchanged
 ## Test 36
 
 ### File residence:
-`js/tests/helpers_test.js`, lines 46-54; `js/tests/interface_test.js`, lines 57-58
+`js/tests/helpers_test.js`, lines 52-60; `js/tests/interface_test.js`, lines 57-58
 
 ### Purpose:
 Verify Req. 10, and keep the chosen language when the link is shared or the page reloaded.
@@ -654,7 +654,7 @@ Boxes: row by state, no marks but a dash. Icons: cell by file name, atlas sized 
 
 ### File residence:
 `js/tests/pictures_test.js`, lines 160-179 and 323-327
-`js/tests/helpers_test.js`, lines 237 and 289-342
+`js/tests/helpers_test.js`, lines 278 and 330-383
 
 ### Purpose:
 Verify that without Simple UI Find clears with its cross, and every control and link has a tooltip unless turned off.
@@ -688,7 +688,7 @@ Ticking: nothing till OK; then no image or civ link, full title, saved. Untickin
 
 ### File residence:
 `js/tests/pictures_test.js`, lines 263-307 and 337-341
-`js/tests/helpers_test.js`, lines 237-287
+`js/tests/helpers_test.js`, lines 278-328
 
 ### Purpose:
 Verify Rule 18 and the pictures' scroll bars: shown while a list scrolls, never stretched, never moving the list.

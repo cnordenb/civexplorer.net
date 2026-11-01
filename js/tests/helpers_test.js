@@ -21,7 +21,13 @@ export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const settled = (img) => img.complete || new Promise((done) => ["load", "error"]
   .forEach((type) => img.addEventListener(type, done)));
 
-export const loaded = (images) => Promise.race([Promise.all(images.map(settled)), wait(10000)]);
+export const loaded = (images) => {
+  let timer = 0;
+  const late = new Promise((done) => {
+    timer = setTimeout(done, 10000);
+  });
+  return Promise.race([Promise.all(images.map(settled)), late]).finally(() => clearTimeout(timer));
+};
 
 export const phone = () => matchMedia("(width < 720px) and (height > 639px)").matches;
 
@@ -269,7 +275,7 @@ export async function edges() {
     .map((code, i) => [`${KINDS[head[i + 1]]} ${reach}`, hex(code)])));
 }
 
-export const painted = () => new Promise((done) => requestAnimationFrame(() => setTimeout(done)));
+export const fitBars = () => dispatchEvent(new Event("resize"));
 
 async function frameShape(el, columns, rows) {
   const sheet = Object.assign(new Image(), { src: urlsOf(getComputedStyle(el))[0] });
@@ -334,17 +340,17 @@ const untipped = (scope) => [...scope.querySelectorAll(CONTROLS)]
     return el.matches("a") ? text !== el.href : !text || (text.length > 100 && el.id !== "find");
   }).map(describe);
 
-export async function tipGaps() {
+export function tipGaps() {
   $("expandAll").click();
   tap(nodeOf(fixtures().partial));
   type("a");
-  await painted();
+  fitBars();
   const gaps = untipped(document.body);
   $("optionsButton").click();
-  await painted();
+  fitBars();
   gaps.push(...untipped($("options")));
   setMenu(true);
-  await painted();
+  fitBars();
   gaps.push(...untipped($("language")));
   reset();
   return [...new Set(gaps)].map((name) => `${name} has no tooltip of at most 100 characters`);
