@@ -4,8 +4,8 @@
 - [2026-10-31](#2026-10-31)
 - [2026-11-01](#2026-11-01)
 
-Part 5 of the development log. It follows [part 4](DEVLOG4.md). The decisions made in the log are listed in
-[DECISIONS.md](../DECISIONS.md).
+Part 5 of the development log. It follows [part 4](DEVLOG4.md) and goes on in [part 6](DEVLOG6.md). The decisions made
+in the log are listed in [DECISIONS.md](../DECISIONS.md).
 
 ## 2026-10-30
 

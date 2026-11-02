@@ -1,10 +1,12 @@
-import { data, ALL, setOf, size, civsOf, useLanguage } from "./datahandler.js";
+import { data, recall, remember, keepInAddress } from "./datahandler.js";
+import { ALL, setOf, size, civsOf } from "./civsets.js";
+import { useLanguage } from "./texts.js";
 
 export const items = [];
 export const roots = [];
 export let include = false;
 export let regional = true;
-export let matching = 0n;
+let matching = 0n;
 
 const observers = new Set();
 
@@ -20,12 +22,14 @@ const notify = (change) => observers.forEach((observer) => observer.update(chang
 
 export const setIncluded = (on) => {
   include = on;
+  remember("include", String(on));
   rebuild();
   notify("tree");
 };
 
 export const setRegionals = (on) => {
   regional = on;
+  remember("regional", String(on));
   rebuild();
   notify("tree");
 };
@@ -48,7 +52,7 @@ function collect(nodes, parent) {
 
 export const whole = (item) => (item.all ??= item.kids.reduce((s, kid) => s & whole(kid), item.set));
 
-const lift = (node, kids) => kids.filter((kid) => !kid.copy)
+const liftedKids = (node, kids) => kids.filter((kid) => !kid.copy)
   .map((kid) => ({ ...kid, via: [node.item, ...(kid.via ?? [])] }));
 
 function prune(nodes, every = false, regionals = true) {
@@ -56,7 +60,7 @@ function prune(nodes, every = false, regionals = true) {
     const reach = data.pictures[node.item]?.reach;
     if ((!every && node.unique) || (!regionals && reach === "regional")) return [];
     const kids = prune(node.kids ?? [], every, regionals);
-    if (!every && reach === "unique") return lift(node, kids);
+    if (!every && reach === "unique") return liftedKids(node, kids);
     const rule = node.item && data.availability[node.item];
     const civs = rule ? size(setOf(rule)) : 0;
     if (!kids.length && (node.group || (!every && (civs === 1 || civs >= data.civs.length - 1)))) return [];
@@ -64,27 +68,27 @@ function prune(nodes, every = false, regionals = true) {
   });
 }
 
-const lent = (kid) => !kid.unique && !kid.own && data.pictures[kid.item]?.reach !== "unique";
+const isLendable = (kid) => !kid.unique && !kid.own && data.pictures[kid.item]?.reach !== "unique";
 
-const common = (node) => ({ ...node, copy: true, kids: (node.kids ?? []).filter(lent).map(common) });
+const lentCopy = (node) => ({ ...node, copy: true, kids: (node.kids ?? []).filter(isLendable).map(lentCopy) });
 
-function borrowed(nodes, key, line = false) {
-  for (const node of nodes) {
-    if (node.item === key) return line ? [] : common(node).kids;
-    const found = borrowed(node.kids ?? [], key, line || !!node.item || !!node.lines);
-    if (found) return found;
-  }
-  return null;
-}
+const placesIn = (nodes, inLine = false) => nodes.flatMap((node) => [
+  { node, inLine }, ...placesIn(node.kids ?? [], inLine || !!node.item || !!node.lines),
+]);
 
-const named = (link) => [link ?? []].flat();
+const borrowedKids = (places, key) => {
+  const place = places.find(({ node }) => node.item === key);
+  return !place || place.inLine ? [] : lentCopy(place.node).kids;
+};
 
-const variants = (nodes) => nodes.map((node) => {
-  const originals = named(node.replaces).flatMap((key) => borrowed(data.tree, key) ?? []);
-  return { ...node, kids: [...variants(node.kids ?? []), ...originals] };
+const keysIn = (link) => [link ?? []].flat();
+
+const withBorrowedKids = (nodes, places = placesIn(data.tree)) => nodes.map((node) => {
+  const originals = keysIn(node.replaces).flatMap((key) => borrowedKids(places, key));
+  return { ...node, kids: [...withBorrowedKids(node.kids ?? [], places), ...originals] };
 });
 
-function twin() {
+function shareMarksWithOriginals() {
   for (const copy of items.filter((each) => each.copy && !each.group)) {
     const original = items.find((each) => !each.copy && each.key === copy.key);
     if (!original) continue;
@@ -93,8 +97,8 @@ function twin() {
   }
 }
 
-function pair(link, list) {
-  for (const item of items) for (const key of named(item[link])) {
+function linkBothWays(link, list) {
+  for (const item of items) for (const key of keysIn(item[link])) {
     const other = items.find((each) => !each.group && each.key === key);
     if (!other) continue;
     item[list].push(other);
@@ -102,17 +106,19 @@ function pair(link, list) {
   }
 }
 
-const side = (item, rival) => (item === rival ? [] : [item, ...item.kids.flatMap((kid) => side(kid, rival))]);
+const branchWithout = (item, rival) => (item === rival
+  ? []
+  : [item, ...item.kids.flatMap((kid) => branchWithout(kid, rival))]);
 
-function oppose() {
+function addOpponents() {
   for (const item of items) for (const rival of item.rivals) {
-    for (const each of side(item, rival)) each.opponents.push(...side(rival, item));
+    for (const each of branchWithout(item, rival)) each.opponents.push(...branchWithout(rival, item));
   }
 }
 
-function siblings() {
+function addSiblingAlternatives() {
   for (const item of items.filter((each) => each.replaces)) {
-    const others = item.alternatives.filter((each) => named(item.replaces).includes(each.key))
+    const others = item.alternatives.filter((each) => keysIn(item.replaces).includes(each.key))
       .flatMap((each) => each.alternatives);
     for (const other of others) if (other !== item && !item.alternatives.includes(other)) item.alternatives.push(other);
   }
@@ -122,35 +128,37 @@ function rebuild() {
   const marks = new Map(items.map((item) => [item.path, item.self]));
   items.length = 0;
   roots.length = 0;
-  collect(prune(variants(data.tree), include, regional), null);
+  collect(prune(withBorrowedKids(data.tree), include, regional), null);
   items.forEach(whole);
-  pair("excludes", "rivals");
-  oppose();
-  pair("replaces", "alternatives");
-  siblings();
+  linkBothWays("excludes", "rivals");
+  addOpponents();
+  linkBothWays("replaces", "alternatives");
+  addSiblingAlternatives();
   for (const item of items) item.self = marks.get(item.path) ?? null;
-  twin();
-  fit();
+  shareMarksWithOriginals();
+  updateMatching();
 }
 
-export function startModel(included, regionals, code) {
-  include = included;
-  regional = regionals;
+export function startModel(code) {
+  include = recall("include") === "true";
+  regional = recall("regional") !== "false";
   useLanguage(code);
   rebuild();
 }
 
 export const chooseLanguage = (code) => {
   useLanguage(code);
+  remember("language", code);
+  keepInAddress("lng", code);
   notify("language");
 };
 
 export const barred = (item) => item.self !== "has"
   && [...item.alternatives, ...item.opponents].some((other) => other.self === "has");
 
-const within = (item, top) => !!item.parent && (item.parent === top || within(item.parent, top));
+const isInside = (item, top) => !!item.parent && (item.parent === top || isInside(item.parent, top));
 
-export const locked = (item) => barred(item) && !item.rivals.some((rival) => within(rival, item));
+export const locked = (item) => barred(item) && !item.rivals.some((rival) => isInside(rival, item));
 
 export const behind = (item) => !!item.parent && (locked(item.parent) || behind(item.parent));
 
@@ -165,10 +173,13 @@ export function state(item, top = item) {
   return parts.every((part) => part === parts[0]) ? parts[0] : "mixed";
 }
 
-export const isUnitOrTech = (item) => {
-  for (let p = item.parent; p; p = p.parent) if (!p.group || p.lines) return !item.group;
-  return false;
+export const ancestors = (item) => {
+  const above = [];
+  for (let p = item.parent; p; p = p.parent) above.push(p);
+  return above;
 };
+
+export const isUnitOrTech = (item) => !item.group && ancestors(item).some((p) => !p.group || p.lines);
 
 const descendants = (item) => item.kids.flatMap((kid) => [kid, ...descendants(kid)]);
 
@@ -180,15 +191,23 @@ function prerequisites(item) {
   return above;
 }
 
+const chainWhile = (item, takes) => {
+  const chain = [item];
+  while (chain.at(-1).kids.length === 1 && takes(chain.at(-1).kids[0])) chain.push(chain.at(-1).kids[0]);
+  return chain;
+};
+
+const itemChain = (item) => chainWhile(item, (kid) => !kid.group);
+
+export const chainOf = (item) => chainWhile(item, () => true);
+
 function passedTo(item) {
-  const line = [item];
-  while (line.at(-1).kids.length === 1 && !line.at(-1).kids[0].group) line.push(line.at(-1).kids[0]);
-  return line.filter((each) => each.set === item.set);
+  return itemChain(item).filter((each) => each.set === item.set);
 }
 
 const current = (item) => (isUnitOrTech(item) ? item.self : state(item));
 
-function put(item, kind) {
+function applyMark(item, kind) {
   if (!isUnitOrTech(item) || !kind) return setMark(item, kind);
   if (kind === "lacks") {
     descendants(item).filter((each) => each.self === "has" && prerequisites(each).includes(item))
@@ -197,22 +216,21 @@ function put(item, kind) {
   passedTo(item).forEach((each) => { each.self = kind; });
 }
 
-const reached = (item) => [...chainOf(item), ...(isUnitOrTech(item) ? passedTo(item) : descendants(item))];
+const spreadOf = (item) => [...chainOf(item), ...(isUnitOrTech(item) ? passedTo(item) : descendants(item))];
 
-export const reach = (item, kind) => (current(item) === kind ? [] : reached(item));
+export const toReveal = (item, kind) => (barred(item) || current(item) === kind ? [] : spreadOf(item));
 
 export function mark(item, kind) {
+  if (barred(item)) return;
   const next = current(item) === kind ? null : kind;
-  put(item, next);
+  applyMark(item, next);
   if (next === "has") prerequisites(item).forEach((each) => { each.self = "has"; });
-  fit();
-  notify("marks");
+  marksChanged();
 }
 
 export function clear() {
   roots.forEach((item) => setMark(item, null));
-  fit();
-  notify("marks");
+  marksChanged();
 }
 
 export function boxState(item) {
@@ -220,11 +238,15 @@ export function boxState(item) {
   return descendants(item).every((each) => !each.self || each.self === item.self) ? item.self : "mixed";
 }
 
-function fit() {
-  const marked = items.filter((item) => item.self);
-  matching = marked.reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
-  return marked;
+function updateMatching() {
+  matching = items.filter((item) => item.self)
+    .reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
 }
+
+const marksChanged = () => {
+  updateMatching();
+  notify("marks");
+};
 
 export const countOf = (item) => ({
   own: size(matching & (item.group ? item.all : item.set)),
@@ -233,11 +255,10 @@ export const countOf = (item) => ({
 
 export const matchingCivs = () => civsOf(matching);
 
-export const markOf = (item) => (["has", "lacks"].includes(state(item)) ? state(item) : item.self);
+const markOf = (item) => (["has", "lacks"].includes(state(item)) ? state(item) : item.self);
 
 export const lineEnd = (item) => {
-  let end = item;
-  while (end.kids.length === 1 && !end.kids[0].group) end = end.kids[0];
+  const end = itemChain(item).at(-1);
   return item.group || end.kids.length ? null : end;
 };
 
@@ -250,48 +271,46 @@ export function lineOf(item) {
   return line;
 }
 
-export function chainOf(item) {
-  const chain = [item];
-  while (chain.at(-1).kids.length === 1) chain.push(chain.at(-1).kids[0]);
-  return chain;
-}
+const isUnique = (item) => data.pictures[item.key]?.reach === "unique";
 
-const unique = (item) => data.pictures[item.key]?.reach === "unique";
+const isLoneUnique = (item) => isUnique(item) && !lineOf(item).every(isUnique);
 
-const alone = (item) => unique(item) && !lineOf(item).every(unique);
-
-const held = (item, mark) => mark === "has" && alone(item);
+const keepsOwnFilter = (item, mark) => mark === "has" && isLoneUnique(item);
 
 export function filtersOf() {
   const covered = (item, mark) => items.some((each) => (each === item || each.original === item) && each.parent
-    && state(each.parent) === mark && !held(each.parent, mark));
+    && state(each.parent) === mark && !keepsOwnFilter(each.parent, mark));
 
   const marked = items.filter((item) => !item.original && markOf(item) && !covered(item, markOf(item))
-    && !held(item, markOf(item))).map((item) => ({ item, mark: markOf(item), line: lineOf(item) }));
+    && !keepsOwnFilter(item, markOf(item))).map((item) => ({ item, mark: markOf(item), line: lineOf(item) }));
 
   const depth = ({ item, line }) => line.indexOf(item);
 
   const outranks = (other, filter) => other !== filter && other.mark === filter.mark && other.line[0] === filter.line[0]
     && (filter.mark === "has" ? depth(other) > depth(filter) : depth(other) < depth(filter));
 
-  const own = items.filter((item) => !item.original && held(item, item.self))
+  const own = items.filter((item) => !item.original && keepsOwnFilter(item, item.self))
     .map((item) => ({ item, mark: "has", line: lineOf(item), own: true }));
   return [...own, ...marked.filter((filter) => !marked.some((other) => outranks(other, filter)))]
     .sort((a, b) => a.item.i - b.item.i);
 }
 
-export const chipOf = (item, kind, own = false) => ({
-  named: (kind === "has" && !own && lineOf(item).findLast((each) => each.self === "has" && !alone(each))) || item,
+export const chipOf = ({ item, mark, own }) => ({
+  named: (mark === "has" && !own && lineOf(item).findLast((each) => each.self === "has" && !isLoneUnique(each)))
+    || item,
   full: !isUnitOrTech(item) && item.kids.length > 1 && state(item) === "has",
 });
 
-export function unmarkLine(item, kind, own = false) {
-  const kept = own ? [] : items.filter((each) => held(each, each.self));
+export function unmarkOwn(item) {
+  item.self = null;
+  marksChanged();
+}
+
+export function unmarkLine(item, kind) {
+  const kept = items.filter((each) => keepsOwnFilter(each, each.self));
   const line = lineOf(item);
-  if (own) item.self = null;
-  else if (line.length > 1) line.filter((each) => each.self === kind).forEach((each) => { each.self = null; });
+  if (line.length > 1) line.filter((each) => each.self === kind).forEach((each) => { each.self = null; });
   else setMark(item, null);
   kept.forEach((each) => { each.self = "has"; });
-  fit();
-  notify("marks");
+  marksChanged();
 }

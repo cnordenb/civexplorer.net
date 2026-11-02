@@ -1,6 +1,13 @@
-import { data, words, numbers, plural, fill, nameOf, cellOf } from "../model/datahandler.js";
+import { data } from "../model/datahandler.js";
+import { words, numbers, plural, fill, nameOf } from "../model/texts.js";
 import { items, roots, boxState, barred, locked, countOf } from "../model/model.js";
-import { $, clone, simple, place, compose, demand } from "./stringbuilder.js";
+import { $, clone, simple, cellOf, place, compose, demand } from "./stringbuilder.js";
+
+export const LONG_PRESS_MS = 500;
+
+const MENU_AFTER_TOUCH_MS = 600;
+
+const PRESS_DRIFT_PX = 10;
 
 const NEEDS = ["gesture", "branch", "key", "find", "enter", "clear", "expandAll", "collapseAll", "unchip", "redrawn"];
 
@@ -185,7 +192,7 @@ function onPress(e) {
   press.timer = setTimeout(() => {
     press.ready = true;
     rows.get(item).node.classList.add("pressed");
-  }, 500);
+  }, LONG_PRESS_MS);
 }
 
 function onRelease(e) {
@@ -201,7 +208,7 @@ function onMenu(e) {
   const item = itemAt(e.target);
   if (!item) return;
   e.preventDefault();
-  if (e.button === 2 || press || performance.now() - touchEnded < 600) return;
+  if (e.button === 2 || press || performance.now() - touchEnded < MENU_AFTER_TOUCH_MS) return;
   actions.gesture(item, "menu");
 }
 
@@ -250,7 +257,8 @@ export function startTreeView(controller) {
   tree.addEventListener("keydown", onKey);
   tree.addEventListener("pointerdown", onPress);
   tree.addEventListener("pointermove", (e) => {
-    if (press && e.pointerId === press.id && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 10) endPress();
+    if (press && e.pointerId === press.id
+      && Math.hypot(e.clientX - press.x, e.clientY - press.y) > PRESS_DRIFT_PX) endPress();
   });
   tree.addEventListener("pointerup", onRelease);
   tree.addEventListener("pointercancel", endPress);

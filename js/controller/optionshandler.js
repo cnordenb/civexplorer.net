@@ -1,7 +1,8 @@
-import { data, language, recall, remember, loadLanguage, keepInAddress } from "../model/datahandler.js";
+import { data, recall, remember, loadLanguage } from "../model/datahandler.js";
+import { language } from "../model/texts.js";
 import { include, regional, setIncluded, setRegionals, chooseLanguage } from "../model/model.js";
-import { simple, showLoadError } from "../view/stringbuilder.js";
-import { buildLanguages, tick, shown, show, startOptionsView } from "../view/optionsview.js";
+import { simple, setLoadError } from "../view/stringbuilder.js";
+import { buildLanguages, tick, optionValue, show, startOptionsView } from "../view/optionsview.js";
 import { view, setView, tips, setTips, applySimple } from "../view/pictures.js";
 
 let pending = null;
@@ -12,13 +13,11 @@ export function setLanguage(code) {
 
 export function setInclude(on) {
   setIncluded(on);
-  remember("include", String(on));
   tick("include", on);
 }
 
 export function setRegional(on) {
   setRegionals(on);
-  remember("regional", String(on));
   tick("regional", on);
 }
 
@@ -50,7 +49,7 @@ const choices = {
 };
 
 function apply() {
-  for (const [id, choice] of Object.entries(choices)) if (shown(id) !== choice.now()) choice.set(shown(id));
+  for (const [id, choice] of Object.entries(choices)) if (optionValue(id) !== choice.now()) choice.set(optionValue(id));
 }
 
 function reset() {
@@ -66,15 +65,13 @@ function choose(code) {
       if (pending !== code) return;
       pending = null;
       show("language", language);
-      showLoadError();
+      setLoadError(true);
     });
     return;
   }
   pending = null;
-  showLoadError(false);
+  setLoadError(false);
   setLanguage(code);
-  remember("language", code);
-  keepInAddress("lng", code);
 }
 
 export function startOptions() {

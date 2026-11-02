@@ -1,6 +1,6 @@
-import {
-  data, words, tag, collator, plural, fill, nameOf, civName, civFile, cellOf,
-} from "../model/datahandler.js";
+import { data } from "../model/datahandler.js";
+import { words, tag, collator, plural, fill, nameOf, civName } from "../model/texts.js";
+import { civFile, byFile } from "../model/icons.js";
 import { items, filtersOf, chipOf, matchingCivs } from "../model/model.js";
 
 export const $ = (id) => document.getElementById(id);
@@ -8,6 +8,15 @@ export const $ = (id) => document.getElementById(id);
 export const clone = (id) => $(id).content.firstElementChild.cloneNode(true);
 
 export const simple = () => !document.documentElement.classList.contains("pictures");
+
+const orders = new WeakMap();
+
+export function cellOf(names, name, file = String) {
+  if (!orders.has(names)) orders.set(names, names.map(file).sort(byFile));
+  const order = orders.get(names);
+  const [at, columns] = [order.indexOf(file(name)), Math.ceil(Math.sqrt(order.length))];
+  return { column: at % columns, row: Math.floor(at / columns), columns, rows: Math.ceil(order.length / columns) };
+}
 
 export function place(icon, { column, row, columns, rows }) {
   icon.style.setProperty("--column", column);
@@ -34,6 +43,7 @@ export function writeFixed() {
   for (const node of document.querySelectorAll("[data-tool]")) node.textContent = data.tools[node.dataset.tool];
   $("sourceLink").href = data.source.url;
   $("sourceLink").textContent = data.source.name;
+  $("updateLink").href = data.source.update.url;
   $("rulesLink").href = data.source.rules.url;
   $("rulesLink").textContent = data.source.rules.name;
   $("projectLink").href = data.source.project.url;
@@ -44,11 +54,8 @@ export function writeFixed() {
 function writeTexts() {
   document.documentElement.lang = tag;
   for (const node of document.querySelectorAll("[data-text]")) node.textContent = words.ui[node.dataset.text];
-  const [year, month] = data.source.updated.split("-").map(Number);
-  compose($("source"), words.ui.source, {
-    source: $("sourceLink"),
-    date: new Intl.DateTimeFormat(tag, { year: "numeric", month: "long" }).format(new Date(year, month - 1)),
-  });
+  $("updateLink").textContent = fill(words.ui.update, { number: data.source.update.number });
+  compose($("source"), words.ui.source, { source: $("sourceLink"), update: $("updateLink") });
 }
 
 export const textsView = {
@@ -65,8 +72,8 @@ function share() {
   shared = new Set([...seen].filter(([, n]) => n > 1).map(([name]) => name));
 }
 
-export function chipName(item, kind, own = false) {
-  const { named, full } = chipOf(item, kind, own);
+export function chipName(filter) {
+  const { named, full } = chipOf(filter);
   const name = shared.has(nameOf(named)) && named.parent
     ? fill(words.ui.inParent, { name: nameOf(named), parent: nameOf(named.parent) })
     : nameOf(named);
@@ -97,10 +104,11 @@ export const civsView = { update: () => listCivs() };
 function listFilters() {
   const filters = filtersOf();
   $("ticked").hidden = !filters.length;
-  $("chips").replaceChildren(...filters.map(({ item, mark, own }) => {
+  $("chips").replaceChildren(...filters.map((filter) => {
+    const { item, mark, own } = filter;
     const li = clone("chipTemplate");
     const chip = li.querySelector(".chip");
-    const name = chipName(item, mark, own);
+    const name = chipName(filter);
     chip.dataset.i = item.i;
     chip.dataset.state = mark;
     chip.toggleAttribute("data-own", !!own);
@@ -122,17 +130,17 @@ export function showPage() {
   $("content").hidden = false;
 }
 
-export function showLoadError(shown = true) {
-  $("loadError").hidden = !shown;
+export function setLoadError(on) {
+  $("loadError").hidden = !on;
 }
 
 let spinner = null;
 
 const spin = (img) => Object.assign(img, { src: img.dataset.src });
 
-export function showLoading(shown = true) {
-  if (shown) $("loading").append(spinner ??= spin(clone("spinnerTemplate")));
+export function setLoading(on) {
+  if (on) $("loading").append(spinner ??= spin(clone("spinnerTemplate")));
   else spinner?.remove();
-  $("loading").hidden = !shown;
-  for (const id of ["top", "content"]) $(id).inert = shown;
+  $("loading").hidden = !on;
+  for (const id of ["top", "content"]) $(id).inert = on;
 }

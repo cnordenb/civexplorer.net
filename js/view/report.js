@@ -1,4 +1,5 @@
-import { data, fill } from "../model/datahandler.js";
+import { data } from "../model/datahandler.js";
+import { fill } from "../model/texts.js";
 import { $, clone } from "./stringbuilder.js";
 
 export function openReport(title, status) {

@@ -207,7 +207,7 @@ html.pictures[data-assets="4k"] :is(.civs a, .foot a), html.pictures[data-assets
   background: url("../assets/images/ui/buttons/clear_search.webp") center / 20px no-repeat;
 }
 .tip {
-  --reach: 32; position: fixed; z-index: 100; top: calc(var(--y, 0) * 1px); left: calc(var(--x, 0) * 1px); width: max-content; max-width: min(300px, 100vw - 8px); padding: 3px 7px 4px;
+  --offset: 32; position: fixed; z-index: 100; top: calc(var(--y, 0) * 1px); left: calc(var(--x, 0) * 1px); width: max-content; max-width: min(300px, 100vw - 8px); padding: 3px 7px 4px;
   border: 1px solid #767676; background: #d7b394; color: #391c1b; box-shadow: 1px 1px 3px rgb(0 0 0 / 0.18);
   font: 12px/1.35 "Civ Georgia", Georgia, serif; white-space: pre-line; overflow-wrap: anywhere; pointer-events: none;
 }

@@ -1,4 +1,5 @@
-import { data, tag, nameOf } from "../model/datahandler.js";
+import { data } from "../model/datahandler.js";
+import { tag, nameOf } from "../model/texts.js";
 import { items } from "../model/model.js";
 import { $ } from "../view/stringbuilder.js";
 import { rowOf } from "../view/treeview.js";

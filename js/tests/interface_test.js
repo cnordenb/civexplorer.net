@@ -1,9 +1,9 @@
-import {
-  data, ALL, size, fill, attempt, recall, language, nameOf, words, plain,
-} from "../model/datahandler.js";
+import { data, attempt, recall } from "../model/datahandler.js";
+import { ALL, size } from "../model/civsets.js";
+import { fill, language, nameOf, words, plain } from "../model/texts.js";
 import { items, roots, lineOf, lineEnd } from "../model/model.js";
 import { $ } from "../view/stringbuilder.js";
-import { isOpen, setOpen, shown } from "../view/treeview.js";
+import { isOpen, shown } from "../view/treeview.js";
 import { options } from "../view/optionsview.js";
 import { setInclude, setSimple } from "../controller/optionshandler.js";
 import { openReport, report } from "../view/report.js";
@@ -11,11 +11,12 @@ import { audit } from "./audit_test.js";
 import {
   root, check, expect, same, tidy, codes, keys, describe, everything, nameFor, visibleTexts, keyDown, tap, pick,
   reset, listed, expected, fixtures, shownKeys, uniqueKeys, regionalKeys, outside, keptPath, byPath, spans, ui, box,
-  chainOf, type, rendered, nodeOf, twistyOf, labelOf, englishFirst,
+  chainOf, type, rendered, nodeOf, twistyOf, labelOf, englishFirst, openTo, ticked, flags,
 } from "./helpers_test.js";
 
-export function menuTests({ partial }) {
+export function menuTests() {
   reset();
+  const { partial } = fixtures();
   tap(nodeOf(partial));
   const button = $("languageButton");
   $("optionsButton").focus();
@@ -62,8 +63,9 @@ export function menuTests({ partial }) {
   reset();
 }
 
-export function languageTests(code, { partial, other }) {
+export function languageTests(code) {
   reset();
+  const { partial, other } = fixtures();
   pick(code);
   reset();
   const text = data.text[code];
@@ -78,9 +80,12 @@ export function languageTests(code, { partial, other }) {
   note("languages: no placeholders are left in the text",
     visibleTexts(document.body).filter((value) => /[{}]/.test(value)));
   const notice = fill(data.source.notice, { rules: data.source.rules.name, project: data.source.project.name });
-  check("languages: the footer names and links the source, and gives Microsoft's notice in English with its links to "
-    + "the rules and the project, as wide as the page, or hidden on a phone", $("source").contains($("sourceLink"))
+  check("languages: the footer names and links the source and the game update's notes, and gives Microsoft's notice "
+    + "in English with its links to the rules and the project, as wide as the page, or hidden on a phone",
+    $("source").contains($("sourceLink")) && $("source").contains($("updateLink"))
     && $("sourceLink").textContent === data.source.name && $("sourceLink").getAttribute("href") === data.source.url
+    && $("updateLink").textContent === fill(text.ui.update, { number: data.source.update.number })
+    && $("updateLink").getAttribute("href") === data.source.update.url
     && tidy($("notice").textContent) === tidy(notice) && ["rules", "project"].every((key) =>
       $("notice").contains($(`${key}Link`)) && $(`${key}Link`).getAttribute("href") === data.source[key].url)
     && $("notice").lang === "en" && spans(), code);
@@ -105,7 +110,6 @@ export function optionTests() {
   tap(nodeOf(byPath(path)));
   const listedBefore = listed();
   const button = $("optionsButton");
-  const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
   const shut = () => !$("options").open && document.activeElement === button;
   const confirm = (id) => [button, $(id), $("optionsOk")].forEach((el) => el.click());
   button.focus();
@@ -145,14 +149,14 @@ export function optionTests() {
   check("options: the Options button opens the window with Include unticked, Include Regionals ticked, and Cancel and "
     + "OK at the foot; changes wait for OK, which applies them, Cancel or closing the window throws them away, and "
     + "both buttons return focus", opened && waited && okayed && cancelled && fresh && closed && again,
-    `${waited}, ${okayed}, ${cancelled}, ${fresh}, ${closed}, ${again}`);
+    flags({ opened, waited, okayed, cancelled, fresh, closed, again }));
   reset();
   setInclude(false);
 }
 
-function menuAudit({ partial }) {
+function menuAudit() {
   reset();
-  tap(nodeOf(partial));
+  tap(nodeOf(fixtures().partial));
   $("optionsButton").click();
   $("languageButton").click();
   audit("language menu open");
@@ -176,8 +180,9 @@ function menuKeys() {
   reset();
 }
 
-function languageAudits(code, { partial, other }) {
+function languageAudits(code) {
   reset();
+  const { partial, other } = fixtures();
   pick(code);
   reset();
   const focus = code === codes()[0];
@@ -190,9 +195,9 @@ function languageAudits(code, { partial, other }) {
   reset();
 }
 
-function spacingTests({ partial }) {
+function spacingTests() {
   reset();
-  tap(nodeOf(partial));
+  tap(nodeOf(fixtures().partial));
   root.classList.add("text-spacing-test");
   expect("layout: with wider text spacing, nothing sticks out sideways", [
     ...(root.scrollWidth > innerWidth ? [`the page is ${root.scrollWidth} pixels wide`] : []),
@@ -209,7 +214,6 @@ function optionKeys() {
   const path = keptPath();
   tap(nodeOf(byPath(path)));
   const listedBefore = listed();
-  const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
   $("optionsButton").click();
   keyDown($("include"), " ");
   keyDown($("regional"), " ");
@@ -223,7 +227,7 @@ function optionKeys() {
   check("options: Space ticks or unticks Include and Include Regionals, and OK then shows or leaves out those items, "
     + "keeping marks", flipped && applied && !ticked("include") && shownKeys().every((key) => !unique.has(key))
     && ticked("regional") && shownKeys().some((key) => regional.has(key)) && byPath(path)?.self === "has"
-    && same(listed(), listedBefore), `${flipped}, ${applied}`);
+    && same(listed(), listedBefore), flags({ flipped, applied }));
   reset();
   setInclude(false);
 }
@@ -240,8 +244,9 @@ function optionAudits() {
   setInclude(false);
 }
 
-function filterFocus({ other, third }) {
+function filterFocus() {
   reset();
+  const { other, third } = fixtures();
   keyDown(nodeOf(other), "x");
   keyDown(nodeOf(third), "x");
   const firstChip = $("chips").querySelector(".chip");
@@ -258,8 +263,9 @@ function filterFocus({ other, third }) {
   reset();
 }
 
-function keyboard({ line }) {
+function keyboard() {
   reset();
+  const { line } = fixtures();
   keyDown(nodeOf(line), "ArrowRight");
   check("keyboard: Right opens a line all the way down", chainOf(line).length > 1
     && items.every((each) => isOpen(each) === chainOf(line).includes(each)));
@@ -289,8 +295,9 @@ function keyboard({ line }) {
   document.activeElement.blur();
 }
 
-function findKey({ partial }) {
+function findKey() {
   reset();
+  const { partial } = fixtures();
   type(nameOf(partial));
   keyDown($("find"), "Enter");
   check("find: Enter goes to the first match", document.activeElement
@@ -298,21 +305,20 @@ function findKey({ partial }) {
   reset();
 }
 
-export function keyboardTests(sample) {
-  filterFocus(sample);
-  keyboard(sample);
-  findKey(sample);
+export function keyboardTests() {
+  filterFocus();
+  keyboard();
+  findKey();
 }
 
-export function accessibilityTests(sample) {
+export function accessibilityTests() {
   const [first, ...rest] = codes();
-  menuAudit(sample);
+  menuAudit();
   menuKeys();
-  languageAudits(first, sample);
-  spacingTests(sample);
+  languageAudits(first);
+  spacingTests();
   optionKeys();
-  const fresh = fixtures();
-  rest.forEach((code) => languageAudits(code, fresh));
+  rest.forEach((code) => languageAudits(code));
   optionAudits();
 }
 
@@ -362,7 +368,7 @@ export function uniqueFilterTests() {
     return;
   }
 
-  for (const each of [item, whole]) for (let p = each.parent; p; p = p.parent) setOpen(p, true);
+  [item, whole].forEach(openTo);
   const end = lineOf(item).at(-1);
   tap(nodeOf(item));
   const both = same(names(), [nameOf(item), nameOf(end)].sort());
@@ -380,7 +386,7 @@ export function uniqueFilterTests() {
   $("clear").click();
   tap(nodeOf(lineEnd(whole)));
   const exempt = same(names(), [nameOf(lineEnd(whole))]);
-  check(name, both && first && second && grouped && exempt, `${both}, ${first}, ${second}, ${grouped}, ${exempt}`);
+  check(name, both && first && second && grouped && exempt, flags({ both, first, second, grouped, exempt }));
   reset();
   setInclude(false);
 }
@@ -396,7 +402,7 @@ export function headingTests() {
     setInclude(false);
     return;
   }
-  for (let p = heading.parent; p; p = p.parent) setOpen(p, true);
+  openTo(heading);
   const bare = !nodeOf(heading).matches("[role], [tabindex], [aria-checked]") && !nodeOf(heading).querySelector(".box");
   labelOf(heading).click();
   const opened = isOpen(heading);
@@ -410,7 +416,7 @@ export function headingTests() {
   keyDown(nodeOf(above), "ArrowDown");
   const reached = document.activeElement === twistyOf(heading);
   check(name, bare && opened && closed && reached && items.every((item) => item.self === null),
-    `${bare}, ${opened}, ${closed}, ${reached}`);
+    flags({ bare, opened, closed, reached }));
   document.activeElement.blur();
   reset();
   setInclude(false);

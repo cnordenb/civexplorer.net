@@ -1,11 +1,13 @@
-import { ALL, data, fill, size, words, numbers, nameOf, plural, plain } from "../model/datahandler.js";
-import { items, roots, state, lineOf, lineEnd, isUnitOrTech } from "../model/model.js";
+import { data } from "../model/datahandler.js";
+import { ALL, size } from "../model/civsets.js";
+import { fill, words, numbers, nameOf, plural, plain } from "../model/texts.js";
+import { items, roots, state, lineOf, lineEnd, isUnitOrTech, mark } from "../model/model.js";
 import { $, chipName } from "../view/stringbuilder.js";
-import { isOpen, setOpen, shown, rowOf } from "../view/treeview.js";
+import { isOpen, setOpen, shown, rowOf, LONG_PRESS_MS } from "../view/treeview.js";
 import { setInclude } from "../controller/optionshandler.js";
 import {
   root, check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below, drawn, marks, yellow,
-  chainOf, fixtures, ownKeys, alternativesOf, byPath, nodeOf, twistyOf, dropsGreyed,
+  chainOf, fixtures, ownKeys, alternativesOf, byPath, nodeOf, twistyOf, dropsGreyed, openTo, flags,
 } from "./helpers_test.js";
 
 const sameCivs = (item) => {
@@ -18,13 +20,14 @@ const chipNames = () =>[...$("chips").querySelectorAll(".chip-name")].map((chip)
 
 const fullName = (item) => fill(words.ui.full, { name: nameOf(item) });
 
-function marking({ partial, other, third }) {
+function marking() {
   reset();
+  const { partial, other, third } = fixtures();
   tap(nodeOf(partial));
   check("marking: a click marks an item must have, and lists and counts the civilisations that have it, in order",
     partial.self === "has" && nodeOf(partial).getAttribute("aria-checked") === "true"
     && same(listed(), expected(partial.set)) && $("count").textContent === plural("compatible", size(partial.set)));
-  const label = fill(words.ui.clearHas, { name: chipName(partial, "has") });
+  const label = fill(words.ui.clearHas, { name: chipName({ item: partial, mark: "has" }) });
   check("filters: a marked item gets a filter button", $("chips").children.length === 1
     && $("chips").querySelector(".chip-label").textContent === label);
   keyDown(nodeOf(other), "x");
@@ -38,9 +41,10 @@ function marking({ partial, other, third }) {
   check("marking: Space on a marked item clears it", partial.self === null);
 }
 
-function branches({ branch, line, group, headed, lone, walled }) {
+function branches() {
   reset();
-  for (let p = branch.parent; p; p = p.parent) setOpen(p, true);
+  const { branch, line, group, headed, lone, walled } = fixtures();
+  openTo(branch);
   const inBranch = items.filter((item) => below(item, branch));
   const branchHidden = inBranch.every((item) => !shown(item));
   tap(nodeOf(branch));
@@ -127,14 +131,15 @@ function crowding() {
     + "their size and place", problems);
 }
 
-async function gestures({ third }) {
+async function gestures() {
   reset();
+  const { third } = fixtures();
   const node = nodeOf(third);
   const box = node.getBoundingClientRect();
   const at = { bubbles: true, clientX: box.left + 5, clientY: box.top + 5 };
   const touch = { ...at, pointerId: 7, pointerType: "touch", button: 0 };
   node.dispatchEvent(new PointerEvent("pointerdown", touch));
-  await wait(600);
+  await wait(LONG_PRESS_MS + 100);
   node.dispatchEvent(new PointerEvent("pointerup", touch));
   node.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   const pressed = third.self === "lacks";
@@ -146,8 +151,9 @@ async function gestures({ third }) {
     pressed && third.self === null);
 }
 
-function lineTops({ line }) {
+function lineTops() {
   reset();
+  const { line } = fixtures();
   const chain = lineOf(line);
   const run = sameCivs(line);
 
@@ -163,15 +169,17 @@ function lineTops({ line }) {
   keyDown(nodeOf(line), "x");
   check("marking: marking the top of a line passes the mark down only to items with as many civilisations, must "
     + "have or must lack, and marking it again clears it", marked && cleared && lacking && run.length < chain.length
-    && chain.every((item) => item.self === null), `${run.length}/${chain.length}, ${marked}, ${cleared}, ${lacking}`);
+    && chain.every((item) => item.self === null),
+    `${run.length}/${chain.length}, ${flags({ marked, cleared, lacking })}`);
   tap(nodeOf(lineEnd(line)));
   check("marking: marking the last item of a line marks every item before it too, with one filter named after the "
     + "last, and lists the civs that have the last", chain.every((item) => item.self === "has")
     && chipNames().join() === nameOf(lineEnd(line)) && same(listed(), expected(lineEnd(line).set)));
 }
 
-function parents({ branch, loose, without }) {
+function parents() {
   reset();
+  const { branch, loose, without } = fixtures();
   const inside = items.filter((item) => !item.group && below(item, branch));
   inside.filter((item) => !item.kids.length).forEach((leaf) => tap(nodeOf(leaf)));
   check("marking: must have passes up to the items before it but not to a building: marking everything at the ends "
@@ -186,8 +194,9 @@ function parents({ branch, loose, without }) {
   $("clear").click();
 }
 
-function rivals({ rival }) {
+function rivals() {
   reset();
+  const { rival } = fixtures();
   const name = "marking: of two items where one excludes the other, must have on the one greys out the other and "
     + "everything in it but the one, which stays in sight, with the other's arrow still working, and must have on any "
     + "of those greys out the one; what is greyed out cannot be marked, and must lack greys out nothing";
@@ -206,14 +215,16 @@ function rivals({ rival }) {
     tap(nodeOf(by));
     const greyed = same(greys(), [rival]);
     tap(nodeOf(rival));
+    mark(rival, "has");
+    mark(rival, "lacks");
     return greyed && rival.self === null;
   };
 
   const theirs = side(other, rival);
-  for (let p = rival.parent; p; p = p.parent) setOpen(p, true);
+  openTo(rival);
   tap(nodeOf(rival));
   const first = shown(rival) && same(greys(), theirs) && theirs.slice(1).every((item) => !isOpen(item))
-    && same(chipNames(), [chipName(rival, "has")]) && same(listed(), expected(rival.set));
+    && same(chipNames(), [chipName({ item: rival, mark: "has" })]) && same(listed(), expected(rival.set));
   twistyOf(other).click();
   const free = !isOpen(other) && twistyOf(other).ariaDisabled !== "true"
     && getComputedStyle(twistyOf(other)).pointerEvents !== "none";
@@ -225,11 +236,11 @@ function rivals({ rival }) {
   keyDown(nodeOf(rival), "x");
   keyDown(nodeOf(other), "x");
   check(name, first && kept && back && !greys().length && rival.self === "lacks" && state(other) === "lacks",
-    `${first}, ${kept}, ${back}, ${greys().length}, ${rival.self}, ${state(other)}`);
+    `${flags({ first, kept, back })}, ${greys().length}, ${rival.self}, ${state(other)}`);
   reset();
 }
 
-function standIns(sample) {
+function standIns() {
   reset();
   const name = "marking: an item that replaces others also holds everything in the buildings among them but "
     + "their unique items and groups, as the same items: marking one there marks both, with one filter, opening "
@@ -257,7 +268,7 @@ function standIns(sample) {
     return closed && by.self === "has" && greyed(each) && !greyed(by) && !isOpen(each) && each.self === null;
   };
 
-  for (const each of [item, other]) for (let p = each.parent; p; p = p.parent) setOpen(p, true);
+  [item, other].forEach(openTo);
   setOpen(item, true);
   const copy = items.find((each) => each.original && below(each, item) && !each.kids.length);
   if (copy) tap(nodeOf(copy));
@@ -286,9 +297,8 @@ function standIns(sample) {
     return same(greys().filter((key) => alternativesOf(key).length), barred);
   });
   setInclude(false);
-  Object.assign(sample, fixtures());
   check(name, held && exclusive && one && first && freed && second && last,
-    `${held}, ${exclusive}, ${one}, ${first}, ${freed}, ${second}`);
+    flags({ held, exclusive, one, first, freed, second, last }));
   reset();
 }
 
@@ -297,7 +307,7 @@ function beyond() {
   const item = items.find((each) => each.parent && isUnitOrTech(each.parent) && size(each.set & ~each.parent.set));
   const above = item?.parent;
   if (!item) return setInclude(false) ?? [true, true];
-  for (let p = above; p; p = p.parent) setOpen(p, true);
+  openTo(item);
   tap(nodeOf(above));
   const alone = items.filter((each) => each.self).length === 1;
   $("clear").click();
@@ -310,10 +320,10 @@ function beyond() {
   return [kept, lifted && byPath(item.path)?.self === "has"];
 }
 
-function lines(sample) {
-  const { line, even, uneven } = sample;
+function lines() {
   reset();
-  for (let p = line.parent; p; p = p.parent) setOpen(p, true);
+  const { line, even, uneven } = fixtures();
+  openTo(line);
   const closed = !isOpen(line);
   tap(nodeOf(line));
   check("marking: marking a unit or technology opens it to its first fork or its end, showing all marked with it",
@@ -331,16 +341,16 @@ function lines(sample) {
     && same(listed(), expected(lacking.reduce((s, item) => s & ~item.set, ALL)));
   $("clear").click();
   const [kept, lifted] = beyond();
-  Object.assign(sample, fixtures());
   check("marking: below the top of a line, a mark passes down only to items with the same civilisations, and only "
     + "must have passes up, to every item before it that all civilisations with it have, and must lack there keeps "
     + "it; a unique item left out leaves the rows under it in its place", passed && lacked && kept && lifted,
-    `${run.length} passed: ${passed}, ${lacked}, ${kept}, ${lifted}`);
+    `${run.length} passed, ${flags({ passed, lacked, kept, lifted })}`);
   $("clear").click();
 }
 
-function counts({ partial, other, upgraded }) {
+function counts() {
   reset();
+  const { partial, other, upgraded } = fixtures();
 
   const fits = () => items.filter((item) => item.self)
     .reduce((m, item) => m & (item.self === "has" ? item.set : ~item.set), ALL);
@@ -395,8 +405,9 @@ function tree() {
   $("collapseAll").click();
 }
 
-function finding({ partial, rival }) {
+function finding() {
   reset();
+  const { partial, rival } = fixtures();
   type(nameOf(partial));
   const matches = items.filter((item) => plain(nameOf(item)).includes(plain(nameOf(partial))));
   const lit = nodeOf(partial).classList.contains("found") && matches.every((item) => shown(item))
@@ -405,7 +416,8 @@ function finding({ partial, rival }) {
     && $("found").textContent === plural("found", matches.length) && beside();
   const { dropped, detail } = dropsGreyed(rival);
   check("find: matches are highlighted in yellow and their number announced beside the box, with branches open down "
-    + "to each, and a match drops out once a mark greys out its branch", lit && dropped, `${lit}, ${detail}`);
+    + "to each, and a match drops out once a mark greys out its branch", lit && dropped,
+    `${flags({ lit })}, ${detail}`);
   type("qqqqzzzzqqqq");
   const none = $("found").textContent === words.ui.noneFound && !document.querySelector(".found") && beside();
   type("");
@@ -414,17 +426,8 @@ function finding({ partial, rival }) {
   reset();
 }
 
-export async function behaviourTests(sample) {
-  marking(sample);
-  branches(sample);
-  crowding();
-  await gestures(sample);
-  lineTops(sample);
-  parents(sample);
-  rivals(sample);
-  standIns(sample);
-  lines(sample);
-  counts(sample);
-  tree();
-  finding(sample);
+export async function behaviourTests() {
+  [marking, branches, crowding].forEach((test) => test());
+  await gestures();
+  [lineTops, parents, rivals, standIns, lines, counts, tree, finding].forEach((test) => test());
 }

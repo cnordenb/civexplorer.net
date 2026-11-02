@@ -80,11 +80,12 @@ exits with 1, which stops `build.mjs`. Never install a PDF whose build printed o
 - Of the clean drawings the largest scale wins, but the text is never larger than `MAX_PT` (9 points), so a small
   diagram does not fill the page with large letters; at a tie the upright page wins.
 - `print.mjs` prints a line `uml: {…}` for each: its id, layout, direction, page, the text's size in points and how
-  many drawings were tried. On 2026-11-01: the overview upright at 8.3 points, the model upright `LR` at 7.4, the view
-  upright `LR` at 5.6 after 4 drawings, the controller upright at 9.
+  many drawings were tried. On 2026-11-02: the overview upright at 7.6 points, the model upright `LR` at 4.7 after 2
+  drawings (7.4 before `updater.js`, 5.1 before `civsets.js`, `texts.js` and `icons.js`), the view upright `LR`
+  at 5.6 after 4 drawings, the controller upright at 9.
 
-If the view's text gets too small to read as it grows, the choice is to give it more room; ask before changing the
-page's size, as A4 was a decision.
+If the model's or the view's text gets too small to read as it grows, the choice is to give it more room; ask before
+changing the page's size, as A4 was a decision.
 
 ## The links
 

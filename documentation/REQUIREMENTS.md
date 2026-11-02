@@ -4,7 +4,7 @@
 2. The header will contain, in left-to-right order: a title consisting of the phrase "Explore Age of Empires II civilisations by technology availability" and an options button.
 3. The input panel will contain, in top-down order: a header section titled "Buildings, units and technologies" and three buttons "clear", "Expand all", "Collapse all", a search bar labelled "Find", a checkbox legend "[v] Must have: left-click or Space. [x] Must lack: right-click, long press or X.", a node tree expandible rightwards with each node having a checkbox before its name and compatible civilisations count label on the right side of the input panel.
 4. The output panel will contain, in top-down order: a header section titled "Civilisations" and displaying the number of currently displayed civilisations as "n compatible civilisations" where n is the number concerned, a list of civilisations compatible with the selected node filter.
-5. The footer will contain a label "Data from aoe2techtree.net, Month Year" where Month Year is the time when the data was last updated.
+5. The footer will contain a label "Data from aoe2techtree.net, Update xxxxxx" where xxxxxx is the AoE2DE patch as of site data is up-to-date.  
 6. The Options button will be a cogwheel instead of a string label.
 7. An Options window will open when the user left-clicks the Options button.
 8. The Options window will contain, in top-down order: a title "Options", a drop-down menu labelled "Language", a checkbox labelled "Include Unique and Universal", a "Close" button.

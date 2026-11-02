@@ -20,7 +20,8 @@ The tests of the tree: marking, Filters, the counts, opening and closing, and Fi
   lack while everything under it is must have (Tests 19, 20; Req. 30).
 - rivals: Tests an item that excludes another, such as the Xolotl Warrior and the Stable: must have on the one greys out
   the other and everything in it, the one staying in sight and the other's arrow working; must have on any of those
-  greys out the one; what is greyed out cannot be marked; and must lack greys out nothing (Test 21).
+  greys out the one; what is greyed out cannot be marked, by a click or by mark() itself; and must lack greys out
+  nothing (Test 21).
 - standIns: Tests an item that replaces others, such as the Pasture and the Farm: it holds everything in their buildings
   but their unique items and groups, as the same items, so marking one marks both with one filter; must have on one
   greys out and closes every alternative until it is cleared (Test 22; Req. 37).
@@ -43,8 +44,9 @@ The tests of the language menu, the languages, the Options window, the keyboard 
 - menuTests: Tests the language menu: in Options, every language in its own language, closing on Escape, a click or
   leaving it, a window that never resizes, the language changed on OK and kept in the address, English first, and marks
   kept (Tests 33 to 37; Req. 8 to 12).
-- languageTests: Tests one language: the page's text, the tree's names, no placeholders, the footer's links and
-  Microsoft's notice, and a translated, sorted civilisation list (Tests 38 to 42; Req. 4, 5, 11).
+- languageTests: Tests one language: the page's text, the tree's names, no placeholders, the footer's links, the
+  game update's among them, and Microsoft's notice, and a translated, sorted civilisation list (Tests 38 to 42; Req. 4,
+  5, 11).
 - optionTests: Tests the two Include boxes: what the tree leaves out by default, ticking and unticking with marks kept,
   the choices remembered, and Options opening and closing properly (Tests 43 to 46; Req. 7, 13 to 16).
 - menuAudit: Runs the accessibility audit with a mark and the language menu open. This is the audit's first run, so its
@@ -151,8 +153,8 @@ All of the page's data, in English: the civilisations, the tree, who has each it
 An item is named by its English name throughout: the tree, `availability`, `pictures`, `extras` and `text.items` use the
   same names as keys.
 - source: Where the data comes from: aoe2techtree.net and its data address, `helpOffset` (taken from an item's help
-  string number to find its text, in localName()), the month of the last update, and Microsoft's notice with the rules
-  and the project it links.
+  string number to find its text, in localName()), the game update the data is from, with the address of its notes,
+  which the updater reads and the footer links, and Microsoft's notice with the rules and the project it links.
 - languages: Every language by its code, with its name in itself, its language tag, and whether its words are spaced and
   its hyphens at line ends are merged. English comes first.
 - civs: The civilisations, in the order whose bits the sets use. A set is a number with one bit per civilisation
@@ -160,7 +162,8 @@ An item is named by its English name throughout: the tree, `availability`, `pict
 - icons: Where the pictures are: the file names of civilisations that differ from their names, and the folder of the
   tree's icons.
 - icons.groups: The icon of each top-level group, by kind and picture.
-- icons.atlas: For each kind, the pictures in its atlas, which cellIn() places by file name.
+- icons.atlas: For each kind, the pictures in its atlas, which cellOf() places by file name, and cellIn() in the tests
+  too.
 - tree: The tree as nested objects: `{"group": …}` for a top-level group or a group in a building, `{"item": …}` for an
   item, with `kids` for what is under it and the flags `own`, `lines`, `excludes` and `replaces` where they belong.
   rebuild() reads it.

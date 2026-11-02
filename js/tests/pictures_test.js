@@ -1,4 +1,7 @@
-import { data, size, attempt, recall, nameOf, civFile, language } from "../model/datahandler.js";
+import { data, attempt, recall } from "../model/datahandler.js";
+import { size } from "../model/civsets.js";
+import { nameOf, language } from "../model/texts.js";
+import { civFile } from "../model/icons.js";
 import { items } from "../model/model.js";
 import { $, simple } from "../view/stringbuilder.js";
 import { bars, LINE } from "../view/scrollbars.js";
@@ -7,7 +10,7 @@ import { options, setMenu } from "../view/optionsview.js";
 import { setInclude, setSimple } from "../controller/optionshandler.js";
 import {
   root, check, expect, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges, labelOf,
-  spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, drawn, ui, box, fixtures, codes,
+  spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, drawn, ui, box, fixtures, codes, flags,
   pick, GRADES, grade, fitted, fitting, urlsOf, misjudged, fitBars, barProblems, tipGaps, tipLooks, nodeOf, twistyOf,
 } from "./helpers_test.js";
 
@@ -324,7 +327,7 @@ export async function pictureTests() {
   check("options: without Simple UI, the Find box shows a search icon or a cross that clears it, and a tooltip "
     + "follows the mouse over the tree and over every other control or link, with Include's description hidden, "
     + "unless Tooltips is unticked", Object.values(looks).every(Boolean) && !untipped.length,
-    [...Object.entries(looks).map(([name, ok]) => `${name} ${ok}`), ...untipped].join(", "));
+    [flags(looks), ...untipped].join(", "));
   reset();
   await document.fonts.ready;
   expect("options: without Simple UI, the tree's buttons are Clear and Expand all, which is Collapse all while a top "

@@ -1,8 +1,12 @@
-import { plain, nameOf } from "../model/datahandler.js";
-import { items, mark, reach, clear, unmarkLine, chainOf, barred, locked, behind } from "../model/model.js";
+import { plain, nameOf } from "../model/texts.js";
+import {
+  items, mark, toReveal, clear, unmarkOwn, unmarkLine, chainOf, ancestors, locked, behind,
+} from "../model/model.js";
 import { isOpen, shown, setOpen, focus, highlight, reveal, findText, startTreeView } from "../view/treeview.js";
 
 const GESTURES = { click: "has", hold: "lacks", menu: "lacks" };
+
+const MARK_KEYS = { " ": "has", x: "lacks", X: "lacks" };
 
 let found = [];
 
@@ -13,8 +17,7 @@ const expand = (item) => {
 const branch = (item) => (isOpen(item) ? setOpen(item, false) : expand(item));
 
 function toggle(item, kind) {
-  if (barred(item)) return;
-  for (const each of reach(item, kind)) {
+  for (const each of toReveal(item, kind)) {
     for (let p = each.parent; p && p !== item.parent; p = p.parent) setOpen(p, true);
   }
   mark(item, kind);
@@ -32,7 +35,7 @@ function find(typed) {
   search(text);
   if (!found.length) return;
   const open = new Set();
-  for (const item of found) for (let p = item.parent; p; p = p.parent) open.add(p);
+  found.flatMap(ancestors).forEach((p) => open.add(p));
   for (const item of items) setOpen(item, open.has(item));
   reveal(found[0]);
 }
@@ -44,36 +47,51 @@ const redrawn = (change) => {
 
 const enter = () => {
   if (!found.length) return;
-  for (let p = found[0].parent; p; p = p.parent) setOpen(p, true);
+  ancestors(found[0]).forEach((p) => setOpen(p, true));
   focus(found[0]);
+};
+
+function moveRight(item) {
+  if (isOpen(item)) return item.kids[0];
+  expand(item);
+  return null;
+}
+
+function moveLeft(item) {
+  if (!isOpen(item)) return item.parent;
+  setOpen(item, false);
+  return null;
+}
+
+const MOVES = {
+  ArrowDown: (item, rows) => rows[rows.indexOf(item) + 1],
+  ArrowUp: (item, rows) => rows[rows.indexOf(item) - 1],
+  Home: (item, rows) => rows[0],
+  End: (item, rows) => rows.at(-1),
+  ArrowRight: moveRight,
+  ArrowLeft: moveLeft,
 };
 
 function key(item, typed) {
   if (typed.modified) return false;
-  const kind = !typed.onTwisty && { " ": "has", x: "lacks", X: "lacks" }[typed.key];
+  const kind = !typed.onTwisty && MARK_KEYS[typed.key];
   if (kind) {
     toggle(item, kind);
     return true;
   }
-  if (typed.shift) return false;
-  const rows = items.filter(shown);
-  const at = rows.indexOf(item);
-  let to = null;
-  if (typed.key === "ArrowDown") to = rows[at + 1];
-  else if (typed.key === "ArrowUp") to = rows[at - 1];
-  else if (typed.key === "Home") to = rows[0];
-  else if (typed.key === "End") to = rows[rows.length - 1];
-  else if (typed.key === "ArrowRight") isOpen(item) ? (to = item.kids[0]) : expand(item);
-  else if (typed.key === "ArrowLeft") isOpen(item) ? setOpen(item, false) : (to = item.parent);
-  else return false;
+  const move = MOVES[typed.key];
+  if (typed.shift || !move) return false;
+  const to = move(item, items.filter(shown));
   if (to) focus(to, typed.onTwisty);
   return true;
 }
+
+const unchip = (item, kind, own) => (own ? unmarkOwn(item) : unmarkLine(item, kind));
 
 const expandAll = () => items.filter((item) => !locked(item)).forEach((item) => setOpen(item, true));
 
 const collapseAll = () => items.forEach((item) => setOpen(item, false));
 
 export const startTree = () => startTreeView({
-  gesture, branch, key, find, enter, clear, expandAll, collapseAll, unchip: unmarkLine, redrawn,
+  gesture, branch, key, find, enter, clear, expandAll, collapseAll, unchip, redrawn,
 });

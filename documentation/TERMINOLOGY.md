@@ -22,6 +22,7 @@ civ list - the civilisations that fit every mark, listed under "Civilisations" i
 civ count - the number right of a node: how many in the civ list have it, and if collapsed also its whole branch
 filters list - the "Filters:" summary of every mark, between the output panel's header and the civ list
 filter entry - one item of the filters list: a node, line or branch with its mark, clearing that mark when clicked
+chip - the code's name for a filter entry, called a filter button in the tests
 full - "Full" before a filter entry: a root node or building node with several child nodes, its whole branch must have
 search bar - the "Find" field in the input panel, expanding to and highlighting in yellow every node matching its text
 variant - a node standing in for one or more other nodes for some civilisations, e.g. "Fortified Church" for "Monastery"

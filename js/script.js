@@ -1,8 +1,8 @@
 import {
-  params, data, recall, load, useData, loadLanguage, loadLanguages, preferredLanguage,
+  params, data, load, useData, loadLanguage, loadLanguages, preferredLanguage,
 } from "./model/datahandler.js";
 import { startModel } from "./model/model.js";
-import { showLoadError, showLoading, writeFixed, showPage } from "./view/stringbuilder.js";
+import { setLoadError, setLoading, writeFixed, showPage } from "./view/stringbuilder.js";
 import { startPictures, finishLoading } from "./view/pictures.js";
 import { startPage, redraw } from "./view/page.js";
 import { startOptions, setSimple, savedSimple } from "./controller/optionshandler.js";
@@ -12,7 +12,7 @@ import { runUpdate } from "./controller/updatehandler.js";
 function start() {
   const code = preferredLanguage();
   const first = Object.keys(data.languages)[0];
-  startModel(recall("include") === "true", recall("regional") !== "false", data.text[code] ? code : first);
+  startModel(data.text[code] ? code : first);
   startTree();
   startOptions();
   writeFixed();
@@ -34,8 +34,8 @@ load("data.json").then((raw) => {
   if (params.has("update")) return runUpdate();
   return null;
 }).catch((error) => {
-  showLoading(false);
-  showLoadError();
+  setLoading(false);
+  setLoadError(true);
   if (params.has("test")) import("./tests/run_test.js").then(({ loadFailed }) => loadFailed());
   throw error;
 });

@@ -1,4 +1,5 @@
-import { data, language } from "../model/datahandler.js";
+import { data } from "../model/datahandler.js";
+import { language } from "../model/texts.js";
 import { $, clone, simple, demand } from "./stringbuilder.js";
 
 const NEEDS = ["reset", "apply"];
@@ -49,7 +50,7 @@ const readers = { language: picked, civView: () => $("views").querySelector(":ch
 
 const writers = { language: showLanguage, civView: showView };
 
-export const shown = (id) => (readers[id] ?? checked)(id);
+export const optionValue = (id) => (readers[id] ?? checked)(id);
 
 export const show = (id, value) => (writers[id] ?? ((on) => tick(id, on)))(value);
 

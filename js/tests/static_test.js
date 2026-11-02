@@ -1,7 +1,6 @@
-import {
-  data, load, setOf, civsOf, pack, unpack, addLanguage, localeFile, toJson, availabilityOf, pictureOf, fromExtra,
-  joinLines, missingText,
-} from "../model/datahandler.js";
+import { data, load, pack, unpack, addLanguage, localeFile } from "../model/datahandler.js";
+import { setOf, civsOf } from "../model/civsets.js";
+import { toJson, availabilityOf, pictureOf, fromExtra, joinLines, missingText } from "../model/updater.js";
 import { items } from "../model/model.js";
 import { TAG, check, expect, same, codes, keys, need } from "./helpers_test.js";
 
@@ -168,7 +167,7 @@ const MARKUP = [
   /\.style\b(?!\.setProperty\("--\w+", [^"]*\))\s*[.=[]/, /setAttribute\(\s*["']style/,
   /\.(innerHTML|outerHTML|insertAdjacentHTML)\b/, /createElement\s*\(/, /document\.write/,
 ];
-const PAGE_FREE = ["js/script.js", "js/model/datahandler.js", "js/model/model.js"];
+const PAGE_FREE = /^js\/(script\.js$|model\/)/;
 const SPINNER = [
   /@media \(prefers-reduced-motion: no-preference\) \{ \.spinner \{ animation: spin 1s linear infinite; \} \}/,
   /@keyframes spin \{ to \{ rotate: 1turn; \} \}/,
@@ -214,6 +213,9 @@ function mvcProblems(files) {
     ...within("js/controller/").filter(({ code }) => PAGE.test(code) || ELEMENTS.test(code) || ADDRESS.test(code))
       .map(({ path }) => `${path} touches the page`),
     ...within("js/view/").filter(({ code }) => code.includes("remember(")).map(({ path }) => `${path} stores data`),
+    ...files.filter(({ path, code }) => !/^js\/(model|tests)\b/.test(path)
+      && /keepInAddress\(|\b(remember|recall)\("(include|regional|language)"/.test(code))
+      .map(({ path }) => `${path} saves or restores the model's state`),
     ...within("js/view/").filter(({ code }) => MARKING.test(code)).map(({ path }) => `${path} decides a mark`),
     ...files.filter(({ path, code }) => !/^js\/(model|tests)\b/.test(path) && SETS.test(code))
       .map(({ path }) => `${path} works on the model's sets`),
@@ -263,8 +265,9 @@ export function sourceTests(page, sheets, files) {
   expect("rules: model, view and controller: the model imports neither, views never import controllers or name a "
     + "mark, script.js, the model and the controllers never touch the page or the address, only the model works on "
     + "its sets and reaches page.update(), views never store data, the model tells only page.js of its changes and "
-    + "holds no page elements, and only datahandler.js and the tests load or store data", [
-    ...named((file) => PAGE_FREE.includes(file.path) && PAGE.test(file.code)),
+    + "holds no page elements, only datahandler.js and the tests load or store data, and only the model saves and "
+    + "restores its own state", [
+    ...named((file) => PAGE_FREE.test(file.path) && PAGE.test(file.code)),
     ...named((file) => !testing(file) && file.path !== "js/model/datahandler.js"
       && /XMLHttpRequest|localStorage|\bfetch\s*\(|\bhistory\.\w+State\b/.test(file.code)),
     ...mvcProblems(files),
@@ -354,7 +357,8 @@ function textDataTests(all) {
     .map((key) => `${code}: ${key}`)));
   expect("data: the source, the tool texts and the ignore list are filled in", [
     ...(data.source.name && data.source.url && data.source.data && Number.isInteger(data.source.helpOffset)
-      && /^\d{4}-\d{2}$/.test(data.source.updated) ? [] : ["source"]),
+      && Number.isInteger(data.source.update?.number) && String(data.source.update?.url).startsWith("https:")
+      ? [] : ["source"]),
     ...Object.entries(data.tools).filter(([, text]) => !text).map(([key]) => `tools: ${key}`),
     ...(Array.isArray(data.ignore) && data.ignore.every((name) => typeof name === "string") ? [] : ["ignore"]),
   ]);

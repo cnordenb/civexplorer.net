@@ -1,10 +1,9 @@
-import {
-  data, ALL, size, civsOf, treeKeys, collator, civName, nameOf, load, language, recall, remember, attempt, params,
-  preferredLanguage, plural, words,
-} from "../model/datahandler.js";
-import { items, whole, lineOf, lineEnd, behind } from "../model/model.js";
+import { data, treeKeys, load, recall, remember, attempt, params, preferredLanguage } from "../model/datahandler.js";
+import { ALL, size, civsOf } from "../model/civsets.js";
+import { collator, civName, nameOf, language, plural, words } from "../model/texts.js";
+import { items, whole, lineOf, lineEnd, behind, ancestors } from "../model/model.js";
 import { $, shared } from "../view/stringbuilder.js";
-import { rowOf } from "../view/treeview.js";
+import { rowOf, setOpen } from "../view/treeview.js";
 import { setMenu, options } from "../view/optionsview.js";
 import { screenPictures } from "../view/pictures.js";
 
@@ -39,6 +38,8 @@ export const spans = () => (phone()
 
 export const need = (ok, problem) => (ok ? [] : [problem]);
 
+export const flags = (parts) => Object.entries(parts).map(([name, ok]) => `${name} ${ok}`).join(", ");
+
 export const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 export const codes = () => Object.keys(data.languages);
@@ -48,6 +49,10 @@ export const nodeOf = (item) => rowOf(item).node;
 export const twistyOf = (item) => rowOf(item).twisty;
 
 export const labelOf = (item) => rowOf(item).label;
+
+export const openTo = (item) => ancestors(item).forEach((p) => setOpen(p, true));
+
+export const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
 
 export function englishFirst() {
   const stored = recall("language");
@@ -241,7 +246,7 @@ export function dropsGreyed(rival) {
   const gone = !nodeOf(hit).classList.contains("found");
   const counted = $("found").textContent === (n ? plural("found", n) : words.ui.noneFound);
   reset();
-  return { dropped: lit && gone && counted, detail: `${nameOf(hit)}: ${lit}, ${gone}, ${counted}` };
+  return { dropped: lit && gone && counted, detail: `${nameOf(hit)}: ${flags({ lit, gone, counted })}` };
 }
 
 export const listed = () => [...$("civs").children].map((li) => li.textContent);

@@ -27,6 +27,9 @@ link.
   install them in a folder outside the project, and nothing the page loads uses them. The skills keep the other
   rules, and each has its own `SKILL.md` (Rule 29).
   [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
+- **The `data-update` skill is not a build.** Its script uses Node with no packages to do in Chrome what the update
+  guide does by hand, and nothing the page loads uses it (Rules 13 to 15).
+  [2026-11-02 01:11:03](DEVLOG/DEVLOG6.md#011103-data-from-update-188329-the-footer-names-the-game-update-and-a-skill-for-the-updaters-files)
 - **No page scrolling.** The document never scrolls; the panes scroll inside themselves (Rule 12).
   [2026-10-18](DEVLOG/DEVLOG1.md#translations-and-making-the-project-follow-rulesmd)
 - **Rule 18** is read as: a control must not move away from under the user while it is used, as opening a branch has to
@@ -85,6 +88,10 @@ link.
   [2026-10-23](DEVLOG/DEVLOG3.md#the-xolotl-warrior-which-excludes-the-stable)
 - **The footer links to the project**, with the text and address in `source.project`.
   [2026-10-22](DEVLOG/DEVLOG3.md#the-footer-links-to-the-project)
+- **The footer names the game update the data is from**, such as "Update 188329", linked to its notes as on
+  aoe2techtree.net, from `source.update`, which the updater reads from aoe2techtree.net's page (requirement 5).
+  Replaced: the month and year of the last update, `source.updated`.
+  [2026-11-02 01:11:03](DEVLOG/DEVLOG6.md#011103-data-from-update-188329-the-footer-names-the-game-update-and-a-skill-for-the-updaters-files)
 
 ## Marking
 
@@ -320,6 +327,9 @@ link.
 - **The model sends the kind of change, and the views read the rest**: `"marks"`, `"tree"` or `"language"`, once for
   each change, and each view then takes what it needs from the model.
   [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
+- **The views and controllers import the model itself**, not an interface handed to them, as the book's views are
+  handed `BeatModelInterface`: with one model, an Adapter such as the book's `HeartAdapter` would gain nothing.
+  [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
 - **Simple UI, the civilisations' view and Tooltips stay outside the model**: they are only how the page looks, so the
   controller saves them and tells the view at once. Simple UI then redraws the views with `redraw("look")`.
   [2026-11-01 03:00:32](DEVLOG/DEVLOG5.md#030032-model-view-and-controller-as-in-head-first-design-patterns)
@@ -337,20 +347,45 @@ link.
 - **The counts, the greyed-out branches and the matching civilisations come from the model**: `countOf()`,
   `behind()` and `matchingCivs()`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **The model refuses to mark a greyed-out item**: `mark()` changes nothing and `reach()` reaches nothing. Replaced:
+  the check in `toggle()` in `nodetree.js`.
+  [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
 - **The language in use is the model's alone**; `optionshandler.js` keeps only the language still loading, and a
   failed load puts Options back on the language in use. Replaced: `chosen`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **The model saves and restores its own state**: `setIncluded()`, `setRegionals()` and `chooseLanguage()` save it,
+  and `startModel()` reads it. Replaced: saving in `optionshandler.js` and reading in `script.js`.
+  [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
 - **`js/script.js` starts the page**; `optionshandler.js` starts only Options. Replaced: `start()` in
   `optionshandler.js`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
 - **`page.update()` is the model's notice alone**; `redraw()` in `page.js` draws the page for `"start"` and
   `"look"`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
-- **Only `datahandler.js` writes the address**, with `keepInAddress()`, next to `remember()`.
+- **Only `datahandler.js` writes the address**, with `keepInAddress()`, next to `remember()`, and only `model.js`
+  calls it.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+  [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
 - **The updater stays outside model, view and controller**: `updatehandler.js` hands the one result of
   `fetchUpdate()` straight to `report.js`, as nothing else waits for it.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
+- **`datahandler.js` split**: the updater is in `updater.js`, and `cellOf()` is in `stringbuilder.js`, as it is only
+  how the icons are laid out; `byFile`, the order of an atlas's files, stays in `datahandler.js` for both. Replaced:
+  both in `datahandler.js`.
+  [2026-11-02 00:52:37](DEVLOG/DEVLOG6.md#005237-datahandlerjs-split-the-updater-in-updaterjs-and-cellof-in-the-view)
+- **`datahandler.js` only loads and stores data**, and the rest of what it held is in `js/model/`: the civilisations'
+  sets in `civsets.js`, the chosen language in `texts.js`, and the icons' file names and the order of an atlas in
+  `icons.js`. A script imports only those before it: `civsets.js`, `datahandler.js`, `texts.js`, `icons.js`,
+  `updater.js`, `model.js`. Replaced: all of them in `datahandler.js`, `byFile` among them.
+  [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
+- **`attempt()` catches only the browser's refusals**, `DOMException`s, and throws any other error again. Replaced:
+  every error turned into `null`.
+  [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
+- **No flag arguments**: a setter is always given `on`, as `setLoading(on)`; values that go together are one
+  argument, as the filter for `chipOf()` and `chipName()`; and a function that did two things is two, as
+  `unmarkOwn()` and `unmarkLine()`. Replaced: `showLoading(shown = true)`, `showLoadError(shown = true)` and
+  `unmarkLine(item, kind, own = false)`.
+  [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
 - **Two style sheets**: `css/base.css`, the layout and Simple UI, and `css/pictures.css`, every rule with a picture or a
   font.
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)
@@ -384,6 +419,9 @@ link.
   [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
 - **Close in the test report** leaves the tests: it opens the page's address without `?test`.
   [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
+- **Each test picks its own sample items** with `fixtures()`, and a failure's detail names its parts with `flags()`.
+  Replaced: one set of sample items made in `run_test.js`, passed from test to test and refreshed by two of them.
+  [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
 
 ## Documents
 

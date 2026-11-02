@@ -1,4 +1,4 @@
-import { fetchUpdate } from "../model/datahandler.js";
+import { fetchUpdate } from "../model/updater.js";
 import { showUpdating, showUpdate, showUpdateFailed } from "../view/report.js";
 
 export async function runUpdate() {

@@ -7,6 +7,8 @@ The page's text: the fixed texts, the texts of the chosen language, the list of 
   fills it in.
 - simple: Tells whether Simple UI is on, from the `pictures` class on the page, which is what shows the pictures. One
   source of truth, readable from every script.
+- cellOf: Finds a picture's cell in its atlas, which holds the pictures in file-name order, row by row, with as many
+  columns as the square root of their number, rounded up. The order is worked out once per list.
 - place: Tells an icon which cell of its atlas to show, as four numbers for CSS: its column and row, and the atlas's
   columns and rows. Scripts give CSS only numbers.
 - compose: Writes a text with placeholders into an element, putting elements such as the source link where their
@@ -14,13 +16,14 @@ The page's text: the fixed texts, the texts of the chosen language, the list of 
 - demand: Checks that a controller has every action a view needs, and stops with an error that names the missing ones.
   treeview.js and optionsview.js call it as they start, so a missing action shows at once.
 - writeFixed: Writes the texts that never change: the report window's English words, the source's, Microsoft's and the
-  project's links, and Microsoft's notice around its links. Runs once at the start.
+  project's links, the address of the game update's notes, and Microsoft's notice around its links. Runs once at the
+  start.
 - writeTexts: Writes every text of the chosen language: the page's `lang`, each element marked `data-text`, and the
-  footer's source and date (Req. 5, 11).
+  footer's source and game update, whose link reads "Update" and its number in the language (Req. 5, 11).
 - textsView: The view of the texts: writes them again at the start and when the language changes.
 - share: Notes the names that more than one row uses, so that Filters can say which one is meant.
-- chipName: Names an entry of Filters from what chipOf() gives: a shared name "in" its parent, and "Full" before a
-  building or group marked in full (Req. 24).
+- chipName: Names an entry of Filters, as filtersOf() gives it, from what chipOf() makes of it: a shared name "in" its
+  parent, and "Full" before a building or group marked in full (Req. 24).
 - civIcon: Makes a civilisation's icon from its template, showing its cell of the civilisations' atlas. Only used
   without Simple UI.
 - listCivs: Lists the civilisations that fit the marks (matchingCivs()), translated and sorted (Req. 4), with icons
@@ -31,10 +34,10 @@ The page's text: the fixed texts, the texts of the chosen language, the list of 
 - filtersView: The view of Filters: notes the shared names again when the tree or the language changed, then makes the
   buttons again.
 - showPage: Shows the header and the content, which stay hidden until the page has started.
-- showLoadError: Shows, or hides, the message that the data or a language could not be loaded.
+- setLoadError: Shows or hides the message that the data or a language could not be loaded.
 - spin: Gives the loading picture its address, kept in `data-src` so that it loads only when the loading screen shows
   it.
-- showLoading: Shows or hides the loading screen, with its turning picture, made once, and makes the page behind it
+- setLoading: Shows or hides the loading screen, with its turning picture, made once, and makes the page behind it
   unreachable while it shows.
 
 @ js/view/treeview.js
@@ -109,7 +112,7 @@ The Options window as the visitor sees it: the language menu, the boxes and Civ 
 - checked: Tells whether an Options box is ticked.
 - toggle: Ticks or unticks an Options box in the window only; OK applies it.
 - readers: How the window reads the two settings that are no boxes: the language and Civ view.
-- shown: What the window shows for a setting: its own reading, or its box.
+- optionValue: What the window shows for a setting: its own reading, or its box.
 - show: Shows a value of a setting in the window: the language, Civ view, or a box.
 - optionsView: The view of the Options window: marks the page's language in it at the start and when the language
   changes.
@@ -172,8 +175,12 @@ What only the pictures need: Civ view, list or tiles, the tooltip, and the pictu
   puts it into the Options window while that is open. After every click it works the tooltip out again for what is under
   the mouse (`elementFromPoint`), so that it follows a button that changes, such as Expand all turning into Collapse
   all. It shows only for a mouse, without Simple UI and with Tooltips on.
-- screenPictures: Works out the pictures for the screen from its size in device pixels: the parchment (`fhd`, `qhd`,
-  `uhd` or `ultrawide`, and `fhd` on a phone) and the size of every other picture, `sd` or `4k`.
+- beyond: Tells whether a screen is wider or higher in device pixels than a size, such as `QHD`, 2560 by 1440.
+- backgroundFor: Picks the parchment for a screen from its size in device pixels: `fhd` on a phone, whose shorter side
+  is under `PHONE_SIDE`, 720 pixels; `ultrawide` if it is more than twice as wide as high; then `uhd` beyond `QHD`,
+  `qhd` beyond `FHD`, and `fhd` otherwise.
+- screenPictures: Works out the pictures for the screen: the parchment from backgroundFor() (`fhd`, `qhd`, `uhd` or
+  `ultrawide`) and the size of every other picture, `4k` with `uhd` or `ultrawide` and `sd` otherwise.
 - rulesIn: Lists every rule of a style sheet, with the rules inside media queries.
 - linksIn: Lists the picture and font addresses in a rule's text, made whole from the style sheet's own address.
 - filesOf: Lists the addresses in a style sheet's rules whose selectors pass a test.
@@ -212,23 +219,30 @@ What the visitor's clicks, touches and keys in the tree mean: marking, opening a
 - expand: Opens an item and each only child below it, so opening Militia shows its whole line in one step, unless the
   item is greyed out and closed. Used by the arrows and the Right key.
 - branch: Opens or closes a branch, from its arrow or a heading's name.
-- toggle: Handles a mark from a gesture or a key, unless the item is greyed out: opens the way to every row the mark
-  will reach (reach(), Req. 28, 31), then calls mark().
+- toggle: Handles a mark from a gesture or a key: opens the way to every row the mark will reach (toReveal(), Req.
+  28, 31), then calls mark(). The model refuses a greyed-out item, which then reaches nothing.
 - gesture: Turns what the tree's view reports into a mark: a click marks must have (Req. 3), and a long press, a
   right-click and the menu key must lack, as key() decides for Space and X.
 - search: Notes the items whose names hold Find's text, but those inside closed greyed-out items (behind()), and has
   the view highlight them and say how many there are (Req. 20, 21).
-- find: Runs Find: searches, opens the branches down to the matches and shows the first (Req. 20, 21).
+- find: Runs Find: searches, opens the branches down to the matches, their ancestors(), and shows
+  the first (Req. 20, 21).
 - redrawn: Keeps Find up to date once the tree's view has drawn a change: after marks it only searches again, so that
   no branch opens or closes, and after a new tree, a new language or the start it runs the whole of Find again, since
   the names or the rows changed. Nothing changes for `"look"`.
 - enter: Opens the branches down to the first item Find found and moves focus to it, on Enter in its box.
-- key: Handles a key in the tree: Space marks must have and X must lack (Req. 3); Up, Down, Home and End move; Right
-  and Left open, enter, leave and close branches (WCAG 2.1.1). Tells the view whether it used the key.
+- moveRight: The Right key: goes into an open branch, to its first row, or opens a closed one and stays.
+- moveLeft: The Left key: closes an open branch and stays, or goes out of a closed one, to the item above.
+- MOVES: Where each key that moves goes from an item, among the rows in sight: Down and Up to the next and the previous
+  row, Home and End to the first and the last, and Right and Left as moveRight() and moveLeft() decide.
+- key: Handles a key in the tree: Space marks must have and X must lack, as `MARK_KEYS` says (Req. 3); Up, Down, Home,
+  End, Right and Left move, open and close as `MOVES` says (WCAG 2.1.1). Tells the view whether it used the key.
 - expandAll: Opens every branch but those of closed greyed-out items.
 - collapseAll: Closes every branch.
-- startTree: Starts the tree's view with these actions, and with the model's clear() and unmarkLine() for Clear and the
-  Filters buttons. Runs once, from start().
+- unchip: Clears what a Filters button stands for: a unique item's own entry with unmarkOwn(), and any other with
+  unmarkLine(). The tree's view hands it the button's item, its mark and whether the entry is the item's own.
+- startTree: Starts the tree's view with these actions, and with the model's clear() for Clear. Runs once, from
+  start().
 
 @ js/controller/optionshandler.js
 What the settings of the Options window do: the language, the two Include boxes, Simple UI, Civ view and Tooltips, each
@@ -236,10 +250,10 @@ What the settings of the Options window do: the language, the two Include boxes,
   language in use is the model's alone: only the one still loading is kept here, as `pending`.
 - setLanguage: Makes a language the page's through the model's chooseLanguage(), which tells the page. Runs when a
   language is chosen and its file is loaded.
-- setInclude: Switches Include Unique and Universal (Req. 13 to 15): has the model build the tree again, keeping marks,
-  saves the choice and ticks the box.
-- setRegional: Switches Include Regionals: has the model build the tree again, keeping marks, saves the choice and
-  ticks the box.
+- setInclude: Switches Include Unique and Universal (Req. 13 to 15): has the model build the tree again, keeping
+  marks, which saves the choice, and ticks the box.
+- setRegional: Switches Include Regionals: has the model build the tree again, keeping marks, which saves the choice,
+  and ticks the box.
 - savedSimple: Reads the saved Simple UI choice: off unless it was saved as on, so a first visit shows the pictures.
 - setSimple: Switches Simple UI (Req. 32, 33): saves the choice, ticks the box and has applySimple() change the page.
   Simple UI is only how the page looks, so it does not go through the model.
@@ -249,16 +263,16 @@ What the settings of the Options window do: the language, the two Include boxes,
   apply() go through it.
 - apply: Applies every setting whose window value differs from the page's, when OK is pressed.
 - reset: Shows the page's values again in the window, dropping what was changed, each time the window opens.
-- choose: Chooses a language: loads its file if needed, as `pending` so that only the last one chosen is used, shows
-  it, saves the choice, and has keepInAddress() put it in the address (`?lng=`), so a shared link keeps it. If the
-  file cannot be loaded, it shows the load error and puts the window back on the language in use.
+- choose: Chooses a language: loads its file if needed, as `pending` so that only the last one chosen is used, and
+  shows it; the model saves it and puts it in the address. If the file cannot be loaded, it shows the load error and
+  puts the window back on the language in use.
 - startOptions: Starts the Options window: ticks the two Include boxes as the model has them, starts the window's
   view with reset() and apply(), builds the language menu, and restores Civ view and Tooltips. Runs once, from
   start().
 
 @ js/controller/updatehandler.js
 Runs the updater, which `?update` opens.
-- runUpdate: Runs the updater: shows that it is loading, has datahandler.js fetch the new data and work out what
+- runUpdate: Runs the updater: shows that it is loading, has updater.js fetch the new data and work out what
   changed, and has report.js show it, or why it failed. It changes nothing by itself.
 
 @ js/tests/run_test.js
@@ -274,7 +288,7 @@ Runs the tests and shows the report. Loaded only when the address ends in `?test
   unticked, Include Regionals ticked, Simple UI and Tooltips on.
 - restore: Puts back the visitor's language, options, view, address and saved choices after the tests.
 - rounds: Runs every test in three rounds, functional, accessibility and maintainability, in the order TESTS.md lists
-  them, picking sample items afresh where the tree was rebuilt.
+  them.
 - runTests: Runs the tests, numbers them in the order they first ran, checks the 100-test limit (Rule 17), marks the
   page passed or failed, and shows the report, failures first. For CI it then has announce() write the failed tests,
   the count and whether they passed. Its Close leaves the tests: it opens the page's own address, without `?test`.

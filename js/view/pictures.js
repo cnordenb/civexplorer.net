@@ -1,10 +1,23 @@
-import { attempt, words } from "../model/datahandler.js";
+import { attempt } from "../model/datahandler.js";
+import { words } from "../model/texts.js";
 import { items } from "../model/model.js";
-import { $, simple, showLoading } from "./stringbuilder.js";
+import { $, simple, setLoading } from "./stringbuilder.js";
 import { itemAt } from "./treeview.js";
 import { tick, showView } from "./optionsview.js";
 import { redraw } from "./page.js";
 import { startBars } from "./scrollbars.js";
+
+const TIP_MARGIN = 4;
+
+const TIP_GAP = 8;
+
+const PHONE_SIDE = 720;
+
+const ULTRAWIDE_RATIO = 2;
+
+const QHD = { wide: 2560, high: 1440 };
+
+const FHD = { wide: 1920, high: 1080 };
 
 export let view = "list";
 
@@ -44,10 +57,10 @@ function wireTip() {
     if (tip.hidden) return;
     const host = target.closest?.("dialog[open]") ?? document.body;
     if (tip.parentElement !== host) host.append(tip);
-    const reach = Number(getComputedStyle(tip).getPropertyValue("--reach"));
-    const below = y + reach + tip.offsetHeight <= innerHeight - 4;
-    tip.style.setProperty("--x", Math.max(4, Math.min(x + reach, innerWidth - tip.offsetWidth - 4)));
-    tip.style.setProperty("--y", below ? y + reach : y - tip.offsetHeight - 8);
+    const offset = Number(getComputedStyle(tip).getPropertyValue("--offset"));
+    const below = y + offset + tip.offsetHeight <= innerHeight - TIP_MARGIN;
+    tip.style.setProperty("--x", Math.max(TIP_MARGIN, Math.min(x + offset, innerWidth - tip.offsetWidth - TIP_MARGIN)));
+    tip.style.setProperty("--y", below ? y + offset : y - tip.offsetHeight - TIP_GAP);
   };
 
   document.addEventListener("pointermove", (e) => {
@@ -63,10 +76,18 @@ function wireTip() {
   });
 }
 
-export function screenPictures(width = screen.width, height = screen.height, ratio = devicePixelRatio) {
+const beyond = (wide, high, limit) => wide > limit.wide || high > limit.high;
+
+function backgroundFor(width, height, ratio) {
   const [wide, high] = [width, height].map((side) => Math.round(side * ratio));
-  const background = Math.min(width, height) < 720 ? "fhd" : wide > high * 2 ? "ultrawide"
-    : wide > 2560 || high > 1440 ? "uhd" : wide > 1920 || high > 1080 ? "qhd" : "fhd";
+  if (Math.min(width, height) < PHONE_SIDE) return "fhd";
+  if (wide > high * ULTRAWIDE_RATIO) return "ultrawide";
+  if (beyond(wide, high, QHD)) return "uhd";
+  return beyond(wide, high, FHD) ? "qhd" : "fhd";
+}
+
+export function screenPictures(width = screen.width, height = screen.height, ratio = devicePixelRatio) {
+  const background = backgroundFor(width, height, ratio);
   return { background, assets: background === "uhd" || background === "ultrawide" ? "4k" : "sd" };
 }
 
@@ -96,7 +117,7 @@ const fits = (src) => {
   return board ? board === background : !grade || !!GRADES[assets]?.includes(grade);
 };
 
-export const pictureFiles = (use = () => true) => [...new Set([...document.styleSheets]
+const pictureFiles = (use = () => true) => [...new Set([...document.styleSheets]
   .flatMap((sheet) => attempt(() => filesOf(sheet, use)) ?? []))].filter(fits);
 
 const kept = new Map();
@@ -114,11 +135,11 @@ export function finishLoading() {
   if (simple()) return opening;
   const pictures = [...new Set(onPage().concat(pictureFiles()))].map(copy);
   const fonts = [...document.fonts];
-  if (ready(pictures, fonts)) showLoading(false);
+  if (ready(pictures, fonts)) setLoading(false);
   if ($("loading").hidden) return opening;
   const mine = ++round;
   opening = Promise.all([...pictures.map(done), ...fonts.map((face) => face.load().catch(() => null))])
-    .then(() => mine === round && showLoading(false));
+    .then(() => mine === round && setLoading(false));
   return opening;
 }
 
@@ -128,7 +149,7 @@ export function applySimple(on) {
     Object.assign(document.documentElement.dataset, screenPictures());
     document.documentElement.style.setProperty("--pixel", `${1 / devicePixelRatio}px`);
   }
-  if (on || coming) showLoading(coming);
+  if (on || coming) setLoading(coming);
   document.documentElement.classList.toggle("pictures", !on);
   if (coming) pictureFiles(rooted).forEach(copy);
   if (items.length) redraw("look");

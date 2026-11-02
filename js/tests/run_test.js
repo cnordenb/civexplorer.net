@@ -1,10 +1,11 @@
-import { data, load, fill, attempt, recall, remember, language } from "../model/datahandler.js";
+import { data, load, attempt, recall, remember } from "../model/datahandler.js";
+import { fill, language } from "../model/texts.js";
 import { include, regional } from "../model/model.js";
 import { $, simple } from "../view/stringbuilder.js";
 import { setLanguage, setInclude, setRegional, setSimple } from "../controller/optionshandler.js";
 import { view, setView, tips, setTips } from "../view/pictures.js";
 import { openReport, report } from "../view/report.js";
-import { root, results, check, codes, pick, reset, fixtures } from "./helpers_test.js";
+import { root, results, check, codes, pick, reset } from "./helpers_test.js";
 import { scripts, styles, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static_test.js";
 import { behaviourTests } from "./behaviour_test.js";
 import {
@@ -65,19 +66,17 @@ async function rounds() {
   const sources = await Promise.all([load("index.html"), styles(), scripts()]);
   textTests();
   pick(codes()[0]);
-  const sample = fixtures();
-  await behaviourTests(sample);
-  menuTests(sample);
-  codes().forEach((code) => languageTests(code, sample));
+  await behaviourTests();
+  menuTests();
+  codes().forEach((code) => languageTests(code));
   optionTests();
   await pictureTests();
   uniqueFilterTests();
   headingTests();
   tagTests();
   pick(codes()[0]);
-  const fresh = fixtures();
-  keyboardTests(fresh);
-  accessibilityTests(fresh);
+  keyboardTests();
+  accessibilityTests();
   sourceTests(...sources);
   dataTests();
   updaterTests();

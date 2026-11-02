@@ -101,7 +101,7 @@ Below, `REPO` is the repository's folder and `WORK` the work folder; run the com
    ```
 
    The lines `uml: …` that `build.mjs` prints give each UML page, its layout, its direction and its text size in
-   points; on 2026-11-01 the view's was the smallest, at 5.6 points. A line `uml problem: …` stops the build: an
+   points; on 2026-11-02 the model's was the smallest, at 4.7 points. A line `uml problem: …` stops the build: an
    arrow crosses or touches another, or runs under a box or a label, or a name links nowhere.
 
 5. **Install it.** Copy `$WORK/code_docu.pdf` over `documentation/code_docu.pdf`.

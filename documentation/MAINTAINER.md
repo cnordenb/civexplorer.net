@@ -48,6 +48,9 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
      language's file, with the English name on the left, such as
      `"Heavy Mounted Crossbowman": "Schwerer berittener Armbrustschütze"` in `locales/de.json`. English corrections
      go in `overrides` in `data.json`. Reload the `?update` page afterwards.
+   - *New game update: …* Nothing. The footer will name the new update and link its notes, as aoe2techtree.net's does.
+   - *The game update could not be read from …* aoe2techtree.net's page now writes it differently. Put the number
+     and the address of its notes under `update` in `source` in `data.json` by hand, and report the problem.
 5. **Change the tree, if the report asked you to.** Open `data.json` and find `"tree"`. It reads like an outline:
    each entry is a row of the left pane, and `"kids"` lists the rows under it.
 
@@ -87,6 +90,9 @@ text editor such as Visual Studio Code, and about ten minutes. You do not need t
    in several window sizes, in light and dark colours; a green tick in the repository's **Actions** tab means they
    all passed.
 
+With Claude Code, the `data-update` skill in `.claude/skills/` runs steps 2 to 7, and stops to ask about any line of
+the report that needs you.
+
 ## How the code works
 
 The page is plain HTML, CSS and JavaScript. There is nothing to install and nothing to build: the files in the
@@ -102,7 +108,7 @@ why a game update changes only those files, and sometimes adds an icon.
 | `css/base.css` | How the page looks with Simple UI, and its layout either way: big and small screens, light and dark colours. |
 | `css/pictures.css` | How the page looks without Simple UI: every rule with a picture or a font, the loading screen, the tooltip and the scroll bars. |
 | `js/script.js` | Where the page starts. |
-| `js/model/` | The data and the tree's rules, which tell the page when they change: `datahandler.js` and `model.js`. |
+| `js/model/` | The data and the tree's rules, which tell the page when they change, and the updater: `datahandler.js`, `civsets.js`, `texts.js`, `icons.js`, `updater.js` and `model.js`. |
 | `js/view/` | What the page shows: `stringbuilder.js`, `treeview.js` (the tree), `optionsview.js` (Options), `page.js` (the whole page), `scrollbars.js`, `pictures.js` and `report.js`. |
 | `js/controller/` | What the visitor's clicks, touches and keys mean: `nodetree.js` (the tree), `optionshandler.js` (Options) and `updatehandler.js` (the updater). |
 | `js/tests/` | The tests, loaded only when the address ends in `?test`; see [Tests](#tests). |
@@ -113,7 +119,7 @@ why a game update changes only those files, and sometimes adds an icon.
 | `documentation/` | This guide, `RULES.md`, `REQUIREMENTS.md`, `TESTS.md`, `DECISIONS.md`, `code_docu.pdf`, and the development log in `DEVLOG/`. |
 | `README.md` | Introduces the project. |
 | `.github/workflows/tests.yml` | Tells GitHub to run the tests on every push. |
-| `.claude/skills/` | How `code_docu.pdf` is made, as skills for Claude Code; see below. |
+| `.claude/skills/` | How `code_docu.pdf` is made, and how the updater's files are put in place, as skills for Claude Code; see below. |
 
 `code_docu.pdf` describes the code folder by folder: each folder is a chapter, each file in it a subchapter, and each
 function a section numbered after both, with its lines, the functions that call it and those it calls. Every name of
@@ -123,7 +129,8 @@ its functions, a page on how `data.json` is laid out, and an index.
 It is made again only when asked. Its steps, the descriptions of every function and the scripts that print it are in
 `.claude/skills/`, as skills for Claude Code: asked to make `code_docu.pdf` again, Claude Code follows
 `.claude/skills/code-docu/SKILL.md`. They use Node, Chrome and Python, which Rule 36 allows for this alone; the page
-itself never does.
+itself never does. The `data-update` skill uses Node with no packages to do in Chrome what steps 2 to 7 of the update
+guide do by hand.
 
 ### UML diagram
 
@@ -158,6 +165,10 @@ classDiagram
   class model {
     <<js/model/>>
     datahandler.js
+    civsets.js
+    texts.js
+    icons.js
+    updater.js
     model.js
   }
   class tests {
@@ -186,20 +197,28 @@ The scripts are in three folders: `js/model/` holds the data and the rules, `js/
 `js/controller/` what the visitor's clicks, touches and keys mean. `js/script.js` starts them.
 
 - **`js/script.js`** turns Simple UI on or off as the visitor last chose (off on a first visit), which puts up the
-  loading screen without it, and loads `data.json` and the visitor's language. It then starts the model with the
-  saved settings, the tree's and the Options window's controllers and the page, has the page drawn once, and lets the
-  loading screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the
+  loading screen without it, and loads `data.json` and the visitor's language. It then starts the model, which reads
+  its own saved settings, the tree's and the Options window's controllers and the page, has the page drawn once, and
+  lets the loading screen go once every picture has loaded. With `?test` it loads the tests, and with `?update` the
   updater. It never touches the page itself.
-- **`js/model/datahandler.js`** looks after the data: loading `data.json` and the language files, the chosen
-  language, which civilisations have what, the visitor's saved choices, the language in the address bar, and the
-  updater's fetching and file writing.
+- **`js/model/datahandler.js`** loads and stores the data: `data.json` and the language files, the saved choices
+  and the address bar. No other script of the page reads a file or the browser's storage.
+- **`js/model/civsets.js`** holds the civilisations as sets: which civilisations an item's rule in `availability`
+  names, how many a set holds, and which they are.
+- **`js/model/texts.js`** holds the chosen language: its texts, the names of items and civilisations, and its way of
+  writing numbers, plurals and the order of names.
+- **`js/model/icons.js`** names the icons' files, and the order of the files in an atlas.
+- **`js/model/updater.js`** fetches the game's newest data for `?update`, compares it with `data.json` and writes the
+  new files.
 - **`js/model/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
   [How marking works](#how-marking-works)), which civilisations fit, the counts beside the names, which branches a
-  mark greys out, and what **Filters** shows. Only its own
-  functions change it (`mark`, `clear`, `unmarkLine`, `setIncluded`, `setRegionals` and `chooseLanguage`), and each
-  then tells the page what changed. It never touches the page.
+  mark greys out, and what **Filters** shows. Only its own functions change it (`mark`, `clear`, `unmarkLine`,
+  `unmarkOwn`, `setIncluded`, `setRegionals` and `chooseLanguage`), and each then tells the page what changed; `mark`
+  refuses an item that is greyed out. It saves its own choices, Include, Include Regionals and the language, and the
+  language in the address, and `startModel` reads them back. It never touches the page.
 - **`js/view/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the list of
-  civilisations and **Filters**, with the names of its buttons. It also holds the helpers the other views share.
+  civilisations and **Filters**, with the names of its buttons. It also holds the helpers the other views share, such
+  as `cellOf()`, which finds an icon's place in its atlas.
 - **`js/view/treeview.js`** draws the tree: its rows, names, boxes and counts, which branches are open, what **Find**
   found, and where the focus goes. It hands the clicks, touches and keys in the tree, its buttons and **Filters** to
   `js/controller/nodetree.js`.
@@ -219,14 +238,15 @@ The scripts are in three folders: `js/model/` holds the data and the rules, `js/
   closing, the arrow keys, **Find**, the buttons above the tree, and the buttons of **Filters**.
 - **`js/controller/optionshandler.js`** says what **OK** in the Options window does. Each setting is one of its
   `choices`, with what it is now and how to set it, and **OK** sets each one that the window shows changed. It saves
-  the settings and loads a language the first time it is chosen; if that fails, Options goes back to the language in
-  use.
-- **`js/controller/updatehandler.js`** runs the updater (`?update`): it fetches the new data and has
-  `js/view/report.js` show what changed.
+  only the look settings, Simple UI, the civilisations' view and Tooltips, and loads a language the first time it is
+  chosen; if that fails, Options goes back to the language in use.
+- **`js/controller/updatehandler.js`** runs the updater (`?update`): it has `js/model/updater.js` fetch the new data
+  and `js/view/report.js` show what changed.
 
-A script only uses the scripts before it in this order: `datahandler.js`, `model.js`, `stringbuilder.js`,
-`treeview.js`, `optionsview.js`, `page.js`, `scrollbars.js`, `pictures.js`, `report.js`, `nodetree.js`,
-`optionshandler.js`, `updatehandler.js`, `script.js`. Keep it so, so that the arrows never go round in a circle.
+A script only uses the scripts before it in this order: `civsets.js`, `datahandler.js`, `texts.js`, `icons.js`,
+`updater.js`, `model.js`, `stringbuilder.js`, `treeview.js`, `optionsview.js`, `page.js`, `scrollbars.js`,
+`pictures.js`, `report.js`, `nodetree.js`, `optionshandler.js`, `updatehandler.js`, `script.js`. Keep it so, so that
+the arrows never go round in a circle.
 
 ### How model, view and controller work together
 
@@ -263,16 +283,20 @@ How this differs from the book's classic model, view and controller:
    `fetchUpdate()` straight to `js/view/report.js`, as nothing else waits for it.
 8. A controller learns of the model's changes from its view, not by subscribing to the model, so that the order is
    fixed: the tree is drawn again first, and only then does **Find** search it.
+9. The views and controllers import `model.js` itself, not an interface handed to them, as the book's views are
+   handed `BeatModelInterface`. So a second model could not be fitted with an Adapter, as the book's `HeartAdapter`
+   is, without changing their imports. There is only one model, so nothing would be gained.
 
 The rule to keep: a view never imports a controller, never changes the model and never names a mark; a controller
-never touches the page or the address; only the model works on its sets and reaches `page.update()`; Test 85 checks
-it.
+never touches the page or the address; only the model works on its sets and reaches `page.update()`; only the model
+saves and restores its own state; Test 85 checks it.
 
 ### The data
 
 `data.json` is a text file in JSON format. Its parts:
 
-- `source`: where the data comes from and when it was fetched, and Microsoft's notice for the footer, with the
+- `source`: where the data comes from, the game update it is from, with the address of its notes, which the updater
+  reads from aoe2techtree.net's page and the footer links, and Microsoft's notice for the footer, with the
   addresses its two links lead to: Microsoft's rules, and, from "Civ Explorer", the project on GitHub.
 - `languages`: the 17 languages, English first. Each has its `name`, its `tag` (such as `pt-BR`) and two settings the
   updater uses to tidy the game's names.
@@ -436,7 +460,7 @@ never shows, and the loading picture is not on the page.
 
 `applySimple()` and `finishLoading()` in `js/view/pictures.js` run it. `applySimple()` puts the loading picture
 on the page before the `pictures` class, so it is the first picture the browser asks for. The template in `index.html`
-names it in `data-src`, not `src`, and `showLoading()` sets `src`: Firefox downloads the `src` of an `<img>` in a
+names it in `data-src`, not `src`, and `setLoading()` sets `src`: Firefox downloads the `src` of an `<img>` in a
 template before any script runs, which would download the picture with Simple UI too. `finishLoading()` finds the
 pictures through the style sheet's rules (`pictureFiles()`), leaving out, by their names, the backgrounds and sizes that
 `data-background` and `data-assets` do not choose. It reads no computed style, as that would make the browser ask for
@@ -541,7 +565,7 @@ is #201819, as the list's is.
 - The cursors are the sword, `cursor_normal`, and the pointing hand, `cursor_pointing`, over the civilisations and the
   footer's links. The `_x1` ones, 32 by 32, are drawn at their own size; the `_x2` ones, 48 by 48, at two thirds of
   that, 32 by 32 too, as `css/pictures.css` names them in `image-set(... 1.5x)`, so on a screen at 150 % they show
-  their own pixels. The tooltip starts at the cursor's bottom-right corner, 32 pixels from its point, `--reach` on
+  their own pixels. The tooltip starts at the cursor's bottom-right corner, 32 pixels from its point, `--offset` on
   `.tip` in the same file: change it with them.
 - To replace a picture, save the new one under the same name, as WebP and with the same proportions. Names use only
   lower-case letters, digits and underscores, and GitHub refuses other names and formats than WebP, PNG and ICO,
@@ -561,7 +585,7 @@ is #201819, as the list's is.
   square root of their number, rounded up. The civilisations' atlas comes in two sizes, with the cells in the same
   places: `civicon_atlas_x1.webp` with 60 by 60 pixels to a cell, and `civicon_atlas_x2.webp` with 104 by 104, the PNGs'
   own size, for 4K screens. The PNGs stay, as the atlases are built from them: after adding one, build its folder's
-  atlas again from every PNG in the folder, both sizes for the civilisations. `cellOf()` in `js/model/datahandler.js`
+  atlas again from every PNG in the folder, both sizes for the civilisations. `cellOf()` in `js/view/stringbuilder.js`
   finds an icon's cell from `atlas` in `data.json` (for the civilisations, from `civs` and `icons`), and
   `css/pictures.css` shows that cell. Test 48 checks each icon's cell and each atlas's size, but it cannot see what an
   atlas shows: look at the page after building one.
@@ -576,7 +600,7 @@ window sizes in light and dark colours, and also checks the file names and that 
 | File in `js/tests/` | Tests |
 | --- | --- |
 | `run_test.js` | Runs the rounds, shows the report and writes it to the console, where GitHub reads it, and checks that there are at most 100 tests. |
-| `helpers_test.js` | No tests: shared helpers, and the sample items the tests use, picked from the data so that the tests survive game updates. |
+| `helpers_test.js` | No tests: shared helpers, and `fixtures()`, with which each test picks its own sample items from the data, so that the tests survive game updates. |
 | `behaviour_test.js` | Marking, **Filters**, counts, opening and closing, and **Find**. |
 | `interface_test.js` | The keyboard, the language menu, every language, the Options window, the filters of unique items, and the runs of the accessibility audit. |
 | `pictures_test.js` | The pictures, with Simple UI off. |
@@ -600,7 +624,8 @@ and with a screen reader.
 - No two files with the same name. Every file in `js/tests/` ends in `_test.js`, so that, for example,
   `js/tests/pictures_test.js` and `js/view/pictures.js` stay apart.
 - A view never imports a controller, never changes the model and never names a mark; a controller never touches the
-  page or the address; only the model works on its sets and reaches `page.update()` (see
+  page or the address; only the model works on its sets and reaches `page.update()`; only the model saves and
+  restores its own state (see
   [How model, view and controller work together](#how-model-view-and-controller-work-together)). Test 85 checks
   it.
 - No comments in the code, and a blank line before and after every function.

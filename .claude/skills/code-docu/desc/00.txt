@@ -11,8 +11,10 @@ Where the scripts start: script.js, which index.html loads as a module. Every ot
   below it: js/model/, js/view/ and js/controller/ for the page, and js/tests/ for the tests.
 
 @ js/model/
-The data and the tree's rules: datahandler.js looks after the data and the languages, and model.js holds the tree and
-  its rules, and tells the page when they change. Neither touches the page.
+The data and the tree's rules: datahandler.js loads and stores the data, civsets.js holds the sets of civilisations,
+  texts.js the chosen language and icons.js the icons' file names, updater.js fetches the game's newest data for
+  `?update`, and model.js holds the tree and its rules, saves its own choices, and tells the page when they change.
+  None of them touches the page, and each imports only those before it.
 
 @ js/view/
 What the page shows: stringbuilder.js writes its text, treeview.js draws the tree, optionsview.js the Options window,

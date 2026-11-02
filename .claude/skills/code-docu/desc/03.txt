@@ -13,11 +13,15 @@ Small tools the test files share: recording results, finding and measuring eleme
 - spans: Tells whether the footer is as wide as the panes, or hidden in the phone layout.
 - need: Returns a problem in a list if a condition fails, and an empty list if it holds, so a test can list exactly what
   went wrong.
+- flags: Writes the parts of a check with their results, such as "held true, exclusive false", for a failure's detail,
+  so that it says which part failed.
 - same: Tells whether two lists are equal, item by item. Used to compare lists of civilisations.
 - codes: Lists the language codes from data.json.
 - nodeOf: The row of an item's box and name, from the tree's view, which keeps the elements away from the items.
 - twistyOf: The arrow of an item's row, if it has one.
 - labelOf: The name in an item's row.
+- openTo: Opens every branch above an item, its ancestors(), so that its row is in sight.
+- ticked: Tells whether an Options box is ticked, by its `aria-checked`, as screen readers hear it.
 - englishFirst: Tells whether a first visit, with no saved choice and a German browser, starts in the language the
   address names, or else in English (Req. 10). Puts the saved choice back afterwards.
 - ui: Returns the page's texts in the current language.
@@ -119,7 +123,8 @@ Small tools the test files share: recording results, finding and measuring eleme
   passes down only at the same count (Req. 29, 30).
 - fixtures: Picks sample items from the tree: leaves some civilisations have, buildings, line tops, even and uneven
   counts, a line in a group of lines, a building some do without, a lone building and an item with a rival. Found from
-  the data, to survive game updates.
+  the data, to survive game updates. Each test that uses them picks them itself, after reset(), so no test depends on
+  another.
 
 @ js/tests/static_test.js
 The maintainability and data tests: they read the page's own files as text and check the rules, then check data.json and
@@ -149,7 +154,8 @@ The maintainability and data tests: they read the page's own files as text and c
   importing a controller, saving a setting or naming a mark in a call to its controller, a controller touching the
   page or the address, a script outside js/model/ and the tests working on the model's sets, anything but a test
   calling `page.update()`, a model.js that does not share `subscribe` and `unsubscribe`, shares `notify` or holds
-  texts, another script than page.js observing the model, and, once the tests have run, an item holding a page element
+  texts, another script than page.js observing the model, a script outside js/model/ and the tests saving or reading
+  the model's choices or writing the address, and, once the tests have run, an item holding a page element
   (Test 85).
 - sourceTests: The rules tests: no comments; no CSS or HTML in the scripts, which hand CSS only numbers; where the files
   are and what they import, the tests named `_test.js` and loading only when testing, and no two of the files with one
@@ -164,7 +170,8 @@ The maintainability and data tests: they read the page's own files as text and c
 - treeTests: Checks the tree in data.json: every item once, only known keys, flags only where they belong, `"excludes"`
   and `"replaces"` naming other known items, and every item with its civilisations and its icon.
 - textDataTests: Checks the texts in data.json: counted texts with an "other" form, the same placeholders in every
-  language, overrides of known names, and the source, tool texts and ignore list filled in.
+  language, overrides of known names, and the source, with its game update's number and address, tool texts and
+  ignore list filled in.
 - dataTests: Runs the checks of the tree and of the texts in data.json.
 - updaterTests: Checks the updater's writing without going online: the files it writes read back the same, availability
   is stored in its shortest form, and stored names are already tidy.
