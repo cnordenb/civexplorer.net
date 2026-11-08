@@ -1,5 +1,5 @@
-import { data } from "../model/datahandler.js";
 import { words, numbers, plural, fill, nameOf } from "../model/texts.js";
+import { spriteOf, atlasOf } from "../model/icons.js";
 import { items, roots, boxState, barred, locked, countOf } from "../model/model.js";
 import { $, clone, simple, cellOf, place, compose, demand } from "./stringbuilder.js";
 
@@ -9,6 +9,8 @@ const MENU_AFTER_TOUCH_MS = 600;
 
 const PRESS_DRIFT_PX = 10;
 
+const ARIA_CHECKED = { has: "true", mixed: "mixed" };
+
 const NEEDS = ["gesture", "branch", "key", "find", "enter", "clear", "expandAll", "collapseAll", "unchip", "redrawn"];
 
 const rows = new Map();
@@ -17,162 +19,21 @@ let press = null;
 let touchEnded = -Infinity;
 let swallowClick = false;
 
-export const rowOf = (item) => rows.get(item);
-
-const opened = (row) => row?.twisty?.getAttribute("aria-expanded") === "true";
-
-export const isOpen = (item) => opened(rows.get(item));
-
-export const shown = (item) => !item.parent || (isOpen(item.parent) && shown(item.parent));
-
-const heading = (item) => item.group && !!item.parent;
-
-const focusOf = (item) => (heading(item) ? rows.get(item).twisty : rows.get(item).node);
-
-export const itemAt = (target) => {
-  const item = items[target.closest?.(".node")?.dataset.i];
-  return item && !heading(item) ? item : undefined;
-};
-
-function dress(item) {
-  const row = rows.get(item);
-  const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
-  if (simple() || !own) return row.icon?.remove();
-  row.icon ??= place(clone("nodeIconTemplate"), cellOf(data.icons.atlas[own.kind], own.picture));
-  Object.assign(row.icon.dataset, own);
-  row.label.before(row.icon);
+export function startTreeView(controller) {
+  const tree = $("tree");
+  actions = demand(controller, NEEDS);
+  tree.addEventListener("keydown", onKey);
+  tree.addEventListener("pointerdown", onPress);
+  tree.addEventListener("pointermove", (e) => {
+    if (press && e.pointerId === press.id
+      && Math.hypot(e.clientX - press.x, e.clientY - press.y) > PRESS_DRIFT_PX) endPress();
+  });
+  tree.addEventListener("pointerup", onRelease);
+  tree.addEventListener("pointercancel", endPress);
+  tree.addEventListener("contextmenu", onMenu);
+  tree.addEventListener("click", onClick);
+  wireTools();
 }
-
-function build(list, ul) {
-  for (const item of list) {
-    const li = clone("itemTemplate");
-    const twisty = li.querySelector(".twisty");
-    const kids = li.querySelector("ul");
-    const row = { entry: li };
-    rows.set(item, row);
-    row.node = li.querySelector(".node");
-    row.label = li.querySelector(".name");
-    row.lacking = li.querySelector(".lacking");
-    row.count = li.querySelector(".count");
-    row.civCount = li.querySelector(".civ-count");
-    row.node.dataset.i = item.i;
-    row.node.classList.toggle("group", item.group);
-    if (heading(item)) {
-      ["role", "tabindex", "aria-checked"].forEach((name) => row.node.removeAttribute(name));
-      row.node.querySelector(".box").remove();
-    }
-    row.label.id = `t${item.i}`;
-    if (item.kids.length) {
-      li.querySelector(".gap").remove();
-      row.twisty = twisty;
-      twisty.dataset.i = item.i;
-      twisty.setAttribute("aria-controls", `k${item.i}`);
-      twisty.setAttribute("aria-labelledby", `t${item.i}`);
-      row.list = kids;
-      kids.id = `k${item.i}`;
-      build(item.kids, kids);
-    } else {
-      twisty.remove();
-      kids.remove();
-    }
-    ul.append(li);
-  }
-}
-
-const endPress = () => {
-  if (!press) return;
-  clearTimeout(press.timer);
-  rows.get(press.item).node.classList.remove("pressed");
-  if (press.timer) touchEnded = performance.now();
-  press = null;
-};
-
-function replant() {
-  const open = new Set([...rows].filter(([, row]) => opened(row)).map(([item]) => item.path));
-  endPress();
-  rows.clear();
-  $("tree").replaceChildren();
-  build(roots, $("tree"));
-  items.forEach(dress);
-  for (const item of items) if (open.has(item.path)) setOpen(item, true);
-}
-
-function label() {
-  for (const item of items) rows.get(item).label.textContent = nameOf(item);
-}
-
-function count(item) {
-  const row = rows.get(item);
-  const { own, all } = countOf(item);
-  if (!item.parent && !own) {
-    row.count.textContent = "";
-    row.civCount.textContent = "";
-    return;
-  }
-  if (item.group || !item.kids.length || isOpen(item)) {
-    row.count.textContent = numbers.format(own);
-    row.civCount.textContent = plural("civCount", own);
-    return;
-  }
-  compose(row.count, words.ui.range, { own: numbers.format(own), all: numbers.format(all) });
-  row.civCount.textContent = fill(words.ui.civRange, { own: plural("civCount", own), all: plural("civCount", all) });
-}
-
-export function setOpen(item, open) {
-  const row = rows.get(item);
-  if (!row?.twisty) return;
-  row.twisty.setAttribute("aria-expanded", String(open));
-  row.list.hidden = !open;
-  count(item);
-}
-
-function paint() {
-  for (const item of items) {
-    const row = rows.get(item);
-    const s = heading(item) ? null : boxState(item);
-    row.node.dataset.state = s || "";
-    const checked = s === "has" ? "true" : s === "mixed" ? "mixed" : "false";
-    if (!heading(item)) row.node.setAttribute("aria-checked", checked);
-    row.lacking.textContent = s === "lacks" ? words.ui.lacking : "";
-    row.node.classList.toggle("self", !!item.self);
-    const shut = barred(item);
-    row.entry.classList.toggle("barred", shut);
-    row.node.ariaDisabled = shut ? "true" : null;
-    if (row.twisty) row.twisty.ariaDisabled = locked(item) ? "true" : null;
-  }
-}
-
-export const treeView = {
-  update: (change) => {
-    if (change === "tree" || change === "start") replant();
-    if (change === "look") items.forEach(dress);
-    else if (change !== "marks") label();
-    items.filter(locked).forEach((item) => setOpen(item, false));
-    paint();
-    items.forEach(count);
-    actions.redrawn(change);
-  },
-};
-
-export function focus(item, onTwisty = false) {
-  const { twisty } = rows.get(item);
-  (onTwisty && twisty ? twisty : focusOf(item)).focus();
-}
-
-export function highlight(found, searched) {
-  for (const item of items) rows.get(item).node.classList.toggle("found", found.includes(item));
-  $("found").textContent = !searched ? "" : found.length ? plural("found", found.length) : words.ui.noneFound;
-}
-
-export function reveal(item) {
-  const { node } = rows.get(item);
-  const pane = node.closest(".scroll");
-  const view = pane.getBoundingClientRect();
-  const row = node.getBoundingClientRect();
-  pane.scrollTop += Math.min(0, row.top - view.top) + Math.max(0, row.bottom - view.bottom);
-}
-
-export const findText = () => $("find").value;
 
 function onKey(e) {
   const item = items[e.target.dataset.i];
@@ -194,6 +55,21 @@ function onPress(e) {
     rows.get(item).node.classList.add("pressed");
   }, LONG_PRESS_MS);
 }
+
+const endPress = () => {
+  if (!press) return;
+  clearTimeout(press.timer);
+  rows.get(press.item).node.classList.remove("pressed");
+  if (press.timer) touchEnded = performance.now();
+  press = null;
+};
+
+export const itemAt = (target) => {
+  const item = items[target.closest?.(".node")?.dataset.i];
+  return item && !heading(item) ? item : undefined;
+};
+
+const heading = (item) => item.group && !!item.parent;
 
 function onRelease(e) {
   if (!press || e.pointerId !== press.id) return;
@@ -220,15 +96,6 @@ function onClick(e) {
   if (item && !swallowClick) actions.gesture(item, "click");
 }
 
-function onChip(e) {
-  const chip = e.target.closest(".chip");
-  if (!chip) return;
-  const at = [...$("chips").querySelectorAll(".chip")].indexOf(chip);
-  actions.unchip(items[chip.dataset.i], chip.dataset.state, chip.hasAttribute("data-own"));
-  const chips = $("chips").querySelectorAll(".chip");
-  (chips[at] || chips[at - 1] || $("civTitle")).focus();
-}
-
 function wireTools() {
   const swap = (from, to, act) => $(from).addEventListener("click", () => {
     const focused = document.activeElement === $(from);
@@ -251,18 +118,177 @@ function wireTools() {
   $("chips").addEventListener("click", onChip);
 }
 
-export function startTreeView(controller) {
-  const tree = $("tree");
-  actions = demand(controller, NEEDS);
-  tree.addEventListener("keydown", onKey);
-  tree.addEventListener("pointerdown", onPress);
-  tree.addEventListener("pointermove", (e) => {
-    if (press && e.pointerId === press.id
-      && Math.hypot(e.clientX - press.x, e.clientY - press.y) > PRESS_DRIFT_PX) endPress();
-  });
-  tree.addEventListener("pointerup", onRelease);
-  tree.addEventListener("pointercancel", endPress);
-  tree.addEventListener("contextmenu", onMenu);
-  tree.addEventListener("click", onClick);
-  wireTools();
+export const findText = () => $("find").value;
+
+function onChip(e) {
+  const chip = e.target.closest(".chip");
+  if (!chip) return;
+  const at = [...$("chips").querySelectorAll(".chip")].indexOf(chip);
+  actions.unchip(items[chip.dataset.i], chip.dataset.state, chip.hasAttribute("data-lone"));
+  const chips = $("chips").querySelectorAll(".chip");
+  (chips[at] || chips[at - 1] || $("civTitle")).focus();
 }
+
+export const treeView = {
+  update: (change) => {
+    if (change === "tree" || change === "start") replant();
+    if (change === "look") items.forEach(dress);
+    else if (change !== "marks") label();
+    items.filter(locked).forEach((item) => setOpen(item, false));
+    paint();
+    items.forEach(count);
+    actions.redrawn(change);
+  },
+};
+
+function replant() {
+  const open = new Set([...rows].filter(([, row]) => opened(row)).map(([item]) => item.path));
+  endPress();
+  rows.clear();
+  $("tree").replaceChildren();
+  build(roots, $("tree"));
+  items.forEach(dress);
+  for (const item of items) {
+    if (open.has(item.path)) setOpen(item, true);
+  }
+}
+
+const opened = (row) => row?.twisty?.getAttribute("aria-expanded") === "true";
+
+function build(list, ul) {
+  for (const item of list) {
+    const row = newRow(clone("itemTemplate"), item);
+    rows.set(item, row);
+    if (heading(item)) makeHeading(row);
+    setUpBranch(row, item);
+    ul.append(row.entry);
+  }
+}
+
+function newRow(li, item) {
+  const row = {
+    entry: li,
+    node: li.querySelector(".node"),
+    label: li.querySelector(".name"),
+    lacking: li.querySelector(".lacking"),
+    count: li.querySelector(".count"),
+    civCount: li.querySelector(".civ-count"),
+  };
+  row.node.dataset.i = item.i;
+  row.node.classList.toggle("group", item.group);
+  row.label.id = `t${item.i}`;
+  return row;
+}
+
+function makeHeading(row) {
+  ["role", "tabindex", "aria-checked"].forEach((name) => row.node.removeAttribute(name));
+  row.node.querySelector(".box").remove();
+}
+
+function setUpBranch(row, item) {
+  const twisty = row.entry.querySelector(".twisty");
+  const kids = row.entry.querySelector("ul");
+  if (!item.kids.length) {
+    twisty.remove();
+    kids.remove();
+    return;
+  }
+  row.entry.querySelector(".gap").remove();
+  row.twisty = twisty;
+  twisty.dataset.i = item.i;
+  twisty.setAttribute("aria-controls", `k${item.i}`);
+  twisty.setAttribute("aria-labelledby", `t${item.i}`);
+  row.list = kids;
+  kids.id = `k${item.i}`;
+  build(item.kids, kids);
+}
+
+function dress(item) {
+  const row = rows.get(item);
+  const sprite = spriteOf(item);
+  if (simple() || !sprite) return row.icon?.remove();
+  row.icon ??= place(clone("nodeIconTemplate"), cellOf(atlasOf(sprite.kind), sprite.picture));
+  Object.assign(row.icon.dataset, sprite);
+  row.label.before(row.icon);
+}
+
+export function setOpen(item, open) {
+  const row = rows.get(item);
+  if (!row?.twisty) return;
+  row.twisty.setAttribute("aria-expanded", String(open));
+  row.list.hidden = !open;
+  count(item);
+}
+
+function count(item) {
+  const row = rows.get(item);
+  const { withItem, withBranch } = countOf(item);
+  if (!item.parent && !withItem) {
+    row.count.textContent = "";
+    row.civCount.textContent = "";
+    return;
+  }
+  if (item.group || !item.kids.length || isOpen(item)) {
+    row.count.textContent = numbers.format(withItem);
+    row.civCount.textContent = plural("civCount", withItem);
+    return;
+  }
+  compose(row.count, words.ui.range, { own: numbers.format(withItem), all: numbers.format(withBranch) });
+  row.civCount.textContent = fill(words.ui.civRange,
+    { own: plural("civCount", withItem), all: plural("civCount", withBranch) });
+}
+
+export const isOpen = (item) => opened(rows.get(item));
+
+function label() {
+  for (const item of items) {
+    rows.get(item).label.textContent = nameOf(item);
+  }
+}
+
+function paint() {
+  for (const item of items) {
+    const row = rows.get(item);
+    const s = heading(item) ? null : boxState(item);
+    row.node.dataset.state = s || "";
+    const checked = ARIA_CHECKED[s] ?? "false";
+    if (!heading(item)) row.node.setAttribute("aria-checked", checked);
+    row.lacking.textContent = s === "lacks" ? words.ui.lacking : "";
+    row.node.classList.toggle("self", !!item.self);
+    const shut = barred(item);
+    row.entry.classList.toggle("barred", shut);
+    row.node.ariaDisabled = shut ? "true" : null;
+    if (row.twisty) row.twisty.ariaDisabled = locked(item) ? "true" : null;
+  }
+}
+
+export function focus(item, onTwisty = false) {
+  const { twisty } = rows.get(item);
+  (onTwisty && twisty ? twisty : focusOf(item)).focus();
+}
+
+const focusOf = (item) => (heading(item) ? rows.get(item).twisty : rows.get(item).node);
+
+export function highlight(found, searched) {
+  for (const item of items) {
+    rows.get(item).node.classList.toggle("found", found.includes(item));
+  }
+  $("found").textContent = foundText(found, searched);
+}
+
+const foundText = (found, searched) => {
+  if (!searched) return "";
+  return found.length ? plural("found", found.length) : words.ui.noneFound;
+};
+
+export function reveal(item) {
+  const { node } = rows.get(item);
+  const pane = node.closest(".scroll");
+  const view = pane.getBoundingClientRect();
+  const row = node.getBoundingClientRect();
+  pane.scrollTop += Math.min(0, row.top - view.top) + Math.max(0, row.bottom - view.bottom);
+}
+
+export const rowOf = (item) => rows.get(item);
+
+export const shown = (item) => !item.parent || (isOpen(item.parent) && shown(item.parent));

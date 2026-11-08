@@ -8,14 +8,11 @@ export function useCivs(list) {
   ALL = (1n << BigInt(list.length)) - 1n;
 }
 
-const bit = (civ) => {
-  if (!civBit.has(civ)) throw new Error(`unknown civilisation ${civ}`);
-  return civBit.get(civ);
-};
-
 export const size = (set) => {
   let n = 0;
-  for (let s = set; s; s &= s - 1n) n++;
+  for (let s = set; s; s &= s - 1n) {
+    n++;
+  }
   return n;
 };
 
@@ -24,5 +21,10 @@ export function setOf(rule) {
   if (rule.has) return rule.has.reduce((s, civ) => s | bit(civ), 0n);
   return rule.lacks.reduce((s, civ) => s & ~bit(civ), ALL);
 }
+
+const bit = (civ) => {
+  if (!civBit.has(civ)) throw new Error(`unknown civilisation ${civ}`);
+  return civBit.get(civ);
+};
 
 export const civsOf = (set) => civs.filter((civ) => set & civBit.get(civ));

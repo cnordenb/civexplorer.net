@@ -347,13 +347,13 @@ link.
 - **The counts, the greyed-out branches and the matching civilisations come from the model**: `countOf()`,
   `behind()` and `matchingCivs()`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
-- **The model refuses to mark a greyed-out item**: `mark()` changes nothing and `reach()` reaches nothing. Replaced:
+- **The model refuses to mark a greyed-out item**: `mark()` changes nothing and `toReveal()` reveals nothing. Replaced:
   the check in `toggle()` in `nodetree.js`.
   [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
 - **The language in use is the model's alone**; `optionshandler.js` keeps only the language still loading, and a
   failed load puts Options back on the language in use. Replaced: `chosen`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
-- **The model saves and restores its own state**: `setIncluded()`, `setRegionals()` and `chooseLanguage()` save it,
+- **The model saves and restores its own state**: `setInclude()`, `setRegional()` and `setLanguage()` save it,
   and `startModel()` reads it. Replaced: saving in `optionshandler.js` and reading in `script.js`.
   [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
 - **`js/script.js` starts the page**; `optionshandler.js` starts only Options. Replaced: `start()` in
@@ -370,22 +370,42 @@ link.
   `fetchUpdate()` straight to `report.js`, as nothing else waits for it.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
 - **`datahandler.js` split**: the updater is in `updater.js`, and `cellOf()` is in `stringbuilder.js`, as it is only
-  how the icons are laid out; `byFile`, the order of an atlas's files, stays in `datahandler.js` for both. Replaced:
-  both in `datahandler.js`.
+  how the icons are laid out. Replaced: both in `datahandler.js`.
   [2026-11-02 00:52:37](DEVLOG/DEVLOG6.md#005237-datahandlerjs-split-the-updater-in-updaterjs-and-cellof-in-the-view)
 - **`datahandler.js` only loads and stores data**, and the rest of what it held is in `js/model/`: the civilisations'
   sets in `civsets.js`, the chosen language in `texts.js`, and the icons' file names and the order of an atlas in
   `icons.js`. A script imports only those before it: `civsets.js`, `datahandler.js`, `texts.js`, `icons.js`,
-  `updater.js`, `model.js`. Replaced: all of them in `datahandler.js`, `byFile` among them.
+  `updater.js`, `itemtree.js`, `model.js`. Replaced: all of them in `datahandler.js`, `byFile` among them.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
 - **`attempt()` catches only the browser's refusals**, `DOMException`s, and throws any other error again. Replaced:
   every error turned into `null`.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
 - **No flag arguments**: a setter is always given `on`, as `setLoading(on)`; values that go together are one
   argument, as the filter for `chipOf()` and `chipName()`; and a function that did two things is two, as
-  `unmarkOwn()` and `unmarkLine()`. Replaced: `showLoading(shown = true)`, `showLoadError(shown = true)` and
+  `unmarkLone()` and `unmarkLine()`. Replaced: `showLoading(shown = true)`, `showLoadError(shown = true)` and
   `unmarkLine(item, kind, own = false)`.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
+- **One verb per layer**: the model and the views use `set…`, the controllers `choose…`, and modules taking in data
+  `use…`. Replaced: `setInclude` and `setIncluded`, and `setRegional` and `setRegionals`, side by side.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **The model's Observer has no `unsubscribe`**, as `page.js`, its only observer, never leaves. It comes back with
+  the first observer that does.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **`itemtree.js` builds the tree's items** and owns `items` and `roots`; `model.js` exports them on, so the imports
+  go one way. Replaced: building the tree in `model.js`, which Question 4 of 2026-11-02 09:51:57 left open.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **The branch sets are stored when the tree is built** (`storeBranchSets()`), and `countOf()` reads `item.all`.
+  Replaced: `whole()`, which filled `item.all` as it was read.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **Each item's icon and reach are read in one place**: `spriteOf()` and `atlasOf()` in `icons.js`, and `reachOf()`
+  in `itemtree.js`.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **Patterns by name**: Prototype (`clone()`), Command-style tables (`GESTURES`, `MARK_KEYS`, `MOVES`, `MENU_MOVES`,
+  `choices`) and Facade (`datahandler.js`), besides model, view and controller.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **The scripts read top-down**: each function comes before the ones it calls, and every loop's body is a block of its
+  own.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
 - **Two style sheets**: `css/base.css`, the layout and Simple UI, and `css/pictures.css`, every rule with a picture or a
   font.
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)
@@ -422,6 +442,11 @@ link.
 - **Each test picks its own sample items** with `fixtures()`, and a failure's detail names its parts with `flags()`.
   Replaced: one set of sample items made in `run_test.js`, passed from test to test and refreshed by two of them.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
+- **Each group of tests starts from the same state** (`toStart()` in `run_test.js`): Simple UI on, Include off,
+  Include Regionals on, Tooltips on, the first language, and nothing marked.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **A check of several parts names them** with `checkAll()`, so that a failure's detail lists the parts that failed.
+  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
 
 ## Documents
 

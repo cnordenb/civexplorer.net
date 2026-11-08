@@ -5,23 +5,11 @@ import { startModel } from "./model/model.js";
 import { setLoadError, setLoading, writeFixed, showPage } from "./view/stringbuilder.js";
 import { startPictures, finishLoading } from "./view/pictures.js";
 import { startPage, redraw } from "./view/page.js";
-import { startOptions, setSimple, savedSimple } from "./controller/optionshandler.js";
+import { startOptions, chooseSimple, savedSimple } from "./controller/optionshandler.js";
 import { startTree } from "./controller/nodetree.js";
 import { runUpdate } from "./controller/updatehandler.js";
 
-function start() {
-  const code = preferredLanguage();
-  const first = Object.keys(data.languages)[0];
-  startModel(data.text[code] ? code : first);
-  startTree();
-  startOptions();
-  writeFixed();
-  startPage();
-  redraw("start");
-  showPage();
-}
-
-setSimple(savedSimple());
+chooseSimple(savedSimple());
 load("data.json").then((raw) => {
   useData(raw);
   if (params.has("test") || params.has("update")) return loadLanguages();
@@ -39,3 +27,15 @@ load("data.json").then((raw) => {
   if (params.has("test")) import("./tests/run_test.js").then(({ loadFailed }) => loadFailed());
   throw error;
 });
+
+function start() {
+  const code = preferredLanguage();
+  const first = Object.keys(data.languages)[0];
+  startModel(data.text[code] ? code : first);
+  startTree();
+  startOptions();
+  writeFixed();
+  startPage();
+  redraw("start");
+  showPage();
+}

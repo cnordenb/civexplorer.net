@@ -4,10 +4,10 @@ import { fill, words, numbers, nameOf, plural, plain } from "../model/texts.js";
 import { items, roots, state, lineOf, lineEnd, isUnitOrTech, mark } from "../model/model.js";
 import { $, chipName } from "../view/stringbuilder.js";
 import { isOpen, setOpen, shown, rowOf, LONG_PRESS_MS } from "../view/treeview.js";
-import { setInclude } from "../controller/optionshandler.js";
+import { chooseInclude } from "../controller/optionshandler.js";
 import {
   root, check, expect, wait, same, keyDown, tap, type, reset, beside, listed, expected, below, drawn, marks, yellow,
-  chainOf, fixtures, ownKeys, alternativesOf, byPath, nodeOf, twistyOf, dropsGreyed, openTo, flags,
+  chainOf, fixtures, ownKeys, alternativesOf, byPath, nodeOf, twistyOf, dropsGreyed, openTo, flags, checkAll,
 } from "./helpers_test.js";
 
 const sameCivs = (item) => {
@@ -24,16 +24,17 @@ function marking() {
   reset();
   const { partial, other, third } = fixtures();
   tap(nodeOf(partial));
-  check("marking: a click marks an item must have, and lists and counts the civilisations that have it, in order",
-    partial.self === "has" && nodeOf(partial).getAttribute("aria-checked") === "true"
-    && same(listed(), expected(partial.set)) && $("count").textContent === plural("compatible", size(partial.set)));
+  checkAll("marking: a click marks an item must have, and lists and counts the civilisations that have it, in order",
+    { marked: partial.self === "has" && nodeOf(partial).getAttribute("aria-checked") === "true",
+      listed: same(listed(), expected(partial.set)),
+      counted: $("count").textContent === plural("compatible", size(partial.set)) });
   const label = fill(words.ui.clearHas, { name: chipName({ item: partial, mark: "has" }) });
   check("filters: a marked item gets a filter button", $("chips").children.length === 1
     && $("chips").querySelector(".chip-label").textContent === label);
   keyDown(nodeOf(other), "x");
-  check("marking: X marks an item must lack, and the civilisations that have it leave the list", other.self === "lacks"
-    && rowOf(other).lacking.textContent === words.ui.lacking
-    && same(listed(), expected(partial.set & ~other.set & ALL)));
+  checkAll("marking: X marks an item must lack, and the civilisations that have it leave the list",
+    { marked: other.self === "lacks", labelled: rowOf(other).lacking.textContent === words.ui.lacking,
+      listed: same(listed(), expected(partial.set & ~other.set & ALL)) });
   const menu = new MouseEvent("contextmenu", { bubbles: true, cancelable: true });
   nodeOf(third).dispatchEvent(menu);
   check("marking: the menu key marks an item must lack", third.self === "lacks" && menu.defaultPrevented);
@@ -87,9 +88,9 @@ function branches() {
   const inGroup = items.filter((item) => below(item, group));
   const groupHidden = inGroup.every((item) => !shown(item));
   tap(nodeOf(group));
-  check("marking: marking a top-level group marks and shows everything in it, greying out nothing in it",
-    groupHidden && state(group) === "has" && group.self === null && inGroup.every(shown)
-    && inGroup.every((item) => !rowOf(item).entry.classList.contains("barred")));
+  checkAll("marking: marking a top-level group marks and shows everything in it, greying out nothing in it",
+    { hidden: groupHidden, marked: state(group) === "has" && group.self === null, shown: inGroup.every(shown),
+      ungreyed: inGroup.every((item) => !rowOf(item).entry.classList.contains("barred")) });
 }
 
 function crowding() {
@@ -172,9 +173,9 @@ function lineTops() {
     && chain.every((item) => item.self === null),
     `${run.length}/${chain.length}, ${flags({ marked, cleared, lacking })}`);
   tap(nodeOf(lineEnd(line)));
-  check("marking: marking the last item of a line marks every item before it too, with one filter named after the "
-    + "last, and lists the civs that have the last", chain.every((item) => item.self === "has")
-    && chipNames().join() === nameOf(lineEnd(line)) && same(listed(), expected(lineEnd(line).set)));
+  checkAll("marking: marking the last item of a line marks every item before it too, with one filter named after "
+    + "the last, and lists the civs that have the last", { marked: chain.every((item) => item.self === "has"),
+      filter: chipNames().join() === nameOf(lineEnd(line)), listed: same(listed(), expected(lineEnd(line).set)) });
 }
 
 function parents() {
@@ -182,15 +183,15 @@ function parents() {
   const { branch, loose, without } = fixtures();
   const inside = items.filter((item) => !item.group && below(item, branch));
   inside.filter((item) => !item.kids.length).forEach((leaf) => tap(nodeOf(leaf)));
-  check("marking: must have passes up to the items before it but not to a building: marking everything at the ends "
-    + "of a building marks all in it but the building, which shows a dash", inside.every((item) => item.self === "has")
-    && inside.some((item) => item.kids.length) && branch.self === null
-    && nodeOf(branch).getAttribute("aria-checked") === "mixed");
+  checkAll("marking: must have passes up to the items before it but not to a building: marking everything at the "
+    + "ends of a building marks all in it but the building, which shows a dash",
+    { marked: inside.every((item) => item.self === "has") && inside.some((item) => item.kids.length),
+      building: branch.self === null, dash: nodeOf(branch).getAttribute("aria-checked") === "mixed" });
   $("clear").click();
   keyDown(nodeOf(loose), "x");
   items.filter((item) => !item.group && below(item, loose)).forEach((item) => item.self === "has" || tap(nodeOf(item)));
-  check("marking: an item can be must lack while everything under it is must have", loose.self === "lacks"
-    && listed().length > 0 && same(listed(), expected(without(loose))));
+  checkAll("marking: an item can be must lack while everything under it is must have",
+    { lacks: loose.self === "lacks", listed: listed().length > 0 && same(listed(), expected(without(loose))) });
   $("clear").click();
 }
 
@@ -280,7 +281,7 @@ function standIns() {
   const second = shut(item, other);
   tap(nodeOf(other));
   const last = !greyed(item);
-  setInclude(true);
+  chooseInclude(true);
   const rows = (top) => inside(top).filter((key) => ["common", "regional"].includes(data.pictures[key]?.reach));
   const own = ownKeys();
   const lent = (alt) => (isUnitOrTech(alt) ? [] : rows(alt).filter((key) => !own.has(key)));
@@ -296,17 +297,17 @@ function standIns() {
     const barred = [...new Set(marked.flatMap(alternativesOf))].filter((key) => !marked.includes(key)).sort();
     return same(greys().filter((key) => alternativesOf(key).length), barred);
   });
-  setInclude(false);
+  chooseInclude(false);
   check(name, held && exclusive && one && first && freed && second && last,
     flags({ held, exclusive, one, first, freed, second, last }));
   reset();
 }
 
 function beyond() {
-  setInclude(true);
+  chooseInclude(true);
   const item = items.find((each) => each.parent && isUnitOrTech(each.parent) && size(each.set & ~each.parent.set));
   const above = item?.parent;
-  if (!item) return setInclude(false) ?? [true, true];
+  if (!item) return chooseInclude(false) ?? [true, true];
   openTo(item);
   tap(nodeOf(above));
   const alone = items.filter((each) => each.self).length === 1;
@@ -315,7 +316,7 @@ function beyond() {
   keyDown(nodeOf(above), "x");
   const kept = alone && item.self === "has" && above.self === "lacks"
     && same(listed(), expected(item.set & ~above.set & ALL));
-  setInclude(false);
+  chooseInclude(false);
   const lifted = byPath(above.path) || byPath(item.path)?.parent === byPath(above.parent.path);
   return [kept, lifted && byPath(item.path)?.self === "has"];
 }
@@ -394,8 +395,8 @@ function tree() {
   twistyOf(roots[0]).click();
   const opened = isOpen(roots[0]) && !rowOf(roots[0]).list.hidden;
   twistyOf(roots[0]).click();
-  check("tree: Expand all, Collapse all and each branch's arrow open and close branches",
-    expanded && collapsed && opened && !isOpen(roots[0]) && rowOf(roots[0]).list.hidden);
+  checkAll("tree: Expand all, Collapse all and each branch's arrow open and close branches",
+    { expanded, collapsed, opened, closed: !isOpen(roots[0]) && rowOf(roots[0]).list.hidden });
   expect("tree: opening a branch also opens each only child below it, down to the first fork or the end", items
     .filter((item) => twistyOf(item)).filter((item) => {
       $("collapseAll").click();

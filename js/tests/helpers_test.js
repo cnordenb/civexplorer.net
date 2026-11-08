@@ -1,8 +1,8 @@
 import { data, treeKeys, load, recall, remember, attempt, params, preferredLanguage } from "../model/datahandler.js";
 import { ALL, size, civsOf } from "../model/civsets.js";
 import { collator, civName, nameOf, language, plural, words } from "../model/texts.js";
-import { items, whole, lineOf, lineEnd, behind, ancestors } from "../model/model.js";
-import { $, shared } from "../view/stringbuilder.js";
+import { items, lineOf, lineEnd, behind, ancestors } from "../model/model.js";
+import { $, nameIsShared } from "../view/stringbuilder.js";
 import { rowOf, setOpen } from "../view/treeview.js";
 import { setMenu, options } from "../view/optionsview.js";
 import { screenPictures } from "../view/pictures.js";
@@ -14,6 +14,9 @@ export const results = [];
 export const check = (name, ok, detail = "") => results.push({ name, ok: Boolean(ok), detail: String(detail) });
 
 export const expect = (name, offenders) => check(name, !offenders.length, offenders.slice(0, 5).join("; "));
+
+export const checkAll = (name, parts) => check(name, Object.values(parts).every(Boolean),
+  Object.entries(parts).filter(([, ok]) => !ok).map(([part]) => part).join(", "));
 
 export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -442,17 +445,17 @@ export function fixtures() {
   const third = leaves.find((item) => ![partial, other].includes(item)
     && size(partial.set & ~other.set & ~item.set & ALL) > 0);
 
-  const underAll = (item) => item.kids.reduce((s, kid) => s & whole(kid), ALL);
+  const underAll = (item) => item.kids.reduce((s, kid) => s & kid.all, ALL);
 
   const without = (item) => underAll(item) & ~item.set & ALL;
 
-  const plainLine = (item) => lineOf(item).every((each) => !shared.has(nameOf(each)));
+  const plainLine = (item) => lineOf(item).every((each) => !nameIsShared(nameOf(each)));
 
   const building = (item) => !item.group && !itemAbove(item);
 
   return {
     leaves, partial, other, third, underAll, without,
-    branch: items.find((item) => building(item) && item.kids.length > 1 && !shared.has(nameOf(item))),
+    branch: items.find((item) => building(item) && item.kids.length > 1 && !nameIsShared(nameOf(item))),
     group: items.find((item) => item.group && !item.parent && item.kids.length),
     line: lines().find((item) => onTop(item) && lineOf(item).length > 2 && plainLine(item)
       && size(lineEnd(item).set) !== size(item.set)),

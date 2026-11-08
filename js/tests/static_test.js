@@ -221,7 +221,7 @@ function mvcProblems(files) {
       .map(({ path }) => `${path} works on the model's sets`),
     ...files.filter(({ path, code }) => !path.startsWith("js/tests/") && /\bpage\.update\(/.test(code))
       .map(({ path }) => `${path} calls page.update()`),
-    ...need(exporting("subscribe") && exporting("unsubscribe") && !exporting("notify")
+    ...need(exporting("subscribe") && !exporting("notify")
       && !/\b(words|fill)\b/.test(model), "model.js does not tell its observers of its changes, or holds texts"),
     ...files.filter(({ path, code }) => /\bsubscribe\(/.test(code) && path !== "js/view/page.js")
       .map(({ path }) => `${path} observes the model`),

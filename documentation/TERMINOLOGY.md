@@ -4,6 +4,7 @@ node tree - the expandable hierarchy in which the input panel lists its nodes, k
 child node - a node directly under another node in the node tree
 descendant node - a node anywhere under another node in the node tree: its child nodes, theirs, and so on
 branch - a node together with all of its descendant nodes
+branch set - the civilisations that have a node and every node of its branch, item.all in the code
 group - an entry of the node tree that holds nodes but is no unit, building or technology itself, e.g. "Economy"
 root node - a node or group at the top level of the node tree, e.g. "Economy", "Dock" or "Blacksmith"
 heading - a group inside a node, without checkbox, that only expands and collapses, e.g. "Unique Units" in "Castle"
@@ -23,6 +24,7 @@ civ count - the number right of a node: how many in the civ list have it, and if
 filters list - the "Filters:" summary of every mark, between the output panel's header and the civ list
 filter entry - one item of the filters list: a node, line or branch with its mark, clearing that mark when clicked
 chip - the code's name for a filter entry, called a filter button in the tests
+lone filter entry - a unique node's own filter entry, kept while its line or group is marked too; lone in the code
 full - "Full" before a filter entry: a root node or building node with several child nodes, its whole branch must have
 search bar - the "Find" field in the input panel, expanding to and highlighting in yellow every node matching its text
 variant - a node standing in for one or more other nodes for some civilisations, e.g. "Fortified Church" for "Monastery"
@@ -42,6 +44,7 @@ tile - a civilisation of the civ list as its icon in a box, with pictures while 
 tooltip - the box by the cursor with pictures, e.g. "Left-click to enable, right-click to disable", set by "Tooltips"
 loading screen - the grey "Loading image assets..." screen of pictures, shown until every image has loaded
 atlas - one webp per icon folder holding all its icons in a grid, from which nodes and civilisations get their icons
+sprite - a node's icon as data.json names it: its kind, which picks the atlas, and its picture in that atlas
 locale file - a json file in locales/ with the text of one language besides english, e.g. de.json for german
 overrides - corrections to the game's names, english ones in data.json and the others in their locale file
 updater - the tool at index.html?update that fetches aoe2techtree.net's data and offers new data.json and locale files

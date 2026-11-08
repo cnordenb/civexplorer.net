@@ -147,7 +147,7 @@ Every language has a name for every item and every civilisation.
 ## Test 3
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 27-29
+`js/tests/behaviour_test.js`, lines 27-30
 
 ### Purpose:
 Verify that a left-click marks must have and the civ list and count follow (Req. 3, 4).
@@ -158,7 +158,7 @@ Item is "has" and aria-checked is true; list holds its civs in order; count read
 ## Test 4
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 31-32
+`js/tests/behaviour_test.js`, lines 32-33
 
 ### Purpose:
 Verify that the Filters list appears when an item is marked (Req. 22, 23).
@@ -169,7 +169,7 @@ Exactly one filter button exists, labelled with the item's name and its must-hav
 ## Test 5
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 34-36
+`js/tests/behaviour_test.js`, lines 35-37
 
 ### Purpose:
 Verify that X marks must lack (Req. 3).
@@ -180,7 +180,7 @@ Item is "lacks", reads ", must lack", and the civs that have it leave the list.
 ## Test 6
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 37-39
+`js/tests/behaviour_test.js`, lines 38-40
 
 ### Purpose:
 Verify that the menu key and right-click mark must lack (Req. 3).
@@ -191,7 +191,7 @@ After a contextmenu event the item is "lacks" and the browser's own menu is supp
 ## Test 7
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 40-41
+`js/tests/behaviour_test.js`, lines 41-42
 
 ### Purpose:
 Verify that Space clears a mark from the keyboard (Req. 3, WCAG 2.1.1).
@@ -202,7 +202,7 @@ Space on a must-have item leaves it unmarked.
 ## Test 8
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 51-52
+`js/tests/behaviour_test.js`, lines 52-53
 
 ### Purpose:
 Verify Req. 24 and 31: marking a building marks everything in it, and opens the way to all of it.
@@ -213,7 +213,7 @@ From closed, clicking a building makes it "has", and every item below it "has" a
 ## Test 9
 
 ### File residence:
-`js/tests/behaviour_test.js`, line 53
+`js/tests/behaviour_test.js`, line 54
 
 ### Purpose:
 Verify Req. 24: a fully marked branch is listed as "Full <name>" in Filters.
@@ -224,7 +224,7 @@ Exactly one filter button exists, named "Full" plus the branch's name.
 ## Test 10
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 55-59
+`js/tests/behaviour_test.js`, lines 56-60
 
 ### Purpose:
 Verify Req. 14, 23 and 26: a mixed box shows a white dash, a must-have box a green tick, a must-lack box a red cross.
@@ -235,7 +235,7 @@ A branch with its first child cleared is "mixed", with a white dash; the legend'
 ## Test 11
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 64-65
+`js/tests/behaviour_test.js`, lines 65-66
 
 ### Purpose:
 Verify Req. 25: a marked line's filter entry is titled after its deepest must-have item.
@@ -246,7 +246,7 @@ Marking a line's top names its filter after its deepest must-have item; marking 
 ## Test 12
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 68-69
+`js/tests/behaviour_test.js`, lines 69-70
 
 ### Purpose:
 Ensure a filter button never clears marks it does not show.
@@ -257,7 +257,7 @@ With the line's last item must lack, the must-have filter button clears all othe
 ## Test 13
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 70-84
+`js/tests/behaviour_test.js`, lines 71-85
 
 ### Purpose:
 Verify Req. 24, 25 and 30: a building heading a single line is named like a line, as Fortifications' lines are.
@@ -268,7 +268,7 @@ A building heading a line is named after its end, not Full; plain with nothing u
 ## Test 14
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 90-92
+`js/tests/behaviour_test.js`, lines 91-93
 
 ### Purpose:
 Verify that a top-level group passes its mark to everything in it and shows it all (Req. 31), stand-ins too.
@@ -279,7 +279,7 @@ From closed, a click on the group makes its state "has", without a mark of its o
 ## Test 15
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 95-132
+`js/tests/behaviour_test.js`, lines 96-133
 
 ### Purpose:
 Verify that a full tree and civ list never stretch the page, and that marking never resizes a pane (Req. 35, rule 18).
@@ -290,7 +290,7 @@ No page scroll; headers inside panes; no overlap; list scrolls in place; panes e
 ## Test 16
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 150-151
+`js/tests/behaviour_test.js`, lines 151-152
 
 ### Purpose:
 Verify marking by long press and right-click (Req. 3).
@@ -301,7 +301,7 @@ A 600 ms touch press marks the item "lacks"; a right-click on it then clears it.
 ## Test 17
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 157-173
+`js/tests/behaviour_test.js`, lines 158-174
 
 ### Purpose:
 Verify Req. 29 and 30 at the top of a line, which Req. 27 no longer exempts: a mark passes down only at equal counts.
@@ -312,7 +312,7 @@ A click on a line's top marks it and its equal counts "has", X "lacks", with the
 ## Test 18
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 174-177
+`js/tests/behaviour_test.js`, lines 175-178
 
 ### Purpose:
 Verify Req. 34: must have on a line's last item also marks every item before it, its prerequisites.
@@ -323,7 +323,7 @@ After a click on a line's end, the whole line is "has", with one filter named af
 ## Test 19
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 183-188
+`js/tests/behaviour_test.js`, lines 184-189
 
 ### Purpose:
 Verify Req. 34 and its exception: must have passes up to the prerequisites, never to the building above them.
@@ -334,7 +334,7 @@ After clicks on every leaf in a building, everything in it is "has"; the buildin
 ## Test 20
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 190-193
+`js/tests/behaviour_test.js`, lines 191-194
 
 ### Purpose:
 Allow searching for civs that get a building's contents elsewhere, such as Two-Man Saw without a Lumber Camp.
@@ -345,7 +345,7 @@ With a building must lack and everything under it must have, the list is not emp
 ## Test 21
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 197-241
+`js/tests/behaviour_test.js`, lines 198-242
 
 ### Purpose:
 Enforce the Xolotl rule: must have on the Xolotl Warrior, or on the Stable or anything in it, greys out the other.
@@ -356,7 +356,7 @@ Other side greys out, unmarkable, also by mark(); the Xolotl stays in sight, the
 ## Test 22
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 243-303
+`js/tests/behaviour_test.js`, lines 244-304
 
 ### Purpose:
 Verify Req. 37: a stand-in, such as the Mule Cart, holds what it replaces, and must have on one greys out the rest.
@@ -367,7 +367,7 @@ Holds the non-own, non-unique rows it replaces; one mark and filter; greys out o
 ## Test 23
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 326-330
+`js/tests/behaviour_test.js`, lines 327-331
 
 ### Purpose:
 Verify Req. 28 and 31: marking a unit or technology opens it, showing every item marked with it.
@@ -378,7 +378,7 @@ Clicking a closed line item opens it down to the end of its line, so every item 
 ## Test 24
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 305-321 and 332-347
+`js/tests/behaviour_test.js`, lines 306-322 and 333-348
 
 ### Purpose:
 Verify Req. 13, 29, 30 and 34: a mark passes down only to the same civs; must have passes up to items they all have.
@@ -389,7 +389,7 @@ Click marks same-civ items below and above; X marks nothing above nor clears bel
 ## Test 25
 
 ### File residence:
-`js/tests/behaviour_test.js`, line 374
+`js/tests/behaviour_test.js`, line 375
 
 ### Purpose:
 Verify each item's compatible civilisations count (Req. 3).
@@ -400,7 +400,7 @@ Closed items with contents show "own–all", other items their own count, roots 
 ## Test 26
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 375-376
+`js/tests/behaviour_test.js`, lines 376-377
 
 ### Purpose:
 Verify that a closed upgrade line shows the range from its first item to its last upgrade.
@@ -411,7 +411,7 @@ The line's count reads its first item's civ count, then its last item's civ coun
 ## Test 27
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 377-378
+`js/tests/behaviour_test.js`, lines 378-379
 
 ### Purpose:
 Avoid a misleading range once an item's contents are visible.
@@ -422,7 +422,7 @@ After Expand all, every item shows only its own count.
 ## Test 28
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 379-384
+`js/tests/behaviour_test.js`, lines 380-385
 
 ### Purpose:
 Verify that the counts follow the active filters (Req. 3).
@@ -433,7 +433,7 @@ With a must-have and a must-lack mark, open and closed items count only the civs
 ## Test 29
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 397-398
+`js/tests/behaviour_test.js`, lines 398-399
 
 ### Purpose:
 Verify Req. 18 and 19, and each branch's arrow.
@@ -444,7 +444,7 @@ Expand all opens every branch, Collapse all closes every branch, and a branch's 
 ## Test 30
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 399-404
+`js/tests/behaviour_test.js`, lines 400-405
 
 ### Purpose:
 Save clicks by opening a line of only children in one step.
@@ -455,7 +455,7 @@ For every branch, its arrow opens exactly the chain of only children below it, a
 ## Test 31
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 413-420; `js/tests/helpers_test.js`, lines 233-250
+`js/tests/behaviour_test.js`, lines 414-421; `js/tests/helpers_test.js`, lines 236-253
 
 ### Purpose:
 Verify Req. 20 and 21: the search highlights its matches in yellow, opens to them, counts them, drops greyed-out ones.
@@ -466,7 +466,7 @@ Exactly the matches are yellow and shown, counted right of the search bar; a mat
 ## Test 32
 
 ### File residence:
-`js/tests/behaviour_test.js`, lines 424-425
+`js/tests/behaviour_test.js`, lines 425-426
 
 ### Purpose:
 Verify the search's feedback for no matches and for an empty search (Req. 21).
@@ -510,7 +510,7 @@ The menu closes, refocuses its button and names the language, the page unchanged
 ## Test 36
 
 ### File residence:
-`js/tests/helpers_test.js`, lines 57-65; `js/tests/interface_test.js`, lines 58-59
+`js/tests/helpers_test.js`, lines 60-68; `js/tests/interface_test.js`, lines 58-59
 
 ### Purpose:
 Verify Req. 10, and keep the chosen language when the link is shared or the page reloaded.
@@ -587,7 +587,7 @@ With a must-have and a must-lack mark, the list holds the right civs' names, sor
 ## Test 43
 
 ### File residence:
-`js/tests/interface_test.js`, lines 104-107
+`js/tests/interface_test.js`, lines 104-108
 
 ### Purpose:
 Verify Req. 13 and 15: by default the tree leaves out unique and universal items, and shows regional ones.
@@ -598,7 +598,7 @@ No unique item, grouped or not, shown; some regional one is; every shown leaf is
 ## Test 44
 
 ### File residence:
-`js/tests/interface_test.js`, lines 108-111, 114 and 120-132
+`js/tests/interface_test.js`, lines 109-112, 115 and 121-133
 
 ### Purpose:
 Verify Req. 14 and 15, and Include Regionals: on OK each box adds or removes its items and keeps marks.
@@ -609,7 +609,7 @@ Include: every item shown. Unticked Regionals: no regional item or item under on
 ## Test 45
 
 ### File residence:
-`js/tests/interface_test.js`, lines 128 and 133
+`js/tests/interface_test.js`, lines 129 and 134
 
 ### Purpose:
 Keep the Include Unique and Universal and the Include Regionals choices for the next visit.
@@ -620,7 +620,7 @@ Browser storage holds include=true and regional=false after the clicks. Passes w
 ## Test 46
 
 ### File residence:
-`js/tests/interface_test.js`, lines 112-123 and 134-152
+`js/tests/interface_test.js`, lines 113-124 and 135-153
 
 ### Purpose:
 Verify Req. 7 and 13, Cancel and OK in place of Req. 16's Close, and that focus returns on closing (WCAG 2.4.3).
@@ -653,8 +653,8 @@ Boxes: row by state, no marks but a dash. Icons: cell by file name, atlas sized 
 ## Test 49
 
 ### File residence:
-`js/tests/helpers_test.js`, lines 283 and 335-388
-`js/tests/helpers_test.js`, lines 283 and 335-388
+`js/tests/helpers_test.js`, lines 286 and 338-391
+`js/tests/helpers_test.js`, lines 286 and 338-391
 
 ### Purpose:
 Verify that without Simple UI Find clears with its cross, and every control and link has a tooltip unless turned off.
@@ -687,8 +687,8 @@ Ticking: nothing till OK; then no image or civ link, full title, saved. Untickin
 ## Test 52
 
 ### File residence:
-`js/tests/helpers_test.js`, lines 283-333
-`js/tests/helpers_test.js`, lines 283-333
+`js/tests/helpers_test.js`, lines 286-336
+`js/tests/helpers_test.js`, lines 286-336
 
 ### Purpose:
 Verify Rule 18 and the pictures' scroll bars: shown while a list scrolls, never stretched, never moving the list.
@@ -699,7 +699,7 @@ Bar at right edge in kept room; x1/x2 sprites in proportion, equally wide; langu
 ## Test 53
 
 ### File residence:
-`js/tests/interface_test.js`, lines 354-392
+`js/tests/interface_test.js`, lines 355-393
 
 ### Purpose:
 Verify Req. 36: a unique item marked must have always has its own filter entry.
@@ -710,7 +710,7 @@ A unique item atop others: its own filter and its line's; each, or a full group'
 ## Test 54
 
 ### File residence:
-`js/tests/interface_test.js`, lines 394-423
+`js/tests/interface_test.js`, lines 395-424
 
 ### Purpose:
 Verify that a group inside a building, such as the Castle's Unique Units, is a heading, not a checkbox.
@@ -732,7 +732,7 @@ Every language has a name and a well-formed language tag.
 ## Test 56
 
 ### File residence:
-`js/tests/interface_test.js`, lines 256-258
+`js/tests/interface_test.js`, lines 257-259
 
 ### Purpose:
 Verify that filter buttons remove filters without losing keyboard focus (WCAG 2.4.3).
@@ -743,7 +743,7 @@ Clicking the first filter button clears its item and moves focus to the next fil
 ## Test 57
 
 ### File residence:
-`js/tests/interface_test.js`, lines 260-262
+`js/tests/interface_test.js`, lines 261-263
 
 ### Purpose:
 Keep focus sensible, and list every civilisation, once no filters remain (WCAG 2.4.3).
@@ -754,7 +754,7 @@ Focus is on the Civilisations heading, every civilisation is listed, no hint sho
 ## Test 58
 
 ### File residence:
-`js/tests/interface_test.js`, lines 270-271
+`js/tests/interface_test.js`, lines 271-272
 
 ### Purpose:
 Give keyboard users the same one-step opening of a line (WCAG 2.1.1).
@@ -765,7 +765,7 @@ Right on a line's first item opens exactly that line's chain of only children.
 ## Test 59
 
 ### File residence:
-`js/tests/interface_test.js`, lines 285-286
+`js/tests/interface_test.js`, lines 286-287
 
 ### Purpose:
 Verify keyboard navigation into and out of branches (WCAG 2.1.1).
@@ -776,7 +776,7 @@ Right opens a branch, Right again focuses its first child, Left returns to the b
 ## Test 60
 
 ### File residence:
-`js/tests/interface_test.js`, lines 290-291
+`js/tests/interface_test.js`, lines 291-292
 
 ### Purpose:
 Verify keyboard movement through the tree (WCAG 2.1.1).
@@ -787,7 +787,7 @@ Up on the first item stays put, Down moves to the next, End focuses the last top
 ## Test 61
 
 ### File residence:
-`js/tests/interface_test.js`, lines 292-294
+`js/tests/interface_test.js`, lines 293-295
 
 ### Purpose:
 Let keyboard users move between branch arrows directly.
@@ -798,7 +798,7 @@ Down on the first branch's arrow focuses the second branch's arrow.
 ## Test 62
 
 ### File residence:
-`js/tests/interface_test.js`, lines 303-304
+`js/tests/interface_test.js`, lines 304-305
 
 ### Purpose:
 Let keyboard users jump from the search bar to the results (WCAG 2.1.1).
@@ -974,7 +974,7 @@ Each focused element's visible centre hits it, or, for a greyed-out row that cli
 ## Test 78
 
 ### File residence:
-`js/tests/interface_test.js`, lines 178-179
+`js/tests/interface_test.js`, lines 179-180
 
 ### Purpose:
 Verify keyboard use of the language menu (WCAG 2.1.1).
@@ -985,7 +985,7 @@ Down on the menu button opens the menu at the current language; Down moves one o
 ## Test 79
 
 ### File residence:
-`js/tests/interface_test.js`, lines 202-205
+`js/tests/interface_test.js`, lines 203-206
 
 ### Purpose:
 WCAG 1.4.12: wider text spacing set by the user does not break the layout.
@@ -996,7 +996,7 @@ With WCAG's text spacing applied, the page and every element stay within the win
 ## Test 80
 
 ### File residence:
-`js/tests/interface_test.js`, lines 217-230
+`js/tests/interface_test.js`, lines 218-231
 
 ### Purpose:
 Verify that the Include Unique and Universal and Include Regionals boxes work from the keyboard (WCAG 2.1.1).
@@ -1194,7 +1194,7 @@ Joining lines and tidying spaces leaves every stored item and civilisation name 
 ## Test 98
 
 ### File residence:
-`js/tests/interface_test.js`, lines 325-352
+`js/tests/interface_test.js`, lines 326-353
 
 ### Purpose:
 Keep the report window usable: title, count and Close stay put and only the list scrolls; Close is plain, on the right.
@@ -1205,7 +1205,7 @@ Keep the report window usable: title, count and Close stay put and only the list
 ## Test 99
 
 ### File residence:
-`js/tests/run_test.js`, lines 96-97
+`js/tests/run_test.js`, lines 94-95
 
 ### Purpose:
 Enforce Rule 17: at most 100 tests.

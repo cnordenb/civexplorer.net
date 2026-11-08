@@ -4,10 +4,10 @@ import { nameOf, language } from "../model/texts.js";
 import { civFile } from "../model/icons.js";
 import { items } from "../model/model.js";
 import { $, simple } from "../view/stringbuilder.js";
-import { bars, LINE } from "../view/scrollbars.js";
+import { barsByBox, LINE } from "../view/scrollbars.js";
 import { setOpen } from "../view/treeview.js";
 import { options, setMenu } from "../view/optionsview.js";
-import { setInclude, setSimple } from "../controller/optionshandler.js";
+import { chooseInclude, chooseSimple } from "../controller/optionshandler.js";
 import {
   root, check, expect, same, describe, rendered, everything, styles, keyDown, tap, type, reset, beside, edges, labelOf,
   spans, need, pictures, simpleSpot, picturesOn, civLinks, simpleTicked, drawn, ui, box, fixtures, codes, flags,
@@ -134,7 +134,7 @@ const misfit = async (grids) => (await Promise.all([...grids].map(async ([url, {
 }))).flat();
 
 async function unpictured() {
-  setInclude(true);
+  chooseInclude(true);
   const [outlines, grids] = [await edges(), new Map()];
   const wrong = items.filter((item) => {
     const own = item.group ? data.icons.groups[item.key] : data.pictures[item.key];
@@ -155,7 +155,7 @@ async function unpictured() {
       civFile(link.hash.slice(1)), side), `icons/civs/atlas/civicon_atlas_${scale}`, grids);
   }).map((link) => link.textContent);
   const atlases = await misfit(grids);
-  setInclude(false);
+  chooseInclude(false);
   return [...wrong, ...civs, ...need(links.length, "no civilisation"), ...atlases,
     ...need(outlines.size === 9, "colour_key.csv")];
 }
@@ -266,7 +266,7 @@ function simpleSwitch() {
 async function strayBars(when) {
   fitBars();
   const problems = [];
-  for (const [list, bar] of bars) {
+  for (const [list, bar] of barsByBox()) {
     const shows = !simple() && rendered(list) && list.scrollHeight - list.clientHeight >= 1;
     problems.push(...need(bar.hidden !== shows, `${describe(list)} has ${shows ? "no" : "a"} bar ${when}`));
     if (shows && !bar.hidden) problems.push(...await barProblems(bar, list));
@@ -274,12 +274,12 @@ async function strayBars(when) {
   return problems;
 }
 
-const ownBars = (width) => [...bars.keys()].filter((list) => getComputedStyle(list).scrollbarWidth !== width)
+const ownBars = (width) => [...barsByBox().keys()].filter((list) => getComputedStyle(list).scrollbarWidth !== width)
   .map((list) => `${describe(list)} has scrollbar-width ${getComputedStyle(list).scrollbarWidth}`);
 
 async function barLooks() {
   const list = $("tree").parentElement;
-  const [bar, wide] = [bars.get(list), box($("tree")).width];
+  const [bar, wide] = [barsByBox().get(list), box($("tree")).width];
 
   const press = (kind) => bar.lastElementChild.dispatchEvent(new PointerEvent(kind, { bubbles: true, button: 0 }));
 
@@ -304,14 +304,14 @@ async function barLooks() {
   problems.push(...need(Math.abs(menu.scrollTop - Math.min(from + entry, menu.scrollHeight - menu.clientHeight)) < 1,
     `the wheel over the language list scrolled it to ${menu.scrollTop}, not by one language at once`));
   reset();
-  setSimple(true);
+  chooseSimple(true);
   problems.push(...ownBars("auto"), ...await strayBars("with Simple UI"));
   return problems;
 }
 
 export async function pictureTests() {
   reset();
-  setSimple(false);
+  chooseSimple(false);
   pictureLooks();
   const { partial, other } = fixtures();
   tap(nodeOf(partial));
@@ -343,6 +343,6 @@ export async function pictureTests() {
     + "the language list's bar has the combo box's arrows, and the wheel scrolls the list a language at a time",
   await barLooks());
   reset();
-  setSimple(true);
+  chooseSimple(true);
 }
 

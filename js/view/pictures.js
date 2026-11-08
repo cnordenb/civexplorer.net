@@ -19,33 +19,26 @@ const QHD = { wide: 2560, high: 1440 };
 
 const FHD = { wide: 1920, high: 1080 };
 
-export let view = "list";
+const LINK = /url\("([^"]+)"\)/g;
 
-export function setView(choice) {
-  view = choice;
-  $("civs").classList.toggle("tiles", choice === "tile");
-  showView(choice);
-}
+const SIZED = /\/backgrounds\/(fhd|qhd|uhd|ultrawide)\.webp$|_(sd|4k|x1|x2)\.webp$/;
+
+const GRADES = { sd: ["sd", "x1"], "4k": ["4k", "x2"] };
+
+export let view = "list";
 
 export let tips = true;
 
-export function setTips(on) {
-  tips = on;
-  tick("tooltips", on);
+let opening = Promise.resolve();
+
+let round = 0;
+
+const kept = new Map();
+
+export function startPictures() {
+  wireTip();
+  startBars();
 }
-
-const branchTip = (target) => {
-  const twisty = target.closest?.(".twisty, .node:not([role])")?.closest(".row").querySelector(".twisty");
-  if (!twisty || twisty.ariaDisabled === "true") return "";
-  return words.ui[twisty.getAttribute("aria-expanded") === "true" ? "collapseTip" : "expandTip"];
-};
-
-const tipFor = (target) => {
-  if (itemAt(target)) return words.ui.nodeTip;
-  const tipped = target.closest?.("[data-tip]");
-  if (tipped) return words.ui[tipped.dataset.tip];
-  return branchTip(target) || (target.closest?.(".civs a, .foot a")?.href ?? "");
-};
 
 function wireTip() {
   const tip = $("tip");
@@ -76,71 +69,28 @@ function wireTip() {
   });
 }
 
-const beyond = (wide, high, limit) => wide > limit.wide || high > limit.high;
-
-function backgroundFor(width, height, ratio) {
-  const [wide, high] = [width, height].map((side) => Math.round(side * ratio));
-  if (Math.min(width, height) < PHONE_SIDE) return "fhd";
-  if (wide > high * ULTRAWIDE_RATIO) return "ultrawide";
-  if (beyond(wide, high, QHD)) return "uhd";
-  return beyond(wide, high, FHD) ? "qhd" : "fhd";
-}
-
-export function screenPictures(width = screen.width, height = screen.height, ratio = devicePixelRatio) {
-  const background = backgroundFor(width, height, ratio);
-  return { background, assets: background === "uhd" || background === "ultrawide" ? "4k" : "sd" };
-}
-
-export let opening = Promise.resolve();
-
-let round = 0;
-
-const LINK = /url\("([^"]+)"\)/g;
-
-const SIZED = /\/backgrounds\/(fhd|qhd|uhd|ultrawide)\.webp$|_(sd|4k|x1|x2)\.webp$/;
-
-const GRADES = { sd: ["sd", "x1"], "4k": ["4k", "x2"] };
-
-const rulesIn = (rules) => [...rules].flatMap((rule) => [rule, ...rulesIn(rule.cssRules ?? [])]);
-
-const linksIn = (text, base) => [...text.matchAll(LINK)].map(([, src]) => new URL(src, base).href);
-
-const filesOf = (sheet, use) => rulesIn(sheet.cssRules).filter((rule) => rule.selectorText && use(rule.selectorText))
-  .flatMap((rule) => linksIn(rule.cssText, sheet.href));
-
-const rooted = (selector) => [document.documentElement, document.body]
-  .some((el) => attempt(() => el.matches(selector)));
-
-const fits = (src) => {
-  const [, board, grade] = SIZED.exec(src) ?? [];
-  const { background, assets } = document.documentElement.dataset;
-  return board ? board === background : !grade || !!GRADES[assets]?.includes(grade);
+const tipFor = (target) => {
+  if (itemAt(target)) return words.ui.nodeTip;
+  const tipped = target.closest?.("[data-tip]");
+  if (tipped) return words.ui[tipped.dataset.tip];
+  return branchTip(target) || (target.closest?.(".civs a, .foot a")?.href ?? "");
 };
 
-const pictureFiles = (use = () => true) => [...new Set([...document.styleSheets]
-  .flatMap((sheet) => attempt(() => filesOf(sheet, use)) ?? []))].filter(fits);
+const branchTip = (target) => {
+  const twisty = target.closest?.(".twisty, .node:not([role])")?.closest(".row").querySelector(".twisty");
+  if (!twisty || twisty.ariaDisabled === "true") return "";
+  return words.ui[twisty.getAttribute("aria-expanded") === "true" ? "collapseTip" : "expandTip"];
+};
 
-const kept = new Map();
+export function setView(choice) {
+  view = choice;
+  $("civs").classList.toggle("tiles", choice === "tile");
+  showView(choice);
+}
 
-const copy = (src) => kept.get(src) ?? kept.set(src, Object.assign(new Image(), { src })).get(src);
-
-const onPage = () => [...document.images].filter((img) => !$("loading").contains(img)).map((img) => img.src);
-
-const done = (img) => img.decode().catch(() => null);
-
-const ready = (pictures, fonts) => pictures.every((img) => img.complete)
-  && fonts.every((face) => /loaded|error/.test(face.status));
-
-export function finishLoading() {
-  if (simple()) return opening;
-  const pictures = [...new Set(onPage().concat(pictureFiles()))].map(copy);
-  const fonts = [...document.fonts];
-  if (ready(pictures, fonts)) setLoading(false);
-  if ($("loading").hidden) return opening;
-  const mine = ++round;
-  opening = Promise.all([...pictures.map(done), ...fonts.map((face) => face.load().catch(() => null))])
-    .then(() => mine === round && setLoading(false));
-  return opening;
+export function setTips(on) {
+  tips = on;
+  tick("tooltips", on);
 }
 
 export function applySimple(on) {
@@ -156,7 +106,57 @@ export function applySimple(on) {
   if (coming && items.length) finishLoading();
 }
 
-export function startPictures() {
-  wireTip();
-  startBars();
+export function screenPictures(width = screen.width, height = screen.height, ratio = devicePixelRatio) {
+  const background = backgroundFor(width, height, ratio);
+  return { background, assets: background === "uhd" || background === "ultrawide" ? "4k" : "sd" };
 }
+
+function backgroundFor(width, height, ratio) {
+  const [wide, high] = [width, height].map((side) => Math.round(side * ratio));
+  if (Math.min(width, height) < PHONE_SIDE) return "fhd";
+  if (wide > high * ULTRAWIDE_RATIO) return "ultrawide";
+  if (beyond(wide, high, QHD)) return "uhd";
+  return beyond(wide, high, FHD) ? "qhd" : "fhd";
+}
+
+const beyond = (wide, high, limit) => wide > limit.wide || high > limit.high;
+
+const pictureFiles = (use = () => true) => [...new Set([...document.styleSheets]
+  .flatMap((sheet) => attempt(() => filesOf(sheet, use)) ?? []))].filter(fits);
+
+const filesOf = (sheet, use) => rulesIn(sheet.cssRules).filter((rule) => rule.selectorText && use(rule.selectorText))
+  .flatMap((rule) => linksIn(rule.cssText, sheet.href));
+
+const rulesIn = (rules) => [...rules].flatMap((rule) => [rule, ...rulesIn(rule.cssRules ?? [])]);
+
+const linksIn = (text, base) => [...text.matchAll(LINK)].map(([, src]) => new URL(src, base).href);
+
+const fits = (src) => {
+  const [, board, grade] = SIZED.exec(src) ?? [];
+  const { background, assets } = document.documentElement.dataset;
+  return board ? board === background : !grade || !!GRADES[assets]?.includes(grade);
+};
+
+const rooted = (selector) => [document.documentElement, document.body]
+  .some((el) => attempt(() => el.matches(selector)));
+
+const copy = (src) => kept.get(src) ?? kept.set(src, Object.assign(new Image(), { src })).get(src);
+
+export function finishLoading() {
+  if (simple()) return opening;
+  const pictures = [...new Set(onPage().concat(pictureFiles()))].map(copy);
+  const fonts = [...document.fonts];
+  if (ready(pictures, fonts)) setLoading(false);
+  if ($("loading").hidden) return opening;
+  const mine = ++round;
+  opening = Promise.all([...pictures.map(done), ...fonts.map((face) => face.load().catch(() => null))])
+    .then(() => mine === round && setLoading(false));
+  return opening;
+}
+
+const onPage = () => [...document.images].filter((img) => !$("loading").contains(img)).map((img) => img.src);
+
+const ready = (pictures, fonts) => pictures.every((img) => img.complete)
+  && fonts.every((face) => /loaded|error/.test(face.status));
+
+const done = (img) => img.decode().catch(() => null);

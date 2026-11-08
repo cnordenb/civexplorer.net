@@ -1,8 +1,8 @@
 import { data, load, attempt, recall, remember } from "../model/datahandler.js";
 import { fill, language } from "../model/texts.js";
-import { include, regional } from "../model/model.js";
+import { include, regional, setLanguage } from "../model/model.js";
 import { $, simple } from "../view/stringbuilder.js";
-import { setLanguage, setInclude, setRegional, setSimple } from "../controller/optionshandler.js";
+import { chooseInclude, chooseRegional, chooseSimple } from "../controller/optionshandler.js";
 import { view, setView, tips, setTips } from "../view/pictures.js";
 import { openReport, report } from "../view/report.js";
 import { root, results, check, codes, pick, reset } from "./helpers_test.js";
@@ -28,8 +28,12 @@ const merge = (where) => {
   return [...merged.values()].map(({ name, ok, failures }) => ({ name, ok, detail: failures.slice(0, 3).join("; ") }));
 };
 
-const reportLine = (result, tools) => fill(!result.number ? tools.aborted : result.ok ? tools.pass : tools.fail,
-  result);
+const reportLine = (result, tools) => fill(outcome(result, tools), result);
+
+const outcome = (result, tools) => {
+  if (!result.number) return tools.aborted;
+  return result.ok ? tools.pass : tools.fail;
+};
 
 const announce = (lines) => lines.forEach((line) => console.log(`tests: ${line.replace(/\s+/g, " ")}`));
 
@@ -38,23 +42,25 @@ export function loadFailed() {
   announce(["the page could not load its data", "failed"]);
 }
 
-function prepare() {
-  const before = {
-    language, include, regional, simple: simple(), view, tips, url: location.href,
-    stored: Object.fromEntries(STORED.map((key) => [key, recall(key)])),
-  };
-  if (include) setInclude(false);
-  if (!regional) setRegional(true);
-  if (!simple()) setSimple(true);
+const snapshot = () => ({
+  language, include, regional, simple: simple(), view, tips, url: location.href,
+  stored: Object.fromEntries(STORED.map((key) => [key, recall(key)])),
+});
+
+function toStart() {
+  reset();
+  if (include) chooseInclude(false);
+  if (!regional) chooseRegional(true);
+  if (!simple()) chooseSimple(true);
   if (!tips) setTips(true);
-  return before;
+  if (language !== codes()[0]) pick(codes()[0]);
 }
 
 function restore(before) {
   reset();
-  if (include !== before.include) setInclude(before.include);
-  if (regional !== before.regional) setRegional(before.regional);
-  setSimple(before.simple);
+  if (include !== before.include) chooseInclude(before.include);
+  if (regional !== before.regional) chooseRegional(before.regional);
+  chooseSimple(before.simple);
   setView(before.view);
   setTips(before.tips);
   setLanguage(before.language);
@@ -64,27 +70,19 @@ function restore(before) {
 
 async function rounds() {
   const sources = await Promise.all([load("index.html"), styles(), scripts()]);
-  textTests();
-  pick(codes()[0]);
-  await behaviourTests();
-  menuTests();
-  codes().forEach((code) => languageTests(code));
-  optionTests();
-  await pictureTests();
-  uniqueFilterTests();
-  headingTests();
-  tagTests();
-  pick(codes()[0]);
-  keyboardTests();
-  accessibilityTests();
-  sourceTests(...sources);
-  dataTests();
-  updaterTests();
-  reportTests();
+  const groups = [
+    textTests, behaviourTests, menuTests, () => codes().forEach((code) => languageTests(code)), optionTests,
+    pictureTests, uniqueFilterTests, headingTests, tagTests, keyboardTests, accessibilityTests,
+    () => sourceTests(...sources), dataTests, updaterTests, reportTests,
+  ];
+  for (const group of groups) {
+    toStart();
+    await group();
+  }
 }
 
 export async function runTests() {
-  const before = prepare();
+  const before = snapshot();
   const where = `${innerWidth} by ${innerHeight}`;
   try {
     await rounds();

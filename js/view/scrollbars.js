@@ -11,34 +11,42 @@ const FIRST = 400;
 
 const NEXT = 50;
 
-export const bars = new Map();
+const bars = new Map();
 
-export function fit(bar, box) {
-  const frame = box.offsetParent;
-  const room = box.scrollHeight - box.clientHeight;
-  bar.hidden = simple() || !frame || room < 1;
-  if (bar.hidden) return;
-  const [inner, outer] = [box, frame].map((el) => el.getBoundingClientRect());
-  const right = box.offsetWidth - box.clientWidth - box.clientLeft;
-  const below = box.offsetHeight - box.clientHeight - box.clientTop;
-  bar.style.setProperty("--x", inner.right - right - outer.left - frame.clientLeft + frame.scrollLeft);
-  bar.style.setProperty("--y", inner.top + box.clientTop - outer.top - frame.clientTop + frame.scrollTop);
-  bar.style.setProperty("--h", inner.height - box.clientTop - below);
-  bar.style.setProperty("--at", box.scrollTop / room);
-  const knob = bar.querySelector(".bar-knob");
-  knob.hidden = knob.parentElement.clientHeight < bar.clientWidth;
+export function startBars() {
+  for (const box of document.querySelectorAll(SCROLLING)) {
+    const bar = clone("barTemplate");
+    box.after(bar);
+    bars.set(box, bar);
+    wire(bar, box);
+    watch(box);
+    changes.observe(box, { childList: true, subtree: true, characterData: true });
+  }
+  changes.observe(document.documentElement, { attributeFilter: ["class"] });
+  addEventListener("resize", fitAll);
 }
 
-const fitAll = () => bars.forEach(fit);
+function wire(bar, box) {
+  const up = bar.querySelector(".bar-up");
+  const track = bar.querySelector(".bar-track");
+  const down = bar.querySelector(".bar-down");
+  const knob = bar.querySelector(".bar-knob");
+  const stepped = () => box.matches(STEPPED) && !simple();
+  const line = () => (stepped() && box.firstElementChild?.offsetHeight) || LINE;
+  hold(up, () => box.scrollBy(0, -line()));
+  hold(down, () => box.scrollBy(0, line()));
+  hold(track, (y) => page(box, knob, y, line()));
+  drag(knob, box);
 
-const sizes = new ResizeObserver(fitAll);
+  const wheel = (e) => {
+    e.preventDefault();
+    box.scrollBy(0, stepped() ? Math.sign(e.deltaY) * line() : e.deltaY * [1, LINE, box.clientHeight][e.deltaMode]);
+  };
 
-const watch = (box) => [box, ...box.children].forEach((el) => sizes.observe(el));
-
-const changes = new MutationObserver(() => {
-  bars.forEach((bar, box) => watch(box));
-  fitAll();
-});
+  bar.addEventListener("wheel", wheel, { passive: false });
+  if (box.matches(STEPPED)) box.addEventListener("wheel", (e) => simple() || wheel(e), { passive: false });
+  box.addEventListener("scroll", () => fit(bar, box));
+}
 
 function hold(part, step) {
   let timer = 0;
@@ -87,35 +95,31 @@ function drag(knob, box) {
   });
 }
 
-function wire(bar, box) {
-  const [up, track, down] = bar.children;
-  const knob = track.firstElementChild;
-  const stepped = () => box.matches(STEPPED) && !simple();
-  const line = () => (stepped() && box.firstElementChild?.offsetHeight) || LINE;
-  hold(up, () => box.scrollBy(0, -line()));
-  hold(down, () => box.scrollBy(0, line()));
-  hold(track, (y) => page(box, knob, y, line()));
-  drag(knob, box);
-
-  const wheel = (e) => {
-    e.preventDefault();
-    box.scrollBy(0, stepped() ? Math.sign(e.deltaY) * line() : e.deltaY * [1, LINE, box.clientHeight][e.deltaMode]);
-  };
-
-  bar.addEventListener("wheel", wheel, { passive: false });
-  if (box.matches(STEPPED)) box.addEventListener("wheel", (e) => simple() || wheel(e), { passive: false });
-  box.addEventListener("scroll", () => fit(bar, box));
+function fit(bar, box) {
+  const frame = box.offsetParent;
+  const room = box.scrollHeight - box.clientHeight;
+  bar.hidden = simple() || !frame || room < 1;
+  if (bar.hidden) return;
+  const [inner, outer] = [box, frame].map((el) => el.getBoundingClientRect());
+  const right = box.offsetWidth - box.clientWidth - box.clientLeft;
+  const below = box.offsetHeight - box.clientHeight - box.clientTop;
+  bar.style.setProperty("--x", inner.right - right - outer.left - frame.clientLeft + frame.scrollLeft);
+  bar.style.setProperty("--y", inner.top + box.clientTop - outer.top - frame.clientTop + frame.scrollTop);
+  bar.style.setProperty("--h", inner.height - box.clientTop - below);
+  bar.style.setProperty("--at", box.scrollTop / room);
+  const knob = bar.querySelector(".bar-knob");
+  knob.hidden = knob.parentElement.clientHeight < bar.clientWidth;
 }
 
-export function startBars() {
-  for (const box of document.querySelectorAll(SCROLLING)) {
-    const bar = clone("barTemplate");
-    box.after(bar);
-    bars.set(box, bar);
-    wire(bar, box);
-    watch(box);
-    changes.observe(box, { childList: true, subtree: true, characterData: true });
-  }
-  changes.observe(document.documentElement, { attributeFilter: ["class"] });
-  addEventListener("resize", fitAll);
-}
+const fitAll = () => bars.forEach(fit);
+
+const sizes = new ResizeObserver(fitAll);
+
+const watch = (box) => [box, ...box.children].forEach((el) => sizes.observe(el));
+
+const changes = new MutationObserver(() => {
+  bars.forEach((bar, box) => watch(box));
+  fitAll();
+});
+
+export const barsByBox = () => new Map(bars);

@@ -2,21 +2,6 @@ import { data } from "../model/datahandler.js";
 import { fill } from "../model/texts.js";
 import { $, clone } from "./stringbuilder.js";
 
-export function openReport(title, status) {
-  $("reportTitle").textContent = title;
-  $("reportStatus").textContent = status;
-  $("reportList").replaceChildren();
-  $("reportDownloads").replaceChildren();
-  $("reportDownloads").hidden = true;
-  if (!$("report").open) $("report").showModal();
-}
-
-export function report(line) {
-  const li = clone("reportTemplate");
-  li.textContent = line;
-  $("reportList").append(li);
-}
-
 export const showUpdating = () => openReport(data.tools.updateTitle,
   fill(data.tools.updateLoading, { source: data.source.name }));
 
@@ -46,4 +31,19 @@ export function showUpdate({ messages, fresh, files }) {
 
 export function showUpdateFailed(error) {
   $("reportStatus").textContent = fill(data.tools.updateFailed, { error: error.message });
+}
+
+export function openReport(title, status) {
+  $("reportTitle").textContent = title;
+  $("reportStatus").textContent = status;
+  $("reportList").replaceChildren();
+  $("reportDownloads").replaceChildren();
+  $("reportDownloads").hidden = true;
+  if (!$("report").open) $("report").showModal();
+}
+
+export function report(line) {
+  const li = clone("reportTemplate");
+  li.textContent = line;
+  $("reportList").append(li);
 }

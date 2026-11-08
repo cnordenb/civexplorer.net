@@ -5,13 +5,13 @@ import { items, roots, lineOf, lineEnd } from "../model/model.js";
 import { $ } from "../view/stringbuilder.js";
 import { isOpen, shown } from "../view/treeview.js";
 import { options } from "../view/optionsview.js";
-import { setInclude, setSimple } from "../controller/optionshandler.js";
+import { chooseInclude, chooseSimple } from "../controller/optionshandler.js";
 import { openReport, report } from "../view/report.js";
 import { audit } from "./audit_test.js";
 import {
   root, check, expect, same, tidy, codes, keys, describe, everything, nameFor, visibleTexts, keyDown, tap, pick,
   reset, listed, expected, fixtures, shownKeys, uniqueKeys, regionalKeys, outside, keptPath, byPath, spans, ui, box,
-  chainOf, type, rendered, nodeOf, twistyOf, labelOf, englishFirst, openTo, ticked, flags,
+  chainOf, type, rendered, nodeOf, twistyOf, labelOf, englishFirst, openTo, ticked, flags, checkAll,
 } from "./helpers_test.js";
 
 export function menuTests() {
@@ -28,12 +28,12 @@ export function menuTests() {
   const sizes = [measure()];
   button.click();
   sizes.push(measure());
-  check("language menu: it is in the options window, and its button opens it, offering every language in its own "
-    + "language, with the current one marked", inWindow && button.getAttribute("aria-expanded") === "true"
-    && !$("languageList").hidden && options().length === codes().length
-    && options().every((option) => option.textContent === data.languages[option.dataset.language].name)
-    && options().filter((option) => option.getAttribute("aria-current") === "true")
-      .map((option) => option.dataset.language).join() === language);
+  checkAll("language menu: it is in the options window, and its button opens it, offering every language in its "
+    + "own language, with the current one marked", { inWindow, opens: button.getAttribute("aria-expanded") === "true"
+      && !$("languageList").hidden, offered: options().length === codes().length
+      && options().every((option) => option.textContent === data.languages[option.dataset.language].name),
+      current: options().filter((option) => option.getAttribute("aria-current") === "true")
+        .map((option) => option.dataset.language).join() === language });
   keyDown(options()[0], "Escape");
   const escaped = $("languageList").hidden && document.activeElement === button;
   sizes.push(measure());
@@ -52,9 +52,9 @@ export function menuTests() {
   const named = root.lang === data.languages[first].tag && $("languageList").hidden && document.activeElement === button
     && nameFor(button).includes(data.languages[next].name);
   $("optionsOk").click();
-  check("language menu: choosing a language names it on the button, closes the menu and returns focus, and OK changes "
-    + "the page language", named && root.lang === data.languages[next].tag
-    && document.querySelector("h1 .title-long").textContent === ui().title);
+  checkAll("language menu: choosing a language names it on the button, closes the menu and returns focus, and OK "
+    + "changes the page language", { named, language: root.lang === data.languages[next].tag,
+      title: document.querySelector("h1 .title-long").textContent === ui().title });
   check("language menu: the choice is kept in the address, and without a choice the page is in English", englishFirst()
     && (location.protocol === "file:" || new URLSearchParams(location.search).get("lng") === next));
   check("language menu: marks are kept when the language changes", partial.self === "has"
@@ -101,10 +101,11 @@ export function optionTests() {
   const all = keys();
   const unique = uniqueKeys();
   const regional = regionalKeys();
-  check("options: by default, unique items, and items all civilisations, all but one or only one has, are left out, "
-    + "and regional items are in", shownKeys().length < all.length && shownKeys().every((key) => !unique.has(key))
-    && shownKeys().some((key) => regional.has(key)) && items.every((item) => item.kids.length > 0
-      || (!item.group && size(item.set) > 1 && size(item.set) < data.civs.length - 1)));
+  checkAll("options: by default, unique items, and items all civilisations, all but one or only one has, are left "
+    + "out, and regional items are in",
+    { unique: shownKeys().length < all.length && shownKeys().every((key) => !unique.has(key)),
+      regional: shownKeys().some((key) => regional.has(key)), shared: items.every((item) => item.kids.length > 0
+        || (!item.group && size(item.set) > 1 && size(item.set) < data.civs.length - 1)) });
   const defaults = shownKeys();
   const path = keptPath();
   tap(nodeOf(byPath(path)));
@@ -151,7 +152,7 @@ export function optionTests() {
     + "both buttons return focus", opened && waited && okayed && cancelled && fresh && closed && again,
     flags({ opened, waited, okayed, cancelled, fresh, closed, again }));
   reset();
-  setInclude(false);
+  chooseInclude(false);
 }
 
 function menuAudit() {
@@ -175,8 +176,8 @@ function menuKeys() {
   keyDown(document.activeElement, "ArrowDown");
   const stepped = document.activeElement === options()[(at + 1) % codes().length];
   keyDown(document.activeElement, "End");
-  check("language menu: Down opens it at the current language, and Down and End move through it", atCurrent && stepped
-    && document.activeElement === options()[codes().length - 1]);
+  checkAll("language menu: Down opens it at the current language, and Down and End move through it",
+    { atCurrent, stepped, end: document.activeElement === options()[codes().length - 1] });
   reset();
 }
 
@@ -229,7 +230,7 @@ function optionKeys() {
     && ticked("regional") && shownKeys().some((key) => regional.has(key)) && byPath(path)?.self === "has"
     && same(listed(), listedBefore), flags({ flipped, applied }));
   reset();
-  setInclude(false);
+  chooseInclude(false);
 }
 
 function optionAudits() {
@@ -237,11 +238,11 @@ function optionAudits() {
   $("optionsButton").click();
   audit("accessibility (options window open)");
   reset();
-  setInclude(true);
+  chooseInclude(true);
   $("expandAll").click();
   audit("accessibility (everything included, all open)", { focus: false });
   reset();
-  setInclude(false);
+  chooseInclude(false);
 }
 
 function filterFocus() {
@@ -253,13 +254,13 @@ function filterFocus() {
   const cleared = items[firstChip.dataset.i];
   const left = cleared === other ? third : other;
   firstChip.click();
-  check("filters: a filter button clears its item and moves focus to the next", cleared.self === null
-    && document.activeElement === $("chips").querySelector(".chip")
-    && Number(document.activeElement.dataset.i) === left.i);
+  checkAll("filters: a filter button clears its item and moves focus to the next",
+    { cleared: cleared.self === null, next: document.activeElement === $("chips").querySelector(".chip")
+      && Number(document.activeElement.dataset.i) === left.i });
   document.activeElement.click();
-  check("filters: clearing the last filter moves focus to the civilisations heading and lists every civilisation",
-    left.self === null && document.activeElement === $("civTitle") && same(listed(), expected(ALL))
-    && $("none").hidden && $("ticked").hidden);
+  checkAll("filters: clearing the last filter moves focus to the civilisations heading and lists every civilisation",
+    { cleared: left.self === null, focused: document.activeElement === $("civTitle"),
+      listed: same(listed(), expected(ALL)) && $("none").hidden && $("ticked").hidden });
   reset();
 }
 
@@ -282,13 +283,13 @@ function keyboard() {
   keyDown(nodeOf(roots[1].kids[0]), "ArrowLeft");
   const back = document.activeElement === nodeOf(roots[1]);
   keyDown(nodeOf(roots[1]), "ArrowLeft");
-  check("keyboard: Right opens a branch and goes into it, and Left goes back out and closes it",
-    opens && into && back && !isOpen(roots[1]));
+  checkAll("keyboard: Right opens a branch and goes into it, and Left goes back out and closes it",
+    { opens, into, back, closed: !isOpen(roots[1]) });
   keyDown(nodeOf(roots[1]), "End");
   const end = document.activeElement === nodeOf(roots[roots.length - 1]);
   keyDown(document.activeElement, "Home");
-  check("keyboard: Down and Up step between items, stopping at the top, and End and Home go to the last and first",
-    down && end && document.activeElement === nodeOf(roots[0]));
+  checkAll("keyboard: Down and Up step between items, stopping at the top, and End and Home go to the last and "
+    + "first", { down, end, home: document.activeElement === nodeOf(roots[0]) });
   twistyOf(roots[0]).focus();
   keyDown(twistyOf(roots[0]), "ArrowDown");
   check("keyboard: on an arrow, Down goes to the next arrow", document.activeElement === twistyOf(roots[1]));
@@ -341,9 +342,9 @@ export function reportTests() {
     && $("report").scrollHeight <= $("report").clientHeight && tops() === before
     && pinned.every((el) => box(el).top >= 0 && box(el).bottom <= innerHeight);
   const right = Math.abs(box(close).right - box(list).right) < 1;
-  setSimple(false);
+  chooseSimple(false);
   const unchanged = look() === plain;
-  setSimple(true);
+  chooseSimple(true);
   check("update: the report window keeps its title, its count and Close in view, and scrolls only its list; Close "
     + "has focus, sits on the right and is the plain button, with or without Simple UI",
     kept && focused && right && unchanged,
@@ -353,7 +354,7 @@ export function reportTests() {
 
 export function uniqueFilterTests() {
   reset();
-  setInclude(true);
+  chooseInclude(true);
   const name = "filters: a unique item marked must have has its own filter button, even in a full group, which clears "
     + "only it, while its line's or group's button leaves it marked; a wholly unique line has one button (Req. 36)";
   const unique = (item) => data.pictures[item.key]?.reach === "unique";
@@ -364,7 +365,7 @@ export function uniqueFilterTests() {
     .find((chip) => chip.querySelector(".chip-name").textContent === text)?.click();
   if (!item || !whole) {
     check(name, false, "no unique item in a line with others, or no wholly unique line");
-    setInclude(false);
+    chooseInclude(false);
     return;
   }
 
@@ -388,18 +389,18 @@ export function uniqueFilterTests() {
   const exempt = same(names(), [nameOf(lineEnd(whole))]);
   check(name, both && first && second && grouped && exempt, flags({ both, first, second, grouped, exempt }));
   reset();
-  setInclude(false);
+  chooseInclude(false);
 }
 
 export function headingTests() {
   reset();
-  setInclude(true);
+  chooseInclude(true);
   const name = "tree: a group inside a building, such as the Castle's Unique Units, has no checkbox: a click on its "
     + "name or arrow opens and closes it, a right-click marks nothing, and Down from the row above reaches its arrow";
   const heading = items.find((item) => item.group && item.parent);
   if (!heading) {
     check(name, false, "no group inside a building");
-    setInclude(false);
+    chooseInclude(false);
     return;
   }
   openTo(heading);
@@ -419,5 +420,5 @@ export function headingTests() {
     flags({ bare, opened, closed, reached }));
   document.activeElement.blur();
   reset();
-  setInclude(false);
+  chooseInclude(false);
 }

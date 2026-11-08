@@ -108,7 +108,7 @@ why a game update changes only those files, and sometimes adds an icon.
 | `css/base.css` | How the page looks with Simple UI, and its layout either way: big and small screens, light and dark colours. |
 | `css/pictures.css` | How the page looks without Simple UI: every rule with a picture or a font, the loading screen, the tooltip and the scroll bars. |
 | `js/script.js` | Where the page starts. |
-| `js/model/` | The data and the tree's rules, which tell the page when they change, and the updater: `datahandler.js`, `civsets.js`, `texts.js`, `icons.js`, `updater.js` and `model.js`. |
+| `js/model/` | The data and the tree's rules, which tell the page when they change, and the updater: `datahandler.js`, `civsets.js`, `texts.js`, `icons.js`, `updater.js`, `itemtree.js` and `model.js`. |
 | `js/view/` | What the page shows: `stringbuilder.js`, `treeview.js` (the tree), `optionsview.js` (Options), `page.js` (the whole page), `scrollbars.js`, `pictures.js` and `report.js`. |
 | `js/controller/` | What the visitor's clicks, touches and keys mean: `nodetree.js` (the tree), `optionshandler.js` (Options) and `updatehandler.js` (the updater). |
 | `js/tests/` | The tests, loaded only when the address ends in `?test`; see [Tests](#tests). |
@@ -169,6 +169,7 @@ classDiagram
     texts.js
     icons.js
     updater.js
+    itemtree.js
     model.js
   }
   class tests {
@@ -207,13 +208,18 @@ The scripts are in three folders: `js/model/` holds the data and the rules, `js/
   names, how many a set holds, and which they are.
 - **`js/model/texts.js`** holds the chosen language: its texts, the names of items and civilisations, and its way of
   writing numbers, plurals and the order of names.
-- **`js/model/icons.js`** names the icons' files, and the order of the files in an atlas.
+- **`js/model/icons.js`** names the icons' files, and the order of the files in an atlas, and finds each item's icon
+  (`spriteOf()`, `atlasOf()`).
 - **`js/model/updater.js`** fetches the game's newest data for `?update`, compares it with `data.json` and writes the
   new files.
-- **`js/model/model.js`** holds the tree and its rules: which items are shown, how marks pass on (see
+- **`js/model/itemtree.js`** builds the tree's items from `data.json`: what Include and Include Regionals hide, the
+  items a variant borrows from the building it replaces, and each item's rivals and alternatives. It also stores each
+  item's branch set, the civilisations that have the item and everything under it. It holds the items, which
+  `model.js` passes on, so the other scripts import them from `model.js`.
+- **`js/model/model.js`** holds the marks and their rules: how marks pass on (see
   [How marking works](#how-marking-works)), which civilisations fit, the counts beside the names, which branches a
   mark greys out, and what **Filters** shows. Only its own functions change it (`mark`, `clear`, `unmarkLine`,
-  `unmarkOwn`, `setIncluded`, `setRegionals` and `chooseLanguage`), and each then tells the page what changed; `mark`
+  `unmarkLone`, `setInclude`, `setRegional` and `setLanguage`), and each then tells the page what changed; `mark`
   refuses an item that is greyed out. It saves its own choices, Include, Include Regionals and the language, and the
   language in the address, and `startModel` reads them back. It never touches the page.
 - **`js/view/stringbuilder.js`** writes the page's text: the fixed texts, the chosen language's texts, the list of
@@ -244,9 +250,9 @@ The scripts are in three folders: `js/model/` holds the data and the rules, `js/
   and `js/view/report.js` show what changed.
 
 A script only uses the scripts before it in this order: `civsets.js`, `datahandler.js`, `texts.js`, `icons.js`,
-`updater.js`, `model.js`, `stringbuilder.js`, `treeview.js`, `optionsview.js`, `page.js`, `scrollbars.js`,
-`pictures.js`, `report.js`, `nodetree.js`, `optionshandler.js`, `updatehandler.js`, `script.js`. Keep it so, so that
-the arrows never go round in a circle.
+`updater.js`, `itemtree.js`, `model.js`, `stringbuilder.js`, `treeview.js`, `optionsview.js`, `page.js`,
+`scrollbars.js`, `pictures.js`, `report.js`, `nodetree.js`, `optionshandler.js`, `updatehandler.js`, `script.js`. Keep
+it so, so that the arrows never go round in a circle.
 
 ### How model, view and controller work together
 
@@ -286,6 +292,11 @@ How this differs from the book's classic model, view and controller:
 9. The views and controllers import `model.js` itself, not an interface handed to them, as the book's views are
    handed `BeatModelInterface`. So a second model could not be fitted with an Adapter, as the book's `HeartAdapter`
    is, without changing their imports. There is only one model, so nothing would be gained.
+10. The model has no `unsubscribe`: `page.js` is its only observer and never leaves.
+
+Three more patterns of the book are in the code: Prototype, as `clone()` copies a `<template>`; Command, as tables
+such as `GESTURES`, `MARK_KEYS`, `MOVES`, `MENU_MOVES` and `choices` turn a gesture, key or setting into what it does;
+and Facade, as `datahandler.js` stands in front of the files, the browser's storage and the address bar.
 
 The rule to keep: a view never imports a controller, never changes the model and never names a mark; a controller
 never touches the page or the address; only the model works on its sets and reaches `page.update()`; only the model
@@ -607,7 +618,12 @@ window sizes in light and dark colours, and also checks the file names and that 
 | `audit_test.js` | The accessibility audit (contrast, focus, sizes, names and more), which the other files run in many states. |
 | `static_test.js` | The files themselves: the rules for the code, and mistakes in `data.json` and the language files. |
 
-There may be at most 100 tests. When you add, change or remove one, update `TESTS.md`. Tests cannot prove everything
+Each group of tests starts from the same state, which `toStart()` in `run_test.js` sets: Simple UI on, Include off,
+Include Regionals on, Tooltips on, the first language, and nothing marked.
+
+There may be at most 100 tests, so many of them check several things at once. `checkAll()` in `helpers_test.js`
+names each part, and the report then says which part failed. When you add, change or remove a test, update
+`TESTS.md`. Tests cannot prove everything
 about accessibility, so after bigger changes also try the page with Simple UI on, with only a keyboard, at 400% zoom
 and with a screen reader.
 
@@ -629,6 +645,9 @@ and with a screen reader.
   [How model, view and controller work together](#how-model-view-and-controller-work-together)). Test 85 checks
   it.
 - No comments in the code, and a blank line before and after every function.
+- A script reads from the top down: imports, constants and state first, then each function before the ones it calls.
+  A `const` that the script reads while it loads stays above the line that reads it, as `fitAll` stays above
+  `new ResizeObserver(fitAll)` in `scrollbars.js`. Every loop's body has a block of its own.
 - No pictures outside `assets/` and `.pictures` rules, and no sounds, animations, libraries, build steps or Python.
 - No button, box or other control may move on the screen while the visitor uses it, and the page itself never
   scrolls with every branch closed.
