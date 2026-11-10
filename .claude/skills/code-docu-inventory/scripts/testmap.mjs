@@ -12,11 +12,12 @@ const md = fs.readFileSync(path.join(root, "documentation/TESTS.md"), "utf8").re
 const tests = [];
 for (const sec of md.split(/\n## Test /).slice(1)) {
   const n = parseInt(sec, 10);
-  const res = /### File residence:\n([\s\S]*?)\n\n/.exec(sec)?.[1] ?? "";
-  for (const part of res.split(/;\s*|\n/)) {
-    const file = /`([^`]+)`/.exec(part)?.[1];
+  const res = (/### File residence:\n([\s\S]*?)\n\n/.exec(sec)?.[1] ?? "").replace(/\n/g, " ");
+  let file = null;
+  for (const part of res.split(/;\s*/)) {
+    file = /`(js\/[^`]+_test\.js)`/.exec(part)?.[1] ?? file;
     if (!file) continue;
-    const ranges = [...part.replace(/`[^`]+`/, "").matchAll(/(\d+)(?:-(\d+))?/g)]
+    const ranges = [...part.replace(/`[^`]+`/g, "").matchAll(/(\d+)(?:-(\d+))?/g)]
       .map((m) => [+m[1], +(m[2] ?? m[1])]);
     tests.push({ n, file, ranges });
   }

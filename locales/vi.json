@@ -63,7 +63,9 @@
       "tooltips": "Chú thích",
       "cancel": "Hủy",
       "ok": "OK",
-      "loading": "Đang tải tài nguyên hình ảnh..."
+      "loading": "Đang tải tài nguyên hình ảnh...",
+      "languageFailed": "Không thể tải ngôn ngữ.",
+      "messageTip": "Nhấp để đóng thông báo này"
     },
     "groups": {
       "economy": "Kinh tế",

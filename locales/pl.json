@@ -73,7 +73,9 @@
       "tooltips": "Podpowiedzi",
       "cancel": "Anuluj",
       "ok": "OK",
-      "loading": "Wczytywanie zasobów graficznych..."
+      "loading": "Wczytywanie zasobów graficznych...",
+      "languageFailed": "Nie udało się wczytać języka.",
+      "messageTip": "Kliknij, aby zamknąć ten komunikat"
     },
     "groups": {
       "economy": "Gospodarka",

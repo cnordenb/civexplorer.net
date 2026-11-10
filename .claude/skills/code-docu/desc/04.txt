@@ -1,196 +1,388 @@
-@ js/tests/behaviour_test.js
-The tests of the tree: marking, Filters, the counts, opening and closing, and Find. Each test function names its checks
-  after TESTS.md, which says on which lines each test is found.
-- sameCivs: Lists the items of a line, from an item down while each has one item under it that is not a group, that have
-  the same civilisations as the item: those a mark on it passes down to (Req. 29, 30).
-- chipNames: Lists the names on the Filters buttons.
-- fullName: Returns "Full" and an item's name, as Filters names a fully marked building (Req. 24).
-- marking: Tests marking by click, X, the menu key and Space, the civilisation list and its count, and the first Filters
-  button (Tests 3 to 7; Req. 3, 4, 22).
-- branches: Tests buildings, groups and lines: what marking them marks and shows, their Filters buttons and names,
-  "Full" only with something under it and not in a group of lines, and the tick, cross and dash (Tests 8 to 14; Req. 14,
-  23 to 26, 30).
-- crowding: Tests that a full tree and the longest civilisation list never make the page scroll, crush a pane or
-  overlap, in whatever window the tests run (Test 15; Rule 12).
-- gestures: Tests that a long press with a finger marks must lack, and that a right-click clears it (Test 16; Req. 3).
-- lineTops: Tests that marking the top of a line passes the mark down only at the same count, must have or must lack,
-  that marking it again clears it, and that marking a line's last item marks the line before it with one filter (Tests
-  17, 18; Req. 29, 30).
-- parents: Tests that must have passes up but never to a building, which then shows a dash, and that an item can be must
-  lack while everything under it is must have (Tests 19, 20; Req. 30).
-- rivals: Tests an item that excludes another, such as the Xolotl Warrior and the Stable: must have on the one greys out
-  the other and everything in it, the one staying in sight and the other's arrow working; must have on any of those
-  greys out the one; what is greyed out cannot be marked, by a click or by mark() itself; and must lack greys out
-  nothing (Test 21).
-- standIns: Tests an item that replaces others, such as the Pasture and the Farm: it holds everything in their buildings
-  but their unique items and groups, as the same items, so marking one marks both with one filter; must have on one
-  greys out and closes every alternative until it is cleared (Test 22; Req. 37).
-- beyond: With Include ticked, finds an item that some civilisations have without the unit or technology above it,
-  checks that must have on it and must lack on the one above list just those civilisations, and that unticking Include
-  lifts it up with its mark kept. Part of Test 24.
-- lines: Tests that marking a unit or technology opens it to its first fork or its end, and that below the top of a line
-  a mark passes down only while the civilisations stay the same (Tests 23, 24; Req. 28 to 31).
-- counts: Tests the numbers on the items: closed and open, on lines, and with filters (Tests 25 to 28; Req. 3).
-- tree: Tests Expand all, Collapse all and the arrows, and that opening a branch also opens its only children (Tests 29,
-  30; Req. 18, 19).
-- finding: Tests that Find highlights its matches in yellow, opens the branches down to them and counts them beside the
-  box, drops a match once a mark greys out its branch (dropsGreyed()), and says when nothing matches (Tests 31, 32;
-  Req. 20, 21).
-- behaviourTests: Runs the tests of the tree, in the order TESTS.md lists them.
+@ js/tests/run_test.js
+Runs the tests in groups and shows the report. Loaded only when the address ends in `?test`.
+- merge: Combines the results into one line per test, failed if any of its checks failed, with the first details and the
+  window's size. A test may check in several states and languages.
+- reportLine: Writes a test's report line, such as "Test 15 failed: ...", from its number, name and details, in the form
+  outcome() picks.
+- outcome: Picks the form of a report line: passed or failed for a numbered test, and a plain "Failed" for the line
+  "the tests ran to the end", which has no number.
+- announce: Writes lines of the report to the console, one by one and each starting with `tests:`, where the workflow
+  on GitHub reads them from Chrome's log.
+- loadFailed: Marks the tests as failed when the page could not load, and says so in the console, so CI never waits for
+  a result that cannot come.
+- snapshot: Notes the visitor's language, Include, Include Regionals, Simple UI, Civ view, Tooltips and address, and
+  the stored language and settings, for restore().
+- toStart: Sets the state every group of tests starts from: the page as reset() leaves it, Include unticked, Include
+  Regionals ticked, Simple UI and Tooltips on, the civilisations as a list and the first language. So no group depends
+  on what the one before it left.
+- restore: Puts back the visitor's language, options, view, address and saved choices after the tests.
+- runAll: Reads index.html, the style sheets and the scripts as text, then runs the 15 groups of tests one after another
+  through runGroup(), in the order TESTS.md lists them; the language tests run once for each language.
+- runGroup: Runs one group of tests from the state toStart() sets. If the group throws, as fixtures() does when
+  data.json lacks a sample, it fails "the tests ran to the end" with the group's name and the error, and the next group
+  runs.
+- runTests: Runs the tests and shows their report through runAndPublish(). If the runner itself throws, stopped()
+  reports it, so that the run still ends in a result.
+- runAndPublish: Keeps the visitor's settings (snapshot()), runs every group, puts the settings back, and publishes one
+  numbered line per test.
+- windowSize: Names the window's size, such as "1920 by 1080", for the details of a failure and the report's summary.
+- numbered: Numbers the tests in the order they first ran, the numbers TESTS.md gives them; the line "the tests ran to
+  the end" gets none.
+- publish: Marks the page passed or failed, and shows the report, failures first, under a summary with the count, the
+  colours and the window's size. For CI it then has announce() write the failed tests, the count and whether they
+  passed. Its Close leaves the tests: it opens the page's own address, without `?test`.
+- stopped: Marks the tests as failed when the runner itself stops with an error, and says so in the console, so CI never
+  waits for a result that cannot come.
 
-@ js/tests/interface_test.js
-The tests of the language menu, the languages, the Options window, the keyboard and the report window, and the runs of
-  the accessibility audit.
-- menuTests: Tests the language menu: in Options, every language in its own language, closing on Escape, a click or
-  leaving it, a window that never resizes, the language changed on OK and kept in the address, English first, and marks
-  kept (Tests 33 to 37; Req. 8 to 12).
-- languageTests: Tests one language: the page's text, the tree's names, no placeholders, the footer's links, the
-  game update's among them, and Microsoft's notice, and a translated, sorted civilisation list (Tests 38 to 42; Req. 4,
-  5, 11).
-- optionTests: Tests the two Include boxes: what the tree leaves out by default, ticking and unticking with marks kept,
-  the choices remembered, and Options opening and closing properly (Tests 43 to 46; Req. 7, 13 to 16).
-- menuAudit: Runs the accessibility audit with a mark and the language menu open. This is the audit's first run, so its
-  checks are listed from here.
-- menuKeys: Tests the language menu's keys: Down opens it at the current language, and Down and End move through it
-  (Test 78; WCAG 2.1.1).
-- languageAudits: Runs the accessibility audit in one language: as loaded, with filters, and with everything open. The
-  focus checks run only in the first language.
-- spacingTests: Tests that wider text spacing, as WCAG 1.4.12 describes it, makes nothing stick out sideways (Test 79).
-- optionKeys: Tests that Space ticks and unticks Include and Include Regionals, and that OK then shows or leaves out
-  those items, keeping marks (Test 80; WCAG 2.1.1).
-- optionAudits: Runs the audit with the Options window open, and with everything included and open.
-- filterFocus: Tests that a Filters button clears its item and hands focus to the next button, and that clearing the
-  last one hands it to the civilisations' heading, with every civilisation listed (Tests 56, 57).
-- keyboard: Tests the arrow keys in the tree: Right opens a line all the way down, or opens a branch and goes into it,
-  Left goes back out and closes it, Down and Up step between items, End and Home go to the last and the first, and Down
-  on an arrow goes to the next arrow (Tests 58 to 61; WCAG 2.1.1).
-- findKey: Tests that Enter in Find goes to the first match (Test 62).
-- keyboardTests: Runs the keyboard tests: filterFocus(), keyboard() and findKey().
-- accessibilityTests: Runs this file's audits and accessibility tests in the order TESTS.md lists them: the menu, the
-  first language, spacing and keys, then every other language and the Options window.
-- reportTests: Tests the report window with 200 lines in it: its title, its count and Close stay in view and only its
-  list scrolls, and Close has focus, sits on the right and is the plain button, with or without Simple UI (Test 98).
-- uniqueFilterTests: Tests that a unique item marked must have gets its own Filters button, even in a full group, which
-  clears only it, while its line's or group's button leaves it marked, and that a wholly unique line has one button
-  (Test 53; Req. 36).
-- headingTests: Tests a group inside a building, such as the Castle's Unique Units: it has no checkbox, a click on its
-  name or arrow opens and closes it, a right-click marks nothing, and Down from the row above reaches its arrow (Test
-  54).
-
-@ js/tests/pictures_test.js
-The tests of the pictures, run with Simple UI off. There the page need not meet WCAG (Rule 22), nor the UI particulars
-  of REQUIREMENTS.md (Req. 0).
-- at: Tells whether a CSS `url()` points at a given picture in `assets/images/`.
-- picture: Tells whether an element's background is a given picture.
-- cut: Tells whether a button is not drawn as the whole button picture: the wrong file or sheet size, drawn parts left
-  on, or not 290 by 50 in proportion.
-- offParchment: Lists the header, panes and footer that stick out of the parchment, worked out from the five numbers
-  `--ratio`, `--left`, `--top`, `--right` and `--bottom` in pictures.css and the window's size.
-- strayCursors: Lists the elements without the right cursor: the pointing hand over links and the sword elsewhere, `_x1`
-  at their own size or `_x2` at two thirds, at 1.5x (Test 47).
-- wrongSizes: Lists the pictures that do not suit the parchment chosen, trying every parchment in turn: `_sd` and `_x1`
-  pictures with fhd and qhd, `_4k` and `_x2` ones with uhd and ultrawide.
-- pictureLooks: Tests the pictures as a whole: the choice for each screen, background, cursors, the Options button and
-  its ring, the parchment and the footer (Test 47).
-- wrongBoxes: Lists the checkboxes without the sheet's picture for their state, empty, ticked or crossed, or with a
-  drawn mark other than the dash, the radio buttons without theirs, and any state with no box (Test 48).
-- cellIn: Works out where a picture's cell is in its atlas: the files sorted by name, row by row, in a square grid.
-- share: Turns a column or row into the percentage CSS needs to show that cell of an atlas.
-- offCell: Tells whether an icon does not show its cell of its atlas: the wrong file, repeat, box, size or position.
-  Notes the atlas for misfit().
-- misfit: Lists the atlases whose size does not fit their grid of 48 px cells, which would shift every icon.
-- unpictured: With every item included, lists the tree rows without the right icon: its cell of its atlas, 44 px,
-  between box and name, and outlined as `colour_key.csv` says (Test 48).
-- findLooks: Tests the Find box with the pictures: its frame, search icon and clearing cross, its width of up to 325 px,
-  the message beside it, and that matches are marked (Test 49; Req. 21).
-- toolLooks: Lists what is wrong with the tree's buttons: not Clear and Expand all, or Collapse all while a branch is
-  open, not side by side as wide as the pane, not the whole button picture, text cut, moved, focus not handed over, or
-  different in another language (Test 50).
-- simpleSwitch: Ticks and unticks Simple UI, and lists what went wrong: a picture or link left, the box moved,
-  the choice not remembered, or something not back (Test 51).
-- strayBars: Lists the lists whose scroll bar is wrong: one shown where nothing scrolls or with Simple UI, none where
-  the list scrolls, or one that barProblems() finds fault with.
-- ownBars: Lists the lists whose own browser scroll bar is not as wanted: hidden with the pictures and back with Simple
-  UI.
-- barLooks: Tests the pictures' scroll bars with every branch closed and open, scrolled to the end, in Options, with the
-  language list open, whose wheel scrolls a language at a time, and with Simple UI, and that the down arrow and the
-  wheel scroll (Test 52).
-- pictureTests: Runs the tests of the pictures with Simple UI off, then turns it on again (Tests 47 to 52; Rules 9, 18,
-  22; Req. 0, 32, 33).
+@ js/tests/helpers_test.js
+Small tools the test files share: recording results, the names of the tests that run in more than one file (`NAMES`),
+  finding and measuring elements, reading names as screen readers do, acting like a visitor, and picking sample items.
+  Helpers that only one folder's tests use sit in that folder.
+- check: Records one test result. Every test reports this way, and each name is one line in the report.
+- expect: Records a test that passes when its list of offenders is empty, naming the first few, so a failure points at
+  the exact items.
+- phone: Tells whether the window uses the phone layout: narrower than 720 px and at least 640 px tall.
+- width: Measures the width of the first element a selector finds.
+- footerAsWide: Tells whether the footer is as wide as the panes, or the window uses the phone layout, which hides it.
+- footerHidden: Tells whether the footer is hidden in the phone layout; in any other layout it holds by itself.
+- need: Returns a problem in a list if a condition fails, and an empty list if it holds, so a test can list exactly what
+  went wrong.
+- same: Tells whether two lists are equal, item by item. Used to compare lists of civilisations.
+- codes: Lists the language codes from data.json.
+- nodeOf: The row of an item's box and name, from the tree's view, which keeps the elements away from the items.
+- twistyOf: The arrow of an item's row, if it has one.
+- labelOf: The name in an item's row.
+- openTo: Opens every branch above an item, its ancestors(), so that its row is in sight.
+- ticked: Tells whether an Options box is ticked, by its `aria-checked`, as screen readers hear it.
+- ui: Returns the page's texts in the current language.
+- box: Short for an element's `getBoundingClientRect()`: its place and size on the screen.
+- keys: Lists every item in the full tree.
+- describe: Names an element briefly, such as `button#clear` or a tree row's text, for failure messages.
+- rendered: Tells whether an element can be seen: laid out, not hidden, and not text for screen readers only. The
+  accessibility checks look at what is rendered.
+- everything: Lists every element that can be seen on the page.
+- styles: Gets an element's styles and those of its `::before`, `::after` and `::marker` parts, so decorations are
+  checked too.
+- rgb: Reads the numbers of a CSS colour.
+- tone: Names a colour as white, black, green, red or other, loosely enough for light and dark colours.
+- drawn: Names the mark drawn on a checkbox, such as "green tick", "red cross" or "white dash", from the borders of its
+  `::before` and `::after`, leaving out parts that draw nothing (Req. 3, 14, 23, 26).
+- textOf: Reads an element's text as a screen reader would, leaving out parts marked `aria-hidden`.
+- tidy: Turns runs of spaces into single spaces and trims the ends.
+- nameFor: Works out an element's accessible name much as a browser does: from `aria-labelledby`, `aria-label`, its
+  label or its text. Lets the tests check that controls are named (WCAG 4.1.2).
+- visibleTexts: Lists the visible pieces of text inside an element. Used to find stray placeholders, and to compare
+  names with what can be seen (WCAG 2.5.3).
+- keyDown: Sends a key press to an element, as a visitor's keyboard would.
+- tap: Clicks an element with mouse pointer events, as a visitor would.
+- mustHave: Marks an item must have with a click, as a visitor would.
+- mustLack: Marks an item must lack with X, as a visitor would.
+- type: Types a text into Find, as a visitor would.
+- pick: Chooses a language through the Options window, its menu and OK, as a visitor would.
+- reset: Returns the page to its start: Find empty, no marks, every branch closed, the menu and the Options window
+  closed, nothing focused. Tests start from here.
+- beside: Tells whether Find's message is on one line, right of the box and level with it (Req. 21).
+- listed: Lists the civilisations the page shows.
+- expected: Lists the names a set of civilisations should show, translated and sorted, to compare with listed().
+- itemAbove: Tells whether an item has another item above it, or sits in a group marked `"lines"`, which makes it a unit
+  or technology. The tests work this out on their own, apart from the page's code.
+- onlyChildren: Lists an item and those below it while each has one item under it, stopping before an item for which
+  `stopAt` holds: the rows that opening an item opens, or that a mark on it may pass down to.
+- chainOf: The rows that opening an item should open: the item and those below it while each has one row under it
+  (onlyChildren()), those with an arrow only. Worked out apart from the page's own [[js/model/itemtree.js#chainOf]].
+- outside: Lists the items of a tree outside regional items and all under them: what the tree shows with Include ticked
+  and Include Regionals unticked.
+- byPath: Finds the item with a path in the tree as it is now, after it was built again.
+- onTop: Tells whether an item is the top of its line: a unit or technology right under a building or group. The tests
+  work this out on their own, apart from the page's code.
+- lines: Lists the items that start a line.
+- inner: Tells whether an item is a unit or technology below the top of its line with one item under it, where a mark
+  passes down only at the same count (Req. 29, 30).
+- fixtures: Picks sample items from the tree: leaves some civilisations have, buildings, line tops, even and uneven
+  counts, a line in a group of lines, a building some do without, a lone building and an item with a rival. Found from
+  the data, to survive game updates. Each test that uses them picks them itself, after reset(), so no test depends on
+  another. It throws when data.json lacks any of the three leaves that most tests mark, so that their group fails "the
+  tests ran to the end" instead of checking nothing.
+- wait: Waits a number of milliseconds: to hold a long press, and to give a language that is made to fail time to show
+  its popup.
 
 @ js/tests/audit_test.js
 The accessibility audit: checks the page as it stands against WCAG 2.2 AAA, wherever a test calls it. Its checks are
-  Tests 63 to 77.
-- rgba: Reads a CSS colour into its red, green, blue and alpha numbers.
-- blend: Blends a see-through colour over the colour below it, to get the colour actually seen.
-- backgroundOf: Works out the colour behind an element by blending its own and its ancestors' backgrounds. Contrast is
-  measured against this.
-- luminance: Computes a colour's relative luminance, as WCAG defines it.
-- contrast: Computes the contrast ratio of two colours, as WCAG defines it, from 1:1 to 21:1.
-- contrastOn: Computes the contrast of a colour, which may be see-through, over the colour behind it.
+  Tests 208 to 227, and it checks too that the page does not scroll (Test 29).
+- audit: Checks the page as it stands through the checks below, and the focus checks unless asked not to, with the state
+  named in each failure's detail. It also checks that the page shows no image, media or picture in its styles (Test 226;
+  Rules 9, 22). Called in many states and languages.
+- structureChecks: Checks the page's title, its language and every language tag, the language of each language choice,
+  its landmarks, its headings (headingChecks()), and that every ARIA reference points to exactly one element (Tests 208
+  to 216; WCAG 1.3.1, 2.4.2, 3.1.1, 3.1.2, 4.1.2).
+- headingChecks: Checks the headings that can be seen: one main heading, none without text, and none that skips a level
+  (Tests 213 to 215; WCAG 1.3.1, 2.4.6).
+- unmatched: Lists every id in an `aria-labelledby`, `aria-controls` or `aria-describedby` that no element or more than
+  one has, with the element that names it and the count (Test 216).
+- controlChecks: Checks that boxes, branches and the language menu say their state, that every control has a name, and
+  that the name contains its visible text (Tests 217 to 219; WCAG 2.5.3, 4.1.2).
+- colourChecks: Checks the contrast of all visible text, 7:1, or 4.5:1 when large, and of control borders, 3:1 (Tests
+  220, 221; WCAG 1.4.6, 1.4.11).
+- layoutChecks: Checks 44 by 44 targets, but for links inside a sentence, no page scrolling, nothing sticking out
+  sideways, and unjustified text with 1.5 line spacing (Tests 222 to 225 and 29; WCAG 2.5.5, 1.4.10, 1.4.8; Rule 12).
+- focusChecks: Focuses every control in turn, only those of the open window when there is one, and checks that nothing
+  covers it (Test 227; WCAG 2.4.12).
 - visibleCentre: Finds the middle of the visible part of an element's first line, clipped by every scrolling area around
   it, to see what is drawn there.
-- focusChecks: Focuses every control in turn, and checks that it shows a thick outline with 3:1 contrast and that
-  nothing covers it (Test 77; WCAG 2.4.7, 2.4.12, 2.4.13).
-- structureChecks: Checks the page's title and languages, its landmarks and headings, and that ids are unique and ARIA
-  references resolve (Tests 63 to 67; WCAG 1.3.1, 2.4.2, 3.1.1, 3.1.2, 4.1.2).
-- controlChecks: Checks that boxes, branches and the language menu say their state, and that every control has a name
-  containing its visible text (Tests 68, 69; WCAG 2.5.3, 4.1.2).
-- colourChecks: Checks the contrast of all visible text, 7:1, or 4.5:1 when large, and of control borders, 3:1 (Tests
-  70, 71; WCAG 1.4.6, 1.4.11).
-- layoutChecks: Checks 44 by 44 targets, no page scrolling, nothing sticking out sideways, and unjustified text with 1.5
-  line spacing (Tests 72 to 75; WCAG 2.5.5, 1.4.10, 1.4.8; Rule 12).
-- mediaChecks: Checks that the page shows no media or CSS picture, and runs no animations or transitions (Test
-  76; Rules 9, 10, 11, 22).
-- audit: Checks the page as it stands through the checks above, and the focus checks if asked, under a name that says
-  the state. Called in many states and languages.
+- focusables: Lists every element that can be seen and reached with the keyboard.
+- squash: Lower-cases a text and keeps only letters and digits, for loose comparisons.
+- contrastOn: Computes the contrast of a colour, which may be see-through, over the colour behind it.
+- contrast: Computes the contrast ratio of two colours, as WCAG defines it, from 1:1 to 21:1.
+- luminance: Computes a colour's relative luminance, as WCAG defines it.
+- backgroundOf: Works out the colour behind an element by blending its own and its ancestors' backgrounds. Contrast is
+  measured against this.
+- blend: Blends a see-through colour over the colour below it, to get the colour actually seen.
+- rgba: Reads a CSS colour into its red, green, blue and alpha numbers.
 
-@ data.json
-All of the page's data, in English: the civilisations, the tree, who has each item, its icon and the page's texts.
-  useData() reads it at start-up, and the updater writes it through pack() and toJson(): short objects and lists on one
-  line, the rest indented by two spaces. The other languages' texts are in `locales/`, one file each, laid out like the
-  `overrides` and `text` here.
-An item is named by its English name throughout: the tree, `availability`, `pictures`, `extras` and `text.items` use the
-  same names as keys.
-- source: Where the data comes from: aoe2techtree.net and its data address, `helpOffset` (taken from an item's help
-  string number to find its text, in localName()), the game update the data is from, with the address of its notes,
-  which the updater reads and the footer links, and Microsoft's notice with the rules and the project it links.
-- languages: Every language by its code, with its name in itself, its language tag, and whether its words are spaced and
-  its hyphens at line ends are merged. English comes first.
-- civs: The civilisations, in the order whose bits the sets use. A set is a number with one bit per civilisation
-  (bit()).
-- icons: Where the pictures are: the file names of civilisations that differ from their names, and the folder of the
-  tree's icons.
-- icons.groups: The icon of each top-level group, by kind and picture.
-- icons.atlas: For each kind, the pictures in its atlas, which cellOf() places by file name, and cellIn() in the tests
-  too.
-- tree: The tree as nested objects: `{"group": …}` for a top-level group or a group in a building, `{"item": …}` for an
-  item, with `kids` for what is under it and the flags `own`, `lines`, `excludes` and `replaces` where they belong.
-  rebuild() reads it.
-- availability: Who has each item: `"all"`, `{"has": […]}` or `{"lacks": […]}`, whichever is shortest
-  (availabilityOf()). setOf() turns it into a set.
-- pictures: Each item's icon: its kind, its picture in that kind's atlas, and its reach, common, regional or unique,
-  which Include Regionals and the outlines use.
-- ignore: Names on aoe2techtree.net that the updater does not report as new items.
-- extras: Items aoe2techtree.net does not show in its tree, with their kind, picture, reach, name number and
-  civilisations. fromExtra() turns each into availability and a picture.
-- overrides: Names to use instead of the game's own, where it gets one wrong.
-- tools: The texts of the tests' report and of the updater, in English only, with `{}` placeholders that fill() fills
-  in.
-- text: The page's texts in English, in four parts.
-- text.ui: The page's own texts, by the name `data-text`, or for a tooltip `data-tip`, gives in index.html, counted ones
-  as `{"one": …, "other": …}` for plural().
-- text.groups: The name of each group.
-- text.civs: The name of each civilisation.
-- text.items: The name of each item.
+@ js/tests/static/scanner_test.js
+The scanner that the rules tests read the code with: it reads every script and style sheet of the page as text,
+  follows the scripts' imports, and finds the functions of a script by pairing its braces outside its strings and
+  regular expressions. It holds no tests itself.
+- scripts: Reads every script reachable from `js/script.js`, following its imports, with the path and the names of each
+  (importsIn()), and notes which ones load only through a later import, as the tests do.
+- importsIn: Lists the imports of a script: each static `import` and `export … from`, with the names it brings in, and
+  each dynamic import, which loads later.
+- namesIn: Reads the names in the braces of an import as they are exported, without their `as` renamings, so the tests
+  can tell which file imports what.
+- styles: Reads every style sheet that index.html links, with its address.
+- guardScanner: Makes sure the scanner can be trusted before the rules tests use it: it throws when the function finder
+  misreads its sample, or when a script has an import that scripts() could not follow, so that the tests fail "the
+  tests ran to the end" instead of passing over code they never read.
+- importLines: Counts the import lines of a script and its `import(` calls, to compare with the imports scripts()
+  followed.
+- functionsOf: Finds where every function body in a script starts and ends, by pairing its braces in the blanked text.
+- opensBody: Tells whether a brace opens a function's body: after `=>`, or after a parameter list that follows a name
+  which is not `if`, `for`, `while`, `switch`, `catch` or `with`.
+- blanked: Blanks out the insides of strings, regular expressions and template texts, keeping the code inside `${}` and
+  every line break, so that only real braces and parentheses are left to count.
+- closing: Finds where a string or regular expression that starts at a place ends, minding escapes and, for a regular
+  expression, character sets.
+- regexMayStart: Tells whether a `/` after a given character or word starts a regular expression rather than a division,
+  so blanked() skips the right text.
+- linesOfCode: Counts the lines that are not blank, as Rules 23 and 25 count a function or a file.
+- named: Lists the paths of the files a test picks out, the offenders a rules test names.
+- testing: Tells whether a file is one of the tests, in `js/tests/`.
 
-@ locales/de.json
-The German texts. Every other language has a file like it in `locales/`, which the page loads when that language is
-  chosen (localeFile()) and the updater writes. It holds the two keys of data.json that differ by language, with the
-  same keys inside.
-- overrides: German names to use instead of the game's own.
-- text: The page's texts in German, in the same four parts as data.json's `text`.
-- text.ui: The page's own texts.
-- text.groups: The name of each group.
-- text.civs: The name of each civilisation.
-- text.items: The name of each item.
+@ js/tests/static/rules_test.js
+The tests of the rules for the code: comments, CSS and HTML in the scripts, how the scripts load, file names,
+  dependencies, the sizes of files, functions and lines, pictures, sounds and animations, and game data in the scripts.
+  They read the page's files as text through scanner_test.js; the tests of model, view and controller are in
+  layers_test.js.
+- sourceTests: Runs the rules tests on index.html, up to the code that Live Server injects, the style sheets and the
+  scripts, once guardScanner() has made sure the scanner reads them right: codeTests(), loadingTests(), sizeTests(),
+  layerTests() and assetTests().
+- codeTests: Tests that index.html, the style sheets and the scripts have no comments, with `//` looked for only outside
+  strings (Rule 7), and that the scripts set no styles but numbers for CSS custom properties and build no markup (Rule
+  2; Tests 238 to 240).
+- loadingTests: Tests that the tests load only when testing and every other script with the page (Rules 4, 6), that no
+  two files share a name (Rule 29), and that the code has no dependencies (Rule 14; Tests 241 to 244).
+- dependencies: Lists what the code takes from outside the project: a style sheet linked from elsewhere, an import
+  that is not relative or leads out of the project, `require`, an `@import` in a style sheet, and a `url()` outside
+  the project.
+- outward: Tells whether an import is not relative or leads out of the project.
+- sizeTests: Tests that no file has over 400 lines of code, no function over 60 and no line of a script over 120
+  characters (Rules 23 to 25), and that a top-level function with statements is a `function` declaration (Rule 6;
+  Tests 245 to 248).
+- longFunctions: Names every function over 60 lines of code, with its line (Rule 23).
+- wide: Lists the lines of a script that are over 120 characters (Rule 24).
+- widths: Says how many lines of a script are over 120 characters, and from which line, for a failure's detail.
+- arrows: Lists the lines of a script where a top-level arrow function opens a block of statements, which should be a
+  `function` declaration (Test 248).
+- assetTests: Tests that no image in a template has a source, that only the picture look's style rules name pictures
+  (Rules 9, 22), that the page plays no sounds (Rule 10), that nothing moves but the loading spin (Rule 11), and that
+  the scripts name no civilisation or item of the game (Rule 1; Tests 262 to 266).
+- inPictureLook: Tells whether every selector of a style rule is under `.pictures`, the class of the picture look, so
+  that Simple UI shows none of its pictures.
+- unspun: Takes the loading picture's spin out of a style sheet's text, the only animation allowed, before it is
+  searched for others.
+- urlsIn: Lists every `url()` in a style sheet, with the selector of its rule and the full address it names.
+
+@ js/tests/static/layers_test.js
+The tests that model, view and controller stay apart (Rule 6), read from the scripts' text and imports through
+  scanner_test.js, and from the model's items once the other tests have run.
+- layerTests: Runs the tests of model, view and controller: pageTests() on the scripts of the page, then importTests(),
+  modelTests() and viewTests() on every script.
+- pageTests: Tests that only the views touch the page, and that only js/model/data/ touches the address and loads or
+  stores data (Tests 249 to 251).
+- importTests: Tests that the model imports only the model, and that no view imports a controller (Tests 252, 253).
+- modelTests: Tests that no script outside js/model/ and the tests works on the model's sets or imports civsets.js, that
+  only page.js observes the model, that model.js shares `subscribe` but not `notify`, that model.js and itemtree.js
+  hold no texts, and that no item holds a page element (Tests 254 to 258).
+- viewTests: Tests that no view stores data, that only the model saves or restores its own state, Include, Include
+  Regionals and the language, and that no view names a mark in a call to its controller (Tests 259 to 261).
+- within: Picks the files in a folder.
+- reaching: Lists the imports of a file that lead where they should not, as "… imports …".
+- importing: Tells whether a file imports a name.
+- exporting: Tells whether a script exports a name as a `const`, `let` or `function`.
+
+@ js/tests/static/data_test.js
+The tests of the data: that every language has every text and name, and that data.json holds its tree, its items,
+  its texts and its source as the page and the updater expect.
+- FOOTER: The fields of `source` in data.json that the footer names, each with its check: the name, the address, and the
+  game update's number and address (Test 281; Req. 5).
+- UPDATER: The fields of `source` that the updater needs, each with its check: the address of the game's data and the
+  offset of its help texts (Test 282).
+- textTests: Tests that every language has all of the page's text, and names every group, item and civilisation (Tests
+  1 to 3; Req. 11).
+- missing: Lists the names a language lacks in one part of its texts, such as `ui` or `civs`.
+- dataTests: Runs the checks of data.json: its tree, its items, its texts and its source.
+- treeTests: Tests the tree in data.json: every item once, only known fields, `"unique"` and `"lines"` only on groups
+  and `"own"` only on items, and `"excludes"` and `"replaces"` naming other items of the tree (Tests 267 to 272).
+- nodesOf: Lists every node of a tree, those under the others included.
+- misflagged: Makes the question whether a node holds a flag wrongly: as anything but `true`, or on the wrong kind of
+  node.
+- linksOf: Lists the items a node's `"excludes"` or `"replaces"` names, one or several.
+- itemTests: Tests every item of data.json: its availability names only known civilisations, it has an icon, and it is
+  common, regional or unique; and each entry of `extras` is a tree item with a name number and known civilisations,
+  stored as the updater writes it (Tests 273 to 277).
+- knownCivs: Tells whether an availability, `"all"` or a list under `has` or `lacks`, names only known civilisations.
+- kept: Tells whether data.json stores an extra's availability and icon as the updater makes them of it, through
+  fromExtra().
+- alike: Tells whether two values are equal, by their JSON.
+- textDataTests: Tests the texts in data.json: counted texts with an "other" form, the same placeholders in every
+  language, and overrides of known names (Tests 278 to 280).
+- holes: Lists the placeholders of a text, such as `{n}`, once each and sorted, to compare a translation with English.
+- sourceDataTests: Tests that the source the footer names, with its game update's number and address, the updater's
+  source, the tool texts and the ignore list are filled in (Tests 281 to 284).
+- unfilled: Lists the fields of the source that their checks, in `FOOTER` or `UPDATER`, find empty.
+
+@ js/tests/static/updates_test.js
+The tests of the updater's writing, run without going online.
+- updaterTests: Tests the updater's writing without going online: each language goes in its own file, the files it
+  writes read back the same, availability is stored in its shortest form, and stored names are already tidy (Tests 285
+  to 288).
+- readBack: Reads the files the updater would write back into the page's data, as the page reads them at the start.
+- shortest: Works out the shortest form of an item's availability, as the updater stores it.
+
+@ js/tests/behaviour/marking_test.js
+The tests of marking an item: by click, X, Space, the menu key, a long press and a right-click, with the civilisation
+  list, its count and the first filter buttons. Its behaviourTests() runs the tests of every file in
+  `js/tests/behaviour/`.
+- behaviourTests: Runs the tests of the tree, in the order TESTS.md lists them, and waits for the long press of
+  gestures().
+- marking: Tests marking by click, X, the menu key (menuKey()) and Space, what screen readers hear, the civilisation
+  list and its count, the first filter buttons with their names and marks, and Clear (Tests 4 to 17; Req. 3, 4, 17,
+  22, 23).
+- menuKey: Tests that the menu key marks an item must lack and that the browser's own menu does not open over it (Tests
+  13, 14).
+- gestures: Tests that a long press with a finger marks must lack, that a right-click clears it and then marks it again,
+  and that no browser menu opens (Tests 36 to 38 and 14; Req. 3).
+- rightClick: Right-clicks a row as a visitor's mouse would, with pointer events and the `contextmenu` that follows, and
+  returns that event, to see whether the browser's menu was kept shut.
+- chipMarks: Names the mark drawn on each filter button, sorted, such as "green tick" and "red cross".
+
+@ js/tests/behaviour/samples_test.js
+What the behaviour tests share: the names of the tests that run in several of their files, the marks as drawn() names
+  them, and small questions about the civilisation list, the filter buttons and the tree. It holds no tests itself.
+- listedAre: Tells whether the civilisations listed are exactly those of a set, whatever their order (Req. 4).
+- chipNames: Lists the names on the filter buttons.
+- boxOf: The box of a row or a filter button, whose mark drawn() reads.
+- below: Tells whether an item sits anywhere under another.
+
+@ js/tests/behaviour/branches_test.js
+The tests of buildings, groups and lines as a whole: what marking them marks and opens, the names of their filter
+  buttons, and the white dash.
+- branches: Runs the tests of buildings, groups and lines: buildingMarks(), lineFilters(), singleLines() and
+  groupMarks().
+- buildingMarks: Tests that marking a building marks and opens everything in it and names its filter button "Full"
+  with the building's name, and that marking one row in it then shows a white dash, which screen readers hear as mixed
+  (Tests 18 to 21 and 7; Req. 24, 26, 31).
+- lineFilters: Tests that a line's filter button is named after its deepest must-have item, and that clicking it clears
+  its mark from the whole line but leaves the line's other kind of mark (Tests 22 to 24; Req. 25).
+- singleLines: Tests that a fully marked building heading a single line is named after the line's last item, and one
+  with nothing in it plainly (Req. 24), and that in a group of lines, such as Fortifications, a mark passes down to no
+  item with other civilisations while the filter button is named after the deepest item (Tests 25 to 27 and 22; Req.
+  25, 30).
+- markedAlone: Marks one item, from the start, and returns the names on the filter buttons.
+- groupMarks: Tests that marking a top-level group marks and opens everything in it, while the group holds no mark of
+  its own, and greys out nothing in it (Tests 18, 19 and 28).
+- closedInside: Lists the items under a building or group, and throws if any of them is in sight before it is marked,
+  which would leave nothing for the test of what marking opens.
+
+@ js/tests/behaviour/tree_test.js
+The tests of the tree as a whole: the panes with every branch open, the numbers on the items, and Expand all, Collapse
+  all and the arrows.
+- crowding: Tests that a full tree and the longest civilisation list never make the page scroll, push a pane's header
+  out of it, make the panes overlap or differ in height, or move or resize a pane, and that the list scrolls inside its
+  pane, in whatever window the tests run (Tests 29 to 35; Rules 12, 18; Req. 35).
+- counts: Tests the numbers on the items, closed and open, and with filters, through countKinds() (Tests 65 to 69; Req.
+  3).
+- countKinds: Checks each kind of row, an empty top-level row, a closed item with contents, an open item, an item with
+  nothing under it and a group, and names the rows whose numbers differ from wanted().
+- miscounted: Tells whether a row's number, or what screen readers hear of it, differs from wanted().
+- wanted: Works out a row's number and what screen readers hear of it: nothing on an empty top-level row, the row's own
+  number when it is open, has nothing under it or is a group, and otherwise its own number, then the number with all
+  under it.
+- tree: Tests Expand all, Collapse all and the arrows, and that opening a branch also opens its only children (Tests 70
+  to 73; Req. 3, 18, 19).
+- scrolls: Tells whether an element's content is taller than the element, so that it scrolls.
+- ownCount: Counts the civilisations that fit the marks and have an item, or for a group anything in it.
+- fitting: The civilisations that fit every mark, worked out from the items apart from the page's code.
+
+@ js/tests/behaviour/lines_test.js
+The tests of lines: how a mark passes down a line and up to the items above it, and what marking a unit or technology
+  opens.
+- lineTops: Tests that marking the top of a line passes the mark down only to the items with the same civilisations,
+  must have or must lack, that marking it again clears it, that marking a line's last item marks the line before it
+  with one filter button, named after that item, and that must lack on the top then clears the must-have marks below it
+  (Tests 39 to 42, 27 and 22; Req. 25, 29, 30, 34).
+- parents: Tests that must have passes up but never to a building, which then shows a dash, and that an item can be must
+  lack while everything under it is must have (Tests 41, 43, 21, 7 and 5; Req. 4, 26, 34).
+- lines: Tests that marking a closed unit or technology opens it to its first fork or its end (Test 59; Req. 28), then
+  runs evenLine(), unevenLine() and beyond().
+- evenLine: Tests an item below the top of a line whose item under it has the same civilisations: must have on it passes
+  up to the items above it and down while the civilisations stay the same, and no further (Tests 41, 39 and 27; Req.
+  29, 30, 34).
+- unevenLine: Tests an item below the top of a line whose item under it has other civilisations: must lack on it passes
+  down only while the civilisations stay the same, and up to nothing (Tests 39, 27 and 60; Req. 29, 30).
+- beyond: With Include ticked, finds an item that some civilisations have without the unit or technology above it, and
+  checks that a mark on the one above does not pass down to it, that must have on it does not pass up, that must have on
+  it and must lack on the one above list just those civilisations, and that unticking Include, which may leave the one
+  above out, puts it in that one's place with its mark kept (Tests 27, 61 to 64 and 5; Req. 30, 34).
+- sameCivs: Lists the items of a line, from an item down while each has one item under it that is not a group, that have
+  the same civilisations as the item: those a mark on it passes down to (Req. 29, 30).
+- marked: Lists the marked items, leaving out the copies of shared rows, which carry their original's mark.
+
+@ js/tests/behaviour/greying_test.js
+The tests of greying out: an item that excludes another, such as the Xolotl Warrior and the Stable, and the variants
+  that replace others, such as the Pasture and the Farm, with their alternatives (Req. 37).
+- rivals: Tests an item that excludes another, such as the Xolotl Warrior and the Stable: must have on the one greys out
+  and closes the other and everything in it, the one staying in sight and the other's arrow working; must have on any of
+  those greys out the one (excludedBy()); what is greyed out cannot be marked; and must lack greys out nothing (Tests
+  44 to 51).
+- excludedBy: Tests that must have on an item of the excluded branch greys out the item that excludes it, which then
+  cannot be marked, by a click or by the model's toggleMark() itself (Tests 48 to 50).
+- standIns: Tests an item that replaces others, such as the Pasture and the Farm: a row they share (sharedRow()), must
+  have on either greying out and closing the other (shuts()) until it is cleared, and, with Include ticked, the rows it
+  borrows (borrowedRows()) and what each variant greys out (variants()) (Test 57; Req. 37).
+- sharedRow: Tests that marking a row that an item holds of what it replaces marks it in both buildings, opens nothing
+  in the other, and makes one plain filter button (Tests 52 to 54).
+- shuts: Tests that must have on one item greys out and closes the other, which then can be marked neither by a click
+  nor by X, and whose arrow does not open it (Tests 46, 48, 55 and 56; Req. 37).
+- borrowedRows: Tests that each item that replaces buildings holds, as copies, exactly their common and regional rows,
+  but for those under `"own"`; a unit or technology it replaces lends it none (Test 58).
+- variants: Tests that must have on each variant greys out exactly its alternatives, as alternativesOf() works them out
+  from data.json (Test 55; Req. 37).
+- ownKeys: Lists the items marked `"own"` and everything under them, which items standing in for theirs never show.
+- alternativesOf: Lists the items that marking an item must have should grey out, from data.json alone: the items it
+  names, the items that name it, and those that name what it names (Req. 37).
+- side: Lists an item and everything under it but a given item and what is under that: what an item greys out of the
+  branch it excludes, when it sits inside that branch.
+- greyedItems: Lists the items whose rows are greyed out for screen readers, by `aria-disabled`.
+- greyed: Tells whether an item's row is greyed out both for screen readers and for the eye.
+
+@ js/tests/behaviour/finding_test.js
+The tests of Find: what it highlights, opens and counts, and that it drops a match that a mark greys out.
+- finding: Tests that Find highlights exactly its matches, in yellow, opens the branches down to them and counts them
+  beside the box, drops a match once a mark greys out its branch (dropsGreyed()), says when nothing matches, and clears
+  its count when emptied (Tests 74 to 80; Req. 20, 21).
+- dropsGreyed: Tests that Find drops a match once a mark greys out its branch: marks a sample's rival, or that rival's
+  own, until a branch is closed and greyed out, searches for an item in it without the mark, marks again, and checks
+  that the match loses its yellow and that the count beside Find agrees (Test 79).
+- yellow: Tells whether a colour is yellow: red and green high, blue clearly lower (Req. 20).
+- found: Tells whether an item's row is highlighted as a match of Find.

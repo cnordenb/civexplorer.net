@@ -1,23 +1,31 @@
-import { data, load, attempt, recall, remember } from "../model/datahandler.js";
+import { data, load, attempt, recall, remember, SETTINGS } from "../model/data/datahandler.js";
 import { fill, language } from "../model/texts.js";
 import { include, regional, setLanguage } from "../model/model.js";
-import { $, simple } from "../view/stringbuilder.js";
+import { $, simple } from "../view/toolkit.js";
 import { chooseInclude, chooseRegional, chooseSimple } from "../controller/optionshandler.js";
-import { view, setView, tips, setTips } from "../view/pictures.js";
+import { view, setView } from "../view/civsview.js";
+import { tips, setTips } from "../view/pictures/tooltips.js";
 import { openReport, report } from "../view/report.js";
 import { root, results, check, codes, pick, reset } from "./helpers_test.js";
-import { scripts, styles, sourceTests, textTests, tagTests, dataTests, updaterTests } from "./static_test.js";
-import { behaviourTests } from "./behaviour_test.js";
-import {
-  menuTests, languageTests, optionTests, keyboardTests, accessibilityTests, reportTests, uniqueFilterTests,
-  headingTests,
-} from "./interface_test.js";
-import { pictureTests } from "./pictures_test.js";
+import { scripts, styles } from "./static/scanner_test.js";
+import { sourceTests } from "./static/rules_test.js";
+import { textTests, dataTests } from "./static/data_test.js";
+import { updaterTests } from "./static/updates_test.js";
+import { behaviourTests } from "./behaviour/marking_test.js";
+import { menuTests } from "./interface/menu_test.js";
+import { languageTests } from "./interface/languages_test.js";
+import { optionTests, languagePopupTests } from "./interface/options_test.js";
+import { keyboardTests, accessibilityTests } from "./interface/keys_test.js";
+import { uniqueFilterTests } from "./interface/uniques_test.js";
+import { headingTests } from "./interface/headings_test.js";
+import { reportTests } from "./interface/reporting_test.js";
+import { pictureTests } from "./pictures/pictures_test.js";
 
-const LIMIT = 100;
-const STORED = ["language", "include", "regional", "simple", "civView", "tooltips"];
+const FAILURES_SHOWN = 3;
+const STORED = ["language", ...Object.keys(SETTINGS)];
+const RAN = "the tests ran to the end";
 
-const merge = (where) => {
+function merge(where) {
   const merged = new Map();
   for (const { name, ok, detail } of results) {
     if (!merged.has(name)) merged.set(name, { name, ok: true, failures: [] });
@@ -25,15 +33,17 @@ const merge = (where) => {
     merged.get(name).ok = false;
     merged.get(name).failures.push(detail ? `${where}: ${detail}` : where);
   }
-  return [...merged.values()].map(({ name, ok, failures }) => ({ name, ok, detail: failures.slice(0, 3).join("; ") }));
-};
+  return [...merged.values()].map(({ name, ok, failures }) => ({
+    name, ok, detail: failures.slice(0, FAILURES_SHOWN).join("; "),
+  }));
+}
 
 const reportLine = (result, tools) => fill(outcome(result, tools), result);
 
-const outcome = (result, tools) => {
+function outcome(result, tools) {
   if (!result.number) return tools.aborted;
   return result.ok ? tools.pass : tools.fail;
-};
+}
 
 const announce = (lines) => lines.forEach((line) => console.log(`tests: ${line.replace(/\s+/g, " ")}`));
 
@@ -53,6 +63,7 @@ function toStart() {
   if (!regional) chooseRegional(true);
   if (!simple()) chooseSimple(true);
   if (!tips) setTips(true);
+  if (view !== "list") setView("list");
   if (language !== codes()[0]) pick(codes()[0]);
 }
 
@@ -68,43 +79,66 @@ function restore(before) {
   for (const [key, value] of Object.entries(before.stored)) remember(key, value);
 }
 
-async function rounds() {
+async function runAll() {
   const sources = await Promise.all([load("index.html"), styles(), scripts()]);
+  const everyLanguageTests = () => codes().forEach((code) => languageTests(code));
+  const loadedSourceTests = () => sourceTests(...sources);
   const groups = [
-    textTests, behaviourTests, menuTests, () => codes().forEach((code) => languageTests(code)), optionTests,
-    pictureTests, uniqueFilterTests, headingTests, tagTests, keyboardTests, accessibilityTests,
-    () => sourceTests(...sources), dataTests, updaterTests, reportTests,
+    textTests, behaviourTests, menuTests, everyLanguageTests, optionTests, pictureTests, uniqueFilterTests,
+    headingTests, keyboardTests, accessibilityTests, languagePopupTests, loadedSourceTests, dataTests, updaterTests,
+    reportTests,
   ];
   for (const group of groups) {
+    await runGroup(group);
+  }
+}
+
+async function runGroup(group) {
+  try {
     toStart();
     await group();
+  } catch (error) {
+    check(RAN, false, `${group.name} stopped: ${error.stack || error.message}`);
   }
 }
 
 export async function runTests() {
-  const before = snapshot();
-  const where = `${innerWidth} by ${innerHeight}`;
   try {
-    await rounds();
+    await runAndPublish();
   } catch (error) {
-    check("the tests ran to the end", false, error.stack || error.message);
+    stopped(error);
   }
+}
+
+async function runAndPublish() {
+  const before = snapshot();
+  await runAll();
   restore(before);
-  const merged = merge(where);
-  const total = merged.length + 1;
-  merged.push({ name: `rules: there are at most ${LIMIT} tests`, ok: total <= LIMIT, detail: `${total} tests` });
-  merged.filter((result) => result.name.includes(":")).forEach((result, i) => {
-    result.number = i + 1;
-  });
-  const failed = merged.filter((result) => !result.ok);
+  publish(numbered(merge(windowSize())));
+}
+
+const windowSize = () => `${innerWidth} by ${innerHeight}`;
+
+function numbered(results) {
+  const tests = results.filter(({ name }) => name !== RAN);
+  return results.map((result) => (result.name === RAN ? result : { ...result, number: tests.indexOf(result) + 1 }));
+}
+
+function publish(results) {
+  const failed = results.filter((result) => !result.ok);
   root.dataset.tests = failed.length ? "failed" : "passed";
   const tools = data.tools;
   const status = fill(failed.length ? tools.testFailed : tools.testPassed, {
-    failed: failed.length, n: merged.length, window: where,
+    failed: failed.length, n: results.length, window: windowSize(),
     colours: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
   });
   openReport(tools.testTitle, status);
-  for (const result of [...failed, ...merged.filter((r) => r.ok)]) report(reportLine(result, tools));
+  for (const result of [...failed, ...results.filter((r) => r.ok)]) report(reportLine(result, tools));
   announce([...failed.map((result) => reportLine(result, tools)), status, root.dataset.tests]);
   $("report").querySelector("form button").addEventListener("click", () => location.assign(location.pathname));
+}
+
+function stopped(error) {
+  root.dataset.tests = "failed";
+  announce([`the test runner stopped: ${error.message}`, "failed"]);
 }

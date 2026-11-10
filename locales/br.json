@@ -63,7 +63,9 @@
       "tooltips": "Dicas",
       "cancel": "Cancelar",
       "ok": "OK",
-      "loading": "Carregando recursos de imagem..."
+      "loading": "Carregando recursos de imagem...",
+      "languageFailed": "Não foi possível carregar o idioma.",
+      "messageTip": "Clique para fechar esta mensagem"
     },
     "groups": {
       "economy": "Economia",

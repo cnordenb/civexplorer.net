@@ -62,6 +62,24 @@ link.
   commit `fa11988`; with Simple UI the page looks as the requirements describe. Replaced: the requirements' look in both
   modes. [2026-10-22](DEVLOG/DEVLOG3.md#compliance-with-rulesmd-and-requirementsmd-and-jsuijs-split-in-three)
   [2026-10-22](DEVLOG/DEVLOG3.md#answers-to-the-questions-above)
+- **Rule 26 allows one level of subfolders**, each with 7 files of its own, as `js/model/data/` and
+  `js/view/pictures/`. The CI's whitelist allows a script one folder below `js/model/`, `js/view/`, `js/controller/`
+  and `js/tests/`. Replaced: no subfolder, which made the tooltip and the scroll bars share `pictures.js`, and the
+  files, the storage, the address and `attempt()` share `datahandler.js`.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+- **Rule 7 has no exception**: no comment gives a reason or a pattern's name in the code; the reasons and the
+  patterns' names are in `MAINTAINER.md` and here.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+- **Node's built-in `http` module in CI is within Rules 13 to 15**: `.github/runtests.sh` runs it as a plain
+  program, with no package and no build.
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+- **Rule conflict, Rules 13 and 14.** *Clean Code* leans on a formatter, a linter and a coverage tool, but there are
+  none, so the scanner of the scripts in `js/tests/static/scanner_test.js` stands in for a parser, and the checks of
+  model, view and controller that the import graph cannot make are text searches.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
 
 ## Data and languages
 
@@ -92,6 +110,10 @@ link.
   aoe2techtree.net, from `source.update`, which the updater reads from aoe2techtree.net's page (requirement 5).
   Replaced: the month and year of the last update, `source.updated`.
   [2026-11-02 01:11:03](DEVLOG/DEVLOG6.md#011103-data-from-update-188329-the-footer-names-the-game-update-and-a-skill-for-the-updaters-files)
+- **The 16 translations of `languageFailed` and `messageTip` stay as written**, unchecked by native speakers, as none
+  are at hand.
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+  [2026-11-10 11:35:26](DEVLOG/DEVLOG6.md#113526-the-message-that-a-language-could-not-be-loaded-is-a-popup)
 
 ## Marking
 
@@ -122,10 +144,12 @@ link.
   [2026-10-24](DEVLOG/DEVLOG3.md#a-building-heading-a-single-line-is-named-after-its-deepest-item)
 - **Greyed out, not hidden.** An item that cannot go with a marked one is greyed out, at half opacity and
   `aria-disabled`, and stays in the keyboard order, so no row moves. An item marked must have is never greyed out.
-  Replaced: hiding it.
+  A branch that is greyed out closes, so the rows below it move up, as when a branch is closed by hand; Rule 18 allows
+  it. Replaced: hiding it.
   [2026-10-24](DEVLOG/DEVLOG3.md#the-fortified-church-is-a-top-level-row-and-it-and-the-monastery-hide-each-other)
   [2026-10-24](DEVLOG/DEVLOG3.md#greyed-out-instead-of-hidden)
   [2026-10-24](DEVLOG/DEVLOG3.md#the-drop-off-site-variants-hold-what-they-replace-as-the-fortified-church-does)
+  [2026-11-10 11:04:37](DEVLOG/DEVLOG6.md#110437-answers-to-the-questions-of-093628-requirements-3-and-16-and-the-civ-views-test)
 - **Two numbers on a closed item**: its own count, and that of everything under it.
   [2026-10-19](DEVLOG/DEVLOG1.md#two-numbers-on-closed-items)
 
@@ -233,6 +257,18 @@ link.
 - **The game's scroll bars** show whenever a pane's content scrolls, 20 pixels wide, and their room is kept; the report
   window keeps the browser's.
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)
+- **A language that cannot load says so in a popup**, `#languageError`, in the language in use, both when it is chosen
+  and at the start; its **OK** closes it, and nothing on the page moves (Requirement 35). At the start it opens as the
+  page is shown, before anything on it can be used, so it is part of the page's first state, not a change of context
+  (WCAG 2.2, 3.2.5). `#loadError` stays in English, with `lang="en"`, as it shows when there is no data to translate it
+  with. Replaced: the English `#loadError`, meant for missing data, on a switch, and a start in the first language
+  without a word; then a line between the title and the panes, which moved and shrank them, and went only when another
+  language loaded.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+  [2026-11-10 11:35:26](DEVLOG/DEVLOG6.md#113526-the-message-that-a-language-could-not-be-loaded-is-a-popup)
+- **The switches in Options are styled from `aria-checked`**, the state that assistive technology reads; `data-state`
+  is for marks alone. Replaced: `data-state` on the switches too.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
 
 ## Pictures and Simple UI
 
@@ -307,6 +343,8 @@ link.
   [2026-10-31 13:54:31](DEVLOG/DEVLOG5.md#135431-the-combo-boxs-arrow-further-in-and-the-language-lists-own-scroll-bar)
   [2026-10-31 13:59:17](DEVLOG/DEVLOG5.md#135917-seven-languages-in-sight-a-language-at-a-time)
   [2026-10-31 14:07:50](DEVLOG/DEVLOG5.md#140750-the-options-panels-contents-60-pixels-from-its-sides)
+- **The 8 `techtree_*.webp` files stay** in `assets/images/ui/backgrounds/`, though no rule or script uses them.
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
 
 ## Code and files
 
@@ -314,10 +352,12 @@ link.
   [2026-10-19](DEVLOG/DEVLOG1.md#scriptjs-split-into-modules-in-js-rule-16)
 - **Model, view and controller** as *Head First Design Patterns* describes them: the scripts are in `js/model/`,
   `js/view/` and `js/controller/`, and `script.js` is in `js/`. `model.js` is the subject (Observer), `js/view/page.js`
-  its only observer and the composite of the views (Composite), and `nodetree.js` and `optionshandler.js` the
-  strategies of `treeview.js` and `optionsview.js` (Strategy). A view never imports a controller, never changes the
-  model and never names a mark; a controller never touches the page or the address; only the model works on its sets
-  and reaches `page.update()`; Test 85 checks it. Replaced: `script.js` in the main folder; the
+  its only observer and the composite of the views (Composite), and `treehandler.js` and `optionshandler.js` the
+  strategies of `treeview.js`, `civsview.js` and `optionsview.js` (Strategy). A view never imports a controller, never
+  changes the model and never names a mark; a controller never touches the page or the address; only the model works
+  on its sets and tells its observers of its changes, and only `page.js` subscribes to it; the tests in
+  `js/tests/static/layers_test.js` check it.
+  Replaced: `script.js` in the main folder; the
   scripts split by folder only, with the controllers drawing the page and the tree's elements kept on the model's
   items.
   [2026-10-19](DEVLOG/DEVLOG1.md#a-documentation-folder-and-scriptjs-in-the-main-folder)
@@ -342,13 +382,13 @@ link.
   `optionshandler.js`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
 - **A view reports the gesture, and its controller picks the mark**: a click is must have, a long press and the
-  menu must lack, decided in `nodetree.js` as the keys are.
+  menu must lack, decided in `treehandler.js` as the keys are.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
 - **The counts, the greyed-out branches and the matching civilisations come from the model**: `countOf()`,
   `behind()` and `matchingCivs()`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
-- **The model refuses to mark a greyed-out item**: `mark()` changes nothing and `toReveal()` reveals nothing. Replaced:
-  the check in `toggle()` in `nodetree.js`.
+- **The model refuses to mark a greyed-out item**: `toggleMark()` changes nothing and `toReveal()` reveals nothing.
+  Replaced: the check in `toggle()` in the tree's controller.
   [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
 - **The language in use is the model's alone**; `optionshandler.js` keeps only the language still loading, and a
   failed load puts Options back on the language in use. Replaced: `chosen`.
@@ -359,29 +399,30 @@ link.
 - **`js/script.js` starts the page**; `optionshandler.js` starts only Options. Replaced: `start()` in
   `optionshandler.js`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
-- **`page.update()` is the model's notice alone**; `redraw()` in `page.js` draws the page for `"start"` and
-  `"look"`.
+- **The model's notice reaches the page through `redraw()`**, which `startPage()` in `page.js` subscribes as
+  `{ update: redraw }`; `redraw()` also draws the page for `"start"` and `"look"`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
-- **Only `datahandler.js` writes the address**, with `keepInAddress()`, next to `remember()`, and only `model.js`
-  calls it.
+- **Only `js/model/data/address.js` writes the address**, with `keepInAddress()`, which `datahandler.js` passes on,
+  and only `model.js` calls it. Replaced: `keepInAddress()` in `datahandler.js`, next to `remember()`.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
   [2026-11-02 00:44:14](DEVLOG/DEVLOG6.md#004414-the-model-guards-its-own-marks-and-saves-its-own-state)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
 - **The updater stays outside model, view and controller**: `updatehandler.js` hands the one result of
   `fetchUpdate()` straight to `report.js`, as nothing else waits for it.
   [2026-11-01 12:17:45](DEVLOG/DEVLOG5.md#121745-the-rest-of-model-view-and-controller-put-in-its-place)
-- **`datahandler.js` split**: the updater is in `updater.js`, and `cellOf()` is in `stringbuilder.js`, as it is only
-  how the icons are laid out. Replaced: both in `datahandler.js`.
+- **`datahandler.js` split**: the updater is in `updater.js`, and `cellOf()` left it, as it is only how the icons are
+  laid out; it is now in `icons.js`. Replaced: both in `datahandler.js`.
   [2026-11-02 00:52:37](DEVLOG/DEVLOG6.md#005237-datahandlerjs-split-the-updater-in-updaterjs-and-cellof-in-the-view)
 - **`datahandler.js` only loads and stores data**, and the rest of what it held is in `js/model/`: the civilisations'
   sets in `civsets.js`, the chosen language in `texts.js`, and the icons' file names and the order of an atlas in
   `icons.js`. A script imports only those before it: `civsets.js`, `datahandler.js`, `texts.js`, `icons.js`,
-  `updater.js`, `itemtree.js`, `model.js`. Replaced: all of them in `datahandler.js`, `byFile` among them.
+  `itemtree.js`, `updater.js`, `model.js`. Replaced: all of them in `datahandler.js`, `byFile` among them.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
 - **`attempt()` catches only the browser's refusals**, `DOMException`s, and throws any other error again. Replaced:
   every error turned into `null`.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
 - **No flag arguments**: a setter is always given `on`, as `setLoading(on)`; values that go together are one
-  argument, as the filter for `chipOf()` and `chipName()`; and a function that did two things is two, as
+  argument, as the filter for `entryOf()` and `chipName()`; and a function that did two things is two, as
   `unmarkLone()` and `unmarkLine()`. Replaced: `showLoading(shown = true)`, `showLoadError(shown = true)` and
   `unmarkLine(item, kind, own = false)`.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
@@ -400,12 +441,59 @@ link.
 - **Each item's icon and reach are read in one place**: `spriteOf()` and `atlasOf()` in `icons.js`, and `reachOf()`
   in `itemtree.js`.
   [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
-- **Patterns by name**: Prototype (`clone()`), Command-style tables (`GESTURES`, `MARK_KEYS`, `MOVES`, `MENU_MOVES`,
-  `choices`) and Facade (`datahandler.js`), besides model, view and controller.
+- **Patterns by name**, as `MAINTAINER.md` names them: Observer (`model.js` and its one observer), Composite one level
+  deep (the `parts` of `page.js`), Strategy (each controller handed to its views and checked by `demand()`, never
+  swapped), the Hollywood principle (`redrawn`), Facade (`datahandler.js` over `js/model/data/`), Adapter (`fromGame()`
+  and `fromExtra()`), Prototype (`clone()`) and a Proxy for one property (a copied item's `self`). `GESTURES`,
+  `MARK_KEYS`, `MOVES`, `BRANCH_KEYS`, `MENU_MOVES`, `choices` and `SETTINGS` are tables, not Command: they have no
+  command objects, invoker or undo. Replaced: "Command-style tables".
   [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
 - **The scripts read top-down**: each function comes before the ones it calls, and every loop's body is a block of its
   own.
   [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+- **The view modules are named for what they hold**: `page.js` the page's Composite, its fixed and translated
+  texts, its messages and showing it; `civsview.js` the civilisations' pane, its count, list or tiles, the list-or-tile
+  setting and **Filters**; `treeview.js` the tree, its gestures, buttons and Find box; `optionsview.js` the Options
+  window and the language menu; `report.js` the report window; `toolkit.js` what every view uses; and
+  `js/view/pictures/` the picture look, with `pictures.js` (the screen's pictures, their preloading and the loading
+  screen), `tooltips.js` and `scrollbars.js`. `treeview.js` stays whole, as its gestures, buttons and Find box share
+  its rows, the controller's actions and the press under way, and split they would import each other. Replaced:
+  `stringbuilder.js`, which built no strings, and the tooltip and the scroll bars in `pictures.js`.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+- **The filter buttons belong to the civilisations' pane**: `civsview.js` draws them, wires them and reads them back,
+  and each carries its filter in a `WeakMap`, not in attributes. Replaced: `data-i`, `data-state` and `data-lone`,
+  written by one view and read by another.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **Each setting has one `SETTINGS` entry**, its values with the default first, and one writer of its control,
+  `showChoices()`. The defaults are in the code, not in `data.json`, as they are how the page behaves, not data
+  (Rule 1). The look, Tooltips and the civilisations' view keep their state in their views, as the model does not
+  compute with them.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **`script.js` runs the start-up**: it reads the mode once (`MODE`, `RUNS`), and its failure handler sees only a
+  failure to load. `applySimple()` only switches the look, and `chooseSimple()` redraws. Replaced: the start-up
+  through `chooseSimple()`, which wrote the stored setting back, and a handler that also caught the tests' errors.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **The language rule is in `datahandler.js`** (`firstLanguage()`, `hasLanguage()`, `startLanguage()`), as `pack()`
+  and `unpack()` use it and `texts.js` imports from there. Replaced: the rule written out in five places.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **`cellOf()` throws for a picture that is not in its atlas**, and it is in `icons.js` with the atlas's order.
+  Replaced: a cell worked out from position -1, outside the atlas, with no error.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **`datahandler.js` is the data's Facade**, and `treeKeys()` and the queries of the tree's shape are in `itemtree.js`.
+  It loads and stores the files, holds the language rule, and passes on the rest of `js/model/data/`: `storage.js`
+  (the browser's storage, `SETTINGS`), `address.js` (the address) and `guard.js` (`attempt()`), so every other script
+  imports from it alone. Replaced: all of them in `datahandler.js`.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+- **The words of marking**: `toggleMark()`, `branchState()`, `toggleState()`, `checkboxState()` and `filterMark()`; a
+  `mark` is a mark's value, and `kind` a node's type.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **The form of a function**: at a script's top level, a function with statements is a `function` declaration, and
+  an arrow function is a single expression; "rules: a top-level function with statements is a function declaration"
+  checks the first half.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
 - **Two style sheets**: `css/base.css`, the layout and Simple UI, and `css/pictures.css`, every rule with a picture or a
   font.
   [2026-10-30](DEVLOG/DEVLOG5.md#two-style-sheets-in-css-the-scripts-in-model-view-and-controller-and-the-games-scroll-bars)
@@ -425,9 +513,32 @@ link.
 - **On GitHub the tests run in real time**, and the workflow reads their report from Chrome's log, as virtual time
   jumped past the waits for files and pictures and cut the tests short.
   [2026-11-01 18:06:02](DEVLOG/DEVLOG5.md#180602-the-tests-on-github-run-in-real-time)
-- **At most 100 tests** (Rule 17), merged where needed. [2026-10-19](DEVLOG/DEVLOG1.md#at-most-100-tests-rule-17)
-- **The tests run in the order of `TESTS.md`'s categories**: functional, accessibility, maintainability.
+- **One thing per test** (Rule 17, as amended): each test checks one thing, for one purpose, a requirement, a rule or a
+  bug recorded in the DEVLOG. A behaviour of the page that no requirement names, such as the picture look, Include
+  Regionals or the updater, is tested under Rule 4, which asks for tests that the page still works, with the entry where
+  it was decided; a decision about the code's structure is tested under Rule 6, and these tests stay. No two tests test
+  one thing: a thing checked in several places keeps one name, from `NAMES` in `helpers_test.js`, and a sample that must
+  exist throws, as `fixtures()` does, instead of being a test. Replaced: at most 100 tests, merged where needed, with
+  their parts named by `checkAll()` and `flags()`, and the old Test 99, which counted them.
+  [2026-10-19](DEVLOG/DEVLOG1.md#at-most-100-tests-rule-17)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+  [2026-11-10 11:04:37](DEVLOG/DEVLOG6.md#110437-answers-to-the-questions-of-093628-requirements-3-and-16-and-the-civ-views-test)
+- **The tests run in groups**, the data and the behaviour first, the files' checks and the report window last, and
+  `TESTS.md` lists them by number, with a contents by the category in each name. Replaced: three categories,
+  functional, accessibility and maintainability.
   [2026-10-19](DEVLOG/DEVLOG1.md#the-tests-run-in-the-order-of-testsmds-categories)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+- **The tests have a folder for each kind**, `behaviour/`, `interface/`, `pictures/` and `static/`, beside
+  `run_test.js`, `helpers_test.js` and `audit_test.js`, and a helper sits beside the tests that use it. Replaced:
+  seven files in `js/tests/`, where `helpers_test.js` kept `barProblems()`, `dropsGreyed()` and the tooltip and
+  fixture helpers, as the files that use them had 400 lines of code (Rules 25 and 26).
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
+- **The paths of style sheets and scripts are GitHub's to check**: the allowed-files step of `tests.yml` checks them, so
+  the page's own checks of them, and of the folder and format of a picture that a style sheet names, are gone. The old
+  Test 55 is gone too: the tests of every `lang` attribute, of each language choice's tag and of each control's name
+  cover it. Replaced: those parts of the old Tests 83 and 86, and the old Test 55.
+  [2026-11-10 09:36:28](DEVLOG/DEVLOG6.md#093628-answers-to-the-questions-subfolders-and-one-thing-per-test-rule-17)
 - **Tests are named by number** in the report and GitHub's log. [2026-10-21](DEVLOG/DEVLOG2.md#tests-named-by-number)
 - **Only the window the tests open in.** The test windows of 360 by 640, 390 by 844 and 320 by 256 are gone, so 400 %
   zoom is tried by hand. [2026-10-21](DEVLOG/DEVLOG2.md#fewer-test-windows-and-three-tests-removed)
@@ -439,14 +550,20 @@ link.
   [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
 - **Close in the test report** leaves the tests: it opens the page's address without `?test`.
   [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
-- **Each test picks its own sample items** with `fixtures()`, and a failure's detail names its parts with `flags()`.
+- **Each test picks its own sample items** with `fixtures()`.
   Replaced: one set of sample items made in `run_test.js`, passed from test to test and refreshed by two of them.
   [2026-11-02 09:51:57](DEVLOG/DEVLOG6.md#095157-clean-code-refactoring-names-arguments-error-handling-and-datahandlerjs-in-parts)
 - **Each group of tests starts from the same state** (`toStart()` in `run_test.js`): Simple UI on, Include off,
-  Include Regionals on, Tooltips on, the first language, and nothing marked.
+  Include Regionals on, Tooltips on, the civilisations as a list, the first language, and nothing marked.
   [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
-- **A check of several parts names them** with `checkAll()`, so that a failure's detail lists the parts that failed.
-  [2026-11-08 22:36:58](DEVLOG/DEVLOG6.md#223658-clean-code-and-head-first-design-patterns-refactoring-names-branch-sets-itemtreejs-and-the-tests-start)
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **A group that throws is reported by name, and the run goes on**: "the tests ran to the end" fails with the group's
+  name and error, and is the only line without a number. `fixtures()` throws when `data.json` lacks a case.
+  Replaced: a run that stopped at the first error, and fixtures that left a missing case `undefined`.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
+- **GitHub runs `.github/runtests.sh`**: six windows over http, served by Node's own `http` module with no package, and
+  one over `file://`. Replaced: six windows over `file://`, where the address tests could not run.
+  [2026-11-10 05:21:12](DEVLOG/DEVLOG6.md#052112-clean-code-and-head-first-design-patterns-refactoring-round-3-test-runner-view-modules-settings-start-up)
 
 ## Documents
 
@@ -456,14 +573,17 @@ link.
   own, then explains how the code works, with a UML diagram (Rule 27).
   [2026-10-19](DEVLOG/DEVLOG1.md#maintainermd-explains-the-code)
   [2026-10-22](DEVLOG/DEVLOG3.md#maintainermd-rewritten-for-rule-27)
-- **`code_docu.pdf`** describes the code folder by folder: a chapter for each folder, a subchapter for each file, and a
-  section for each function. Replaced: a chapter for each file. [2026-10-19](DEVLOG/DEVLOG1.md#code_docupdf)
-  [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again) [2026-10-31](DEVLOG/DEVLOG5.md#code_docupdf-by-folder)
+- **`code_docu.pdf`** describes the code folder by folder: a chapter for each folder, each subfolder a chapter of its
+  own after the folder it is in, a subchapter for each file, and a section for each function. Replaced: a chapter for
+  each file. [2026-10-19](DEVLOG/DEVLOG1.md#code_docupdf) [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again)
+  [2026-10-31](DEVLOG/DEVLOG5.md#code_docupdf-by-folder)
+  [2026-11-10 13:04:12](DEVLOG/DEVLOG6.md#130412-code_docupdf-made-again-with-a-chapter-for-each-subfolder)
 - **`code_docu.pdf` is made from `.claude/skills/`**, only when asked, by four skills for Claude Code that keep its
   steps, scripts and descriptions. Its chapters keep their order, from the main folder to `locales/`, and each UML
-  diagram is on an A4 page. Replaced: the sources outside the project, and the A3 page.
-  [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again)
+  diagram is on an upright A4 page. Replaced: the sources outside the project, the A3 page, and a UML page turned on
+  its side when its diagram came out larger that way. [2026-10-30](DEVLOG/DEVLOG5.md#code_docupdf-made-again)
   [2026-10-31 16:46:04](DEVLOG/DEVLOG5.md#164604-test-51-gone-close-leaving-the-tests-and-the-skills-that-make-code_docupdf)
+  [2026-11-10 13:13:18](DEVLOG/DEVLOG6.md#131318-every-page-of-code_docupdf-upright)
 - **Four UML diagrams.** The overview, the only one in `MAINTAINER.md`, shows the code in model, view and controller,
   file by file; `code_docu.pdf` adds a diagram of each part, function by function, made from the code. No arrow
   crosses or touches another, or runs under a box or a label, and every build of `code_docu.pdf` checks it, as it

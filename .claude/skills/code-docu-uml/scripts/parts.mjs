@@ -6,15 +6,17 @@ const PARTS = [
   { part: "controller", dir: "js/controller" },
 ];
 const ROLES = {
-  "js/model/datahandler.js": "reads data.json and locales/",
+  "js/model/data/datahandler.js": "facade, reads data.json and locales/",
   "js/model/model.js": "subject",
   "js/view/page.js": "observer, composite",
-  "js/controller/nodetree.js": "strategy of treeview",
+  "js/controller/treehandler.js": "strategy of treeview",
   "js/controller/optionshandler.js": "strategy of optionsview",
 };
-const UNDRAWN = "js/tests";
+const UNDRAWN = "js/tests/";
 
 export const classOf = (file) => path.posix.basename(file, ".js");
+
+const within = (dir) => (folder) => folder === dir || folder.startsWith(`${dir}/`);
 
 const names = (params) => `(${params.slice(1, -1).replace(/\s*=\s*[^,]+/g, "").replace(/[{}[\]\s]/g, "")
   .split(",").filter(Boolean).join(", ")})`;
@@ -36,7 +38,7 @@ function edgesOf(mods) {
 
 export function partDiagrams(modules, folders) {
   return PARTS.map(({ part, dir }) => {
-    const files = folders.find((f) => f.dir === dir).files;
+    const files = folders.filter((f) => within(dir)(f.dir)).flatMap((f) => f.files);
     const mods = files.map((f) => modules.get(f));
     return { id: `uml-${part}`, part, dir, files, classes: mods.map(classText), edges: edgesOf(mods) };
   });
@@ -45,16 +47,27 @@ export function partDiagrams(modules, folders) {
 export const overviewBoxes = (source) => [...source.matchAll(/class (\w+) \{\s*<<([^>]+)\/>>([^}]*)\}/g)]
   .map(([, name, dir, body]) => ({ name, dir, files: body.trim().split(/\s+/).filter(Boolean) }));
 
+const ownerOf = (boxes, dir) => boxes.filter((b) => within(b.dir)(dir))
+  .sort((a, b) => b.dir.length - a.dir.length)[0];
+
+function expected(box, boxes, folders) {
+  return folders.filter((f) => ownerOf(boxes, f.dir) === box).flatMap(({ dir, files }) => {
+    if (dir === box.dir) return files.map((f) => path.posix.basename(f));
+    const sub = dir.slice(box.dir.length + 1);
+    return box.files.includes(`${sub}/`) ? [`${sub}/`] : files.map((f) => `${sub}/${path.posix.basename(f)}`);
+  });
+}
+
 export function overviewProblems(source, modules, folders) {
   const boxes = overviewBoxes(source);
   const problems = [];
   for (const box of boxes) {
-    const real = (folders.find((f) => f.dir === box.dir)?.files ?? []).map((f) => path.posix.basename(f));
+    const real = expected(box, boxes, folders);
     const wrong = [...real.filter((f) => !box.files.includes(f)), ...box.files.filter((f) => !real.includes(f))];
     if (wrong.length) problems.push(`uml: the overview's box ${box.name} differs from ${box.dir}/ in ${wrong}`);
   }
-  const boxOf = (file) => boxes.find((b) => b.dir === path.posix.dirname(file))?.name;
-  const used = new Set([...modules.values()].filter((m) => path.posix.dirname(m.file) !== UNDRAWN)
+  const boxOf = (file) => ownerOf(boxes, path.posix.dirname(file))?.name;
+  const used = new Set([...modules.values()].filter((m) => !m.file.startsWith(UNDRAWN))
     .flatMap((m) => [...usedBy(m)].map((from) => `${boxOf(m.file)} ..> ${boxOf(from)}`))
     .filter((e) => !/undefined/.test(e) && e.split(" ..> ")[0] !== e.split(" ..> ")[1]));
   const drawn = new Set([...source.matchAll(/^\s*(\w+ \.\.> \w+)/gm)].map((m) => m[1]));

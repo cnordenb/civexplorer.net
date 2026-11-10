@@ -63,7 +63,9 @@
       "tooltips": "工具提示",
       "cancel": "取消",
       "ok": "確定",
-      "loading": "正在載入圖片資源..."
+      "loading": "正在載入圖片資源...",
+      "languageFailed": "無法載入語言。",
+      "messageTip": "點擊以關閉此訊息"
     },
     "groups": {"economy": "經濟", "military": "軍事", "uniqueUnits": "特殊單位", "uniqueTechnologies": "特殊科技", "fortifications": "防禦工事"},
     "civs": {

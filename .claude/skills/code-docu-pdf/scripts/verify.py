@@ -79,8 +79,8 @@ for i, p in enumerate(reader.pages, 1):
     w, h = (round(float(x)) for x in p.mediabox[2:])
     sizes.setdefault((w, h), []).append(i)
 print("pages:", len(reader.pages), "sizes:", {f"{w}x{h}": len(v) for (w, h), v in sizes.items()})
-report("pages that are not A4", [(i, f"{w}x{h}") for (w, h), v in sizes.items()
-                                  if {w, h} != {595, 842} for i in v])
+report("pages that are not upright A4", [(i, f"{w}x{h}") for (w, h), v in sizes.items()
+                                          if (w, h) != (595, 842) for i in v])
 
 data_start = pages.get("c-data-json")
 after = [pages[k] for k in pages if pages[k] > (data_start or 0)]

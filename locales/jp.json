@@ -63,7 +63,9 @@
       "tooltips": "ツールチップ",
       "cancel": "キャンセル",
       "ok": "OK",
-      "loading": "画像アセットを読み込み中..."
+      "loading": "画像アセットを読み込み中...",
+      "languageFailed": "言語を読み込めませんでした。",
+      "messageTip": "クリックしてこのメッセージを閉じる"
     },
     "groups": {
       "economy": "経済",

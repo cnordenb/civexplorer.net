@@ -1,41 +1,42 @@
-import { data } from "../model/datahandler.js";
+import { data } from "../model/data/datahandler.js";
 import { fill } from "../model/texts.js";
-import { $, clone } from "./stringbuilder.js";
+import { $, clone } from "./toolkit.js";
 
 export const showUpdating = () => openReport(data.tools.updateTitle,
   fill(data.tools.updateLoading, { source: data.source.name }));
 
-export function showUpdate({ messages, fresh, files }) {
-  const tools = data.tools;
+export function showUpdate({ messages, blocked, counts, files }) {
   messages.forEach(report);
-  if (!fresh) {
-    $("reportStatus").textContent = tools.updateBlocked;
+  if (blocked) {
+    setStatus(data.tools.updateBlocked);
     return;
   }
-  if (!messages.length) report(tools.updateSame);
-  $("reportStatus").textContent = fill(tools.updateReady, {
-    civs: fresh.civs.length,
-    items: Object.keys(fresh.availability).length,
-    languages: Object.keys(fresh.languages).length,
-  });
-  $("reportDownloads").replaceChildren(...files.map(({ path, json }) => {
-    const li = clone("downloadTemplate");
-    const link = li.querySelector("a");
-    link.href = URL.createObjectURL(new Blob([`${json}\n`], { type: "application/json" }));
-    link.download = path.split("/").pop();
-    link.textContent = fill(tools.download, { file: path });
-    return li;
-  }));
+  if (!messages.length) report(data.tools.updateSame);
+  setStatus(fill(data.tools.updateReady, counts));
+  $("reportDownloads").replaceChildren(...files.map(downloadItem));
   $("reportDownloads").hidden = false;
 }
 
+function setStatus(text) {
+  $("reportStatus").textContent = text;
+}
+
+function downloadItem({ path, json }) {
+  const li = clone("downloadTemplate");
+  const link = li.querySelector("a");
+  link.href = URL.createObjectURL(new Blob([`${json}\n`], { type: "application/json" }));
+  link.download = path.split("/").pop();
+  link.textContent = fill(data.tools.download, { file: path });
+  return li;
+}
+
 export function showUpdateFailed(error) {
-  $("reportStatus").textContent = fill(data.tools.updateFailed, { error: error.message });
+  setStatus(fill(data.tools.updateFailed, { error: error.message }));
 }
 
 export function openReport(title, status) {
   $("reportTitle").textContent = title;
-  $("reportStatus").textContent = status;
+  setStatus(status);
   $("reportList").replaceChildren();
   $("reportDownloads").replaceChildren();
   $("reportDownloads").hidden = true;

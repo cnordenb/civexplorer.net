@@ -48,9 +48,12 @@ const nearest = (p, boxes) => boxes.reduce((best, b) => (away(p, b) < away(p, be
 
 const ends = (points, boxes) => [points[0], points.at(-1)].map((p) => nearest(p, boxes).name);
 
+const marked = (path, side) => /url\(/.test(path.getAttribute(`marker-${side}`) ?? "");
+
 function edgesOf(root, boxes) {
   return [...root.querySelectorAll(".edgePaths path")].map((path) => {
     const points = lineOf(root, path);
+    if (marked(path, "start") && !marked(path, "end")) points.reverse();
     const [from, to] = ends(points, boxes);
     return { name: `${from} → ${to}`, from, to, points };
   });

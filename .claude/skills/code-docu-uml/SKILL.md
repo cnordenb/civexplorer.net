@@ -16,8 +16,8 @@ There are four diagrams, each on its own page after the contents, decided on 202
 | Id | Diagram | Made from | Layout |
 | --- | --- | --- | --- |
 | `uml-overview` | Each folder of `js/` with its files | `MAINTAINER.md`, by hand | dagre |
-| `uml-model` | The scripts of `js/model/` and their functions | The code, by `parts.mjs` | ELK |
-| `uml-view` | The scripts of `js/view/` and their functions | The code, by `parts.mjs` | ELK |
+| `uml-model` | The scripts of `js/model/` and `js/model/data/` and their functions | The code, by `parts.mjs` | ELK |
+| `uml-view` | The scripts of `js/view/` and `js/view/pictures/` and their functions | The code, by `parts.mjs` | ELK |
 | `uml-controller` | The scripts of `js/controller/` and their functions | The code, by `parts.mjs` | ELK |
 
 The overview's source is the mermaid block under "### UML diagram" in `documentation/MAINTAINER.md`, which shows
@@ -31,7 +31,9 @@ and sets `window.docReady`, which `print.mjs` waits for.
 
 The overview is written by hand, so that it stays short enough for `MAINTAINER.md`: a box for each folder, its
 stereotype the folder (`<<js/view/>>`) and its lines the files, and an arrow with a label from a part to each part it
-uses. `parts.mjs` (`overviewProblems`) compares it with the code on every build, and `gen.mjs` stops on each
+uses. A box also holds the files of its folder's subfolders, named from its own folder (`data/datahandler.js`), or
+names a subfolder alone with its slash (`behaviour/`), which stands for all of that folder's files and links to its
+chapter. `parts.mjs` (`overviewProblems`) compares it with the code on every build, and `gen.mjs` stops on each
 difference with a warning that starts with `uml:`:
 
 - `the overview's box … differs from … in …`: a file was added, moved or removed; change the box's lines.
@@ -48,16 +50,21 @@ seen to cross. GitHub's own rendering cannot be checked from here; the check is 
 
 ## The diagrams of the parts
 
-`parts.mjs` (`partDiagrams`) writes them from the inventory: a box for each script of the folder, named by its file
-name without `.js`, its role as stereotype (`ROLES`: `subject`, `observer, composite`, the strategies, what
-`datahandler` reads, or `module`), then each top-level object and function in the order of the file, `+` if
-exported and `-` if not, with the names of its parameters. An arrow points from a script to each script of the same
-folder that it imports. They change with the code by themselves and need no edits.
+`parts.mjs` (`partDiagrams`) writes them from the inventory: a box for each script of the part's folder and its
+subfolders, named by its file name without `.js`, its role as stereotype (`ROLES`: `subject`, `observer, composite`, the
+strategies, what `datahandler` reads, or `module`), then each top-level object and function in the order of the file,
+`+` if exported and `-` if not, with the names of its parameters. An arrow points from a script to each script of the
+same part that it imports. They change with the code by themselves and need no edits.
 
-They are drawn with ELK (`layout: elk`), which routes arrows at right angles and spreads their ends along the
-boxes; dagre crossed arrows in the view's diagram in every order tried. `uml.js` draws the arrows in their own order,
-then reversed, then in shuffled orders (`TRIES`, 12, with a fixed seed so every build is the same), each top to
-bottom and left to right, and keeps the first order that gives a clean drawing.
+They are drawn with ELK (`layout: elk`), which routes arrows at right angles and spreads their ends along the boxes;
+dagre crossed arrows in the view's diagram in every order tried. `uml.js` draws the arrows in their own order, then
+reversed, then in shuffled orders (`TRIES`, 12, with a fixed seed so every build is the same), and then in their own
+order with one arrow written the other way round (`b <.. a` for `a ..> b`), each arrow in turn. Such an arrow still
+points from the script that imports to the one it imports, but ELK lays it out from `b`, which moves the boxes into
+other layers: on 2026-11-10, `model.js` and `updater.js` both imported `itemtree.js` and `texts.js`, and no order could
+draw the model without a crossing until `itemtree ..> civsets` was turned. Every order is drawn, top to bottom and left
+to right, and the largest of all the clean drawings is kept (until 2026-11-10, the first order that gave a clean drawing
+was kept). `collide.js` reads an arrow's head from its marker, so a turned arrow is checked as the arrow it shows.
 
 ## The check
 
@@ -74,15 +81,18 @@ exits with 1, which stops `build.mjs`. Never install a PDF whose build printed o
 
 ## How it is fitted
 
-- Each diagram is tried on an upright and a lying A4 page (`@page uml-portrait` and `uml-landscape` in
-  `code-docu/scripts/doc.css`, 176 by 263 mm inside the margins, and the other way round). The room is the page less
-  the headings and paragraphs above the diagram, measured at that page's width, less `SAFETY_MM` (4 mm).
-- Of the clean drawings the largest scale wins, but the text is never larger than `MAX_PT` (9 points), so a small
-  diagram does not fill the page with large letters; at a tie the upright page wins.
+- Each diagram is fitted to an upright A4 page (`@page uml-portrait` in `code-docu/scripts/doc.css`, 176 by 263 mm
+  inside the margins). Until 2026-11-10 a lying page was tried too, and the controller's diagram came out on its side.
+  The room is the page less the headings and paragraphs above the diagram, measured at that page's width, less
+  `SAFETY_MM` (4 mm).
+- Of the clean drawings of every order the largest scale wins, but the text is never larger than `MAX_PT` (9 points), so
+  a small diagram does not fill the page with large letters.
 - `print.mjs` prints a line `uml: {…}` for each: its id, layout, direction, page, the text's size in points and how
   many drawings were tried. On 2026-11-02: the overview upright at 7.6 points, the model upright `LR` at 4.7 after 2
   drawings (7.4 before `updater.js`, 5.1 before `civsets.js`, `texts.js` and `icons.js`), the view upright `LR`
-  at 5.6 after 4 drawings, the controller upright at 9.
+  at 5.6 after 4 drawings, the controller upright at 9. On 2026-11-10, with the subfolders: the overview at 6.5, the
+  model upright `LR` at 3.7, drawn clean only with `itemtree ..> civsets` turned, the view upright `LR` at 4.5, and
+  the controller upright at 9.
 
 If the model's or the view's text gets too small to read as it grows, the choice is to give it more room; ask before
 changing the page's size, as A4 was a decision.
@@ -99,6 +109,8 @@ changing the page's size, as A4 was a decision.
 - `uml problem: mermaid could not draw a diagram: …`: the overview in `MAINTAINER.md` has a syntax error, or mermaid
   or the ELK layout is not in the work folder (run `preflight.mjs`).
 - `uml problem: <id>: a → b and c → d cross` and the like: in the overview, reorder or relabel its arrows and run
-  again; in a part's diagram, raise `TRIES` in `uml.js`.
+  again; in a part's diagram, raise `TRIES` in `uml.js`, or have it turn two arrows at a time as well as one. On
+  2026-11-10, 48 shuffled orders, ELK's other layouts (stress, force, mrtree) and turning all of one script's arrows
+  at once all failed for the model, where turning one arrow did not.
 - A page that never sets `window.docReady` makes `print.mjs` stop after a minute with "the page never set
   window.docReady".

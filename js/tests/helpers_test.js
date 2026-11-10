@@ -1,47 +1,40 @@
-import { data, treeKeys, load, recall, remember, attempt, params, preferredLanguage } from "../model/datahandler.js";
-import { ALL, size, civsOf } from "../model/civsets.js";
-import { collator, civName, nameOf, language, plural, words } from "../model/texts.js";
-import { items, lineOf, lineEnd, behind, ancestors } from "../model/model.js";
-import { $, nameIsShared } from "../view/stringbuilder.js";
+import { data } from "../model/data/datahandler.js";
+import { treeKeys } from "../model/itemtree.js";
+import { allCivs, size, civsOf } from "../model/civsets.js";
+import { collator, civName, nameOf, language } from "../model/texts.js";
+import { items, lineOf, lineEnd, endsInLine, ancestors } from "../model/model.js";
+import { $ } from "../view/toolkit.js";
+import { nameIsShared } from "../view/civsview.js";
 import { rowOf, setOpen } from "../view/treeview.js";
-import { setMenu, options } from "../view/optionsview.js";
-import { screenPictures } from "../view/pictures.js";
+import { setMenu, languageOptions } from "../view/optionsview.js";
 
 export const TAG = /^[a-z]{2,3}(-[a-z0-9]{2,8})*$/i;
 export const root = document.documentElement;
 export const results = [];
-
+const OFFENDERS_SHOWN = 5;
 export const check = (name, ok, detail = "") => results.push({ name, ok: Boolean(ok), detail: String(detail) });
 
-export const expect = (name, offenders) => check(name, !offenders.length, offenders.slice(0, 5).join("; "));
+export const expect = (name, offenders) => check(name, !offenders.length,
+  offenders.slice(0, OFFENDERS_SHOWN).join("; "));
 
-export const checkAll = (name, parts) => check(name, Object.values(parts).every(Boolean),
-  Object.entries(parts).filter(([, ok]) => !ok).map(([part]) => part).join(", "));
-
-export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const settled = (img) => img.complete || new Promise((done) => ["load", "error"]
-  .forEach((type) => img.addEventListener(type, done)));
-
-export const loaded = (images) => {
-  let timer = 0;
-  const late = new Promise((done) => {
-    timer = setTimeout(done, 10000);
-  });
-  return Promise.race([Promise.all(images.map(settled)), late]).finally(() => clearTimeout(timer));
+export const NAMES = {
+  noScroll: "layout: the page does not scroll",
+  footerWide: "layout: the footer is as wide as the panes",
+  footerHidden: "layout: on a phone, the footer is hidden",
+  remembered: "options: the choices are remembered",
+  findBeside: "find: the number found sits on one line right of the search box",
+  marksKept: "options: a change to what the tree shows keeps the marks",
 };
 
 export const phone = () => matchMedia("(width < 720px) and (height > 639px)").matches;
 
 const width = (selector) => document.querySelector(selector).getBoundingClientRect().width;
 
-export const spans = () => (phone()
-  ? getComputedStyle(document.querySelector(".foot")).display === "none"
-  : Math.abs(width(".foot") - width(".panes")) < 1);
+export const footerAsWide = () => phone() || Math.abs(width(".foot") - width(".panes")) < 1;
+
+export const footerHidden = () => !phone() || getComputedStyle(document.querySelector(".foot")).display === "none";
 
 export const need = (ok, problem) => (ok ? [] : [problem]);
-
-export const flags = (parts) => Object.entries(parts).map(([name, ok]) => `${name} ${ok}`).join(", ");
 
 export const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
 
@@ -57,26 +50,16 @@ export const openTo = (item) => ancestors(item).forEach((p) => setOpen(p, true))
 
 export const ticked = (id) => $(id).getAttribute("aria-checked") === "true";
 
-export function englishFirst() {
-  const stored = recall("language");
-  remember("language", null);
-  Object.defineProperty(navigator, "languages", { value: ["de-DE", "de"], configurable: true });
-  const first = preferredLanguage();
-  delete navigator.languages;
-  remember("language", stored);
-  return first === (codes().includes(params.get("lng")) ? params.get("lng") : codes()[0]);
-}
-
 export const ui = () => data.text[language].ui;
 
 export const box = (el) => el.getBoundingClientRect();
 
 export const keys = () => treeKeys(data.tree, "item");
 
-export const describe = (el) => {
+export function describe(el) {
   const row = el.closest(".node") && !el.id ? ` (${el.closest(".node").textContent.trim().slice(0, 40)})` : "";
   return `${el.tagName.toLowerCase()}${el.id ? `#${el.id}` : ""}${el.classList[0] ? `.${el.classList[0]}` : ""}${row}`;
-};
+}
 
 export const rendered = (el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden"
   && !el.closest(".sr-only");
@@ -85,66 +68,17 @@ export const everything = () => [...document.body.querySelectorAll("*")].filter(
 
 export const styles = (el) => [null, "::before", "::after", "::marker"].map((part) => getComputedStyle(el, part));
 
-export const pictured = (el) => styles(el).some((style) => style.backgroundImage !== "none"
-  || style.listStyleImage !== "none" || style.borderImageSource !== "none" || /url\(/.test(style.content)
-  || /url\(/.test(style.cursor));
-
-export const GRADES = { fhd: "sd", qhd: "sd", uhd: "4k", ultrawide: "4k" };
-
-const SIZED = /\/backgrounds\/(fhd|qhd|uhd|ultrawide)\.webp$|_(sd|4k|x1|x2)\.webp$/;
-
-export const grade = () => root.dataset.assets;
-
-export const fitted = (width = screen.width, height = screen.height, ratio = devicePixelRatio) => {
-  const [wide, high] = [width, height].map((side) => Math.round(side * ratio));
-  if (width < 720 || height < 720) return "fhd";
-  if (wide / high > 2) return "ultrawide";
-  return wide > 2560 || high > 1440 ? "uhd" : wide > 1920 || high > 1080 ? "qhd" : "fhd";
-};
-
-const SCREENS = [
-  [1920, 1080, 1], [1536, 864, 1.25], [1366, 768, 1], [1920, 1200, 1], [2560, 1440, 1], [1920, 1080, 2],
-  [2560, 1080, 1], [3440, 1440, 1], [390, 844, 3], [844, 390, 3], [768, 1024, 2],
-];
-
-export const misjudged = () => SCREENS.filter((sizes) => {
-  const [{ background, assets }, wanted] = [screenPictures(...sizes), fitted(...sizes)];
-  return background !== wanted || assets !== GRADES[wanted];
-}).map(([wide, high, ratio]) => `a ${wide} by ${high} screen at ${ratio * 100}% is misjudged`);
-
-export const fitting = (src, background) => {
-  const [, board, sized] = SIZED.exec(src) ?? [];
-  const sizes = GRADES[background] === "4k" ? ["4k", "x2"] : ["sd", "x1"];
-  return board ? board === background : !sized || sizes.includes(sized);
-};
-
-const files = (value) => [...value.matchAll(/url\("([^"]+)"\)/g)].map(([, src]) => src);
-
-export const urlsOf = (style) => files([style.backgroundImage, style.borderImageSource, style.listStyleImage,
-  style.content, style.cursor].join(" "));
-
-export const pictures = () => [...document.querySelectorAll("img"), root, document.body, ...everything()]
-  .filter((el) => el.tagName === "IMG" || pictured(el)).map(describe);
-
-export const picturesOn = () => [describe(root), "body", describe($("optionsButton"))]
-  .every((name) => pictures().includes(name));
-
 const rgb = (colour) => (colour.match(/[\d.]+/g) ?? []).map(Number);
 
-export const yellow = (colour) => {
-  const [r, g, b] = rgb(colour);
-  return r > 200 && g > 200 && b < Math.min(r, g) * 0.75;
-};
-
-const tone = (colour) => {
+function tone(colour) {
   const [r, g, b] = rgb(colour);
   if (r > 200 && g > 200 && b > 200) return "white";
   if (r < 60 && g < 60 && b < 60) return "black";
   if (g > r + 40 && g > b + 40) return "green";
   return r > g + 80 && r > b + 80 ? "red" : "other";
-};
+}
 
-export const drawn = (box) => {
+export function drawn(box) {
   const [, before, after] = styles(box).map((style) => (style.content === "none" ? null : style));
 
   const width = (style, side) => (style ? parseFloat(style[`border${side}Width`]) : 0);
@@ -152,22 +86,9 @@ export const drawn = (box) => {
   if (width(after, "Bottom") > 0) return `${tone(after.borderBottomColor)} tick`;
   if (width(before, "Left") > 0 && width(after, "Left") > 0) return `${tone(before.borderLeftColor)} cross`;
   return width(after, "Top") > 0 ? `${tone(after.borderTopColor)} dash` : "";
-};
+}
 
 export const marks = { has: "green tick", lacks: "red cross", mixed: "white dash" };
-
-export const simpleSpot = () => {
-  const box = $("simple").querySelector(".box").getBoundingClientRect();
-  return `${box.left},${box.top}`;
-};
-
-export const simpleTicked = (on) => $("simple").getAttribute("aria-checked") === String(on)
-  && $("simple").dataset.state === (on ? "has" : "");
-
-export const civLinks = () => $("civs").children.length > 0 && $("civs").querySelectorAll("a[href]").length;
-
-export const focusables = () => [...document.querySelectorAll("a[href], button, input, select, textarea, [tabindex]")]
-  .filter((el) => el.tabIndex >= 0 && !el.disabled && rendered(el));
 
 const textOf = (node) => [...node.childNodes].map((child) => {
   if (child.nodeType === Node.TEXT_NODE) return child.textContent;
@@ -176,257 +97,87 @@ const textOf = (node) => [...node.childNodes].map((child) => {
 
 export const tidy = (text) => text.replace(/\s+/g, " ").trim();
 
-export const nameFor = (el) => {
+export function nameFor(el) {
   const ids = el.getAttribute("aria-labelledby");
   if (ids) return tidy(ids.split(/\s+/).map((id) => ($(id) ? textOf($(id)) : "")).join(" "));
   if (el.getAttribute("aria-label")) return tidy(el.getAttribute("aria-label"));
   if (el.labels?.length) return tidy([...el.labels].map(textOf).join(" "));
   return tidy(textOf(el));
-};
+}
 
-export const squash = (text) => text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
-
-export const visibleTexts = (el) => {
+export function visibleTexts(el) {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
   const texts = [];
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     if (node.textContent.trim() && rendered(node.parentElement)) texts.push(node.textContent);
   }
   return texts;
-};
+}
 
 export const keyDown = (target, key) => target.dispatchEvent(new KeyboardEvent("keydown", {
   key, bubbles: true, cancelable: true,
 }));
 
-export const tap = (el) => {
+export function tap(el) {
   el.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "mouse", button: 0 }));
   el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerType: "mouse", button: 0 }));
   el.click();
-};
+}
 
-export const type = (text) => {
+export const mustHave = (item) => tap(nodeOf(item));
+
+export const mustLack = (item) => keyDown(nodeOf(item), "x");
+
+export function type(text) {
   $("find").value = text;
   $("find").dispatchEvent(new Event("input", { bubbles: true }));
-};
+}
 
-export const pick = (code) => {
+export function pick(code) {
   if (!$("options").open) $("optionsButton").click();
   if ($("languageList").hidden) $("languageButton").click();
-  options().find((option) => option.dataset.language === code).click();
+  languageOptions().find((option) => option.dataset.language === code).click();
   $("optionsOk").click();
-};
+}
 
-export const reset = () => {
+export function reset() {
   type("");
   $("clear").click();
   $("collapseAll").click();
   setMenu(false);
   if ($("options").open) $("options").close();
   document.activeElement?.blur();
-};
+}
 
-export const beside = () => {
+export function beside() {
   const box = $("find").getBoundingClientRect();
   const note = $("found").getBoundingClientRect();
   return note.left >= box.right - 0.5 && note.top < box.bottom && note.bottom > box.top
     && note.height < 1.5 * parseFloat(getComputedStyle($("found")).lineHeight);
-};
-
-export function dropsGreyed(rival) {
-  const by = [rival, rival?.rivals[0]].filter(Boolean).find((each) => {
-    reset();
-    tap(nodeOf(each));
-    return items.some(behind);
-  });
-  const hit = by && items.find(behind);
-  if (!hit) return { dropped: false, detail: "no mark in data.json greys out a branch with items in it" };
-  reset();
-  type(nameOf(hit));
-  const lit = nodeOf(hit).classList.contains("found");
-  tap(nodeOf(by));
-  const n = document.querySelectorAll(".node.found").length;
-  const gone = !nodeOf(hit).classList.contains("found");
-  const counted = $("found").textContent === (n ? plural("found", n) : words.ui.noneFound);
-  reset();
-  return { dropped: lit && gone && counted, detail: `${nameOf(hit)}: ${flags({ lit, gone, counted })}` };
 }
 
 export const listed = () => [...$("civs").children].map((li) => li.textContent);
 
 export const expected = (set) => civsOf(set).map(civName).sort(collator.compare);
 
-export const below = (item, top) => {
-  for (let p = item.parent; p; p = p.parent) if (p === top) return true;
-  return false;
-};
-
-export const itemAbove = (item) => {
+function itemAbove(item) {
   for (let p = item.parent; p; p = p.parent) if (!p.group || p.lines) return true;
   return false;
-};
+}
 
-export const chainOf = (item) => {
+export function onlyChildren(item, stopAt = () => false) {
   const chain = [item];
-  while (chain.at(-1).kids.length === 1) chain.push(chain.at(-1).kids[0]);
-  return chain.filter((each) => twistyOf(each));
-};
-
-const KINDS = { unit: "unit", building: "building", technology: "tech" };
-
-const hex = (code) => `rgb(${[0, 2, 4].map((at) => parseInt(code.slice(at, at + 2), 16)).join(", ")})`;
-
-export async function edges() {
-  const csv = await load(`${data.icons.nodes}colour_key.csv`);
-  const [head, ...rows] = csv.trim().split(/\r?\n/).map((line) => line.trim().split(","));
-  return new Map(rows.flatMap(([reach, ...colours]) => colours
-    .map((code, i) => [`${KINDS[head[i + 1]]} ${reach}`, hex(code)])));
+  while (chain.at(-1).kids.length === 1 && !stopAt(chain.at(-1).kids[0])) {
+    chain.push(chain.at(-1).kids[0]);
+  }
+  return chain;
 }
 
-export const fitBars = () => dispatchEvent(new Event("resize"));
-
-async function frameShape(el, columns, rows) {
-  const sheet = Object.assign(new Image(), { src: urlsOf(getComputedStyle(el))[0] });
-  await loaded([sheet]);
-  return (sheet.naturalHeight / rows) / (sheet.naturalWidth / columns);
-}
-
-const sprite = (el) => {
-  const style = getComputedStyle(el);
-  return [urlsOf(style)[0]?.split("/").pop(), style.backgroundSize, style.backgroundRepeat, style.backgroundPosition]
-    .join(" ");
-};
-
-const comboArrow = () => (grade() === "4k" ? [35, 28, 4].map((side) => side / devicePixelRatio) : [19, 14, 2]);
-
-export async function barProblems(bar, list) {
-  const [up, track, down] = bar.children;
-  const knob = track.firstElementChild;
-  const [name, scale, style, menu] = [describe(list), grade() === "4k" ? "x2" : "x1", getComputedStyle(list),
-    list === $("languageList")];
-  const [outer, inner, [wide, high]] = [box(bar), box(list), comboArrow()];
-  const edge = inner.right - parseFloat(style.borderRightWidth);
-  const ending = menu ? "combobox_arrow_atlas.webp" : `scrollbarendings_${scale}.webp`;
-  const wanted = [
-    [up, `${ending} 300% 200% no-repeat 0px 0px`],
-    [track, "scrollbar.webp 100% auto repeat-y 0px 0px"],
-    [knob, `scrollbarknob_${scale}.webp 300% 100% no-repeat 0px 0px`],
-    [down, `${ending} 300% 200% no-repeat 0px 100%`],
-  ];
-  const [ends, grip] = [await frameShape(up, 3, 2), await frameShape(knob, 3, 1)];
-  const at = box(track).top + (box(track).height - box(knob).height) * list.scrollTop
-    / (list.scrollHeight - list.clientHeight);
-
-  const shape = (el) => box(el).height / box(el).width;
-
-  const fits = (el) => (menu ? Math.abs(box(el).width - wide) < 0.5 && Math.abs(box(el).height - high) < 0.5
-    && Math.abs(box(el).left + box(el).right - outer.left - outer.right) < 1 : Math.abs(shape(el) - ends) < 0.005);
-
-  return [
-    ...need(Math.abs(outer.right - edge) < 0.5 && outer.left > edge - parseFloat(style.paddingRight) - 0.5
-      && Math.abs(outer.top - inner.top - list.clientTop) < 0.5 && Math.abs(outer.height - list.clientHeight) < 1,
-    `${name}'s bar is not along its right edge, in the room kept for it`),
-    ...wanted.filter(([el, look]) => sprite(el) !== look).map(([el]) => `${name}'s ${el.className} is ${sprite(el)}`),
-    ...need([track, knob, ...(menu ? [] : [up, down])].every((el) => el.hidden
-      || Math.abs(box(el).width - outer.width) < 0.01), `${name}'s arrows, body and knob are not equally wide`),
-    ...need([up, down].every(fits) && (knob.hidden || Math.abs(shape(knob) - grip) < 0.005),
-      `${name}'s arrows or knob are out of proportion, or not the combo box's arrows`),
-    ...need(knob.hidden || Math.abs(box(knob).top - at) < 1, `${name}'s knob is not where it is scrolled to`),
-  ];
-}
-
-export const hover = (el, x, y) => el.dispatchEvent(new PointerEvent("pointermove", {
-  bubbles: true, pointerType: "mouse", clientX: x, clientY: y,
-}));
-
-const CONTROLS = "button, a[href], input, .node, .option, .view, .bar > *, .bar-knob";
-
-const untipped = (scope) => [...scope.querySelectorAll(CONTROLS)]
-  .filter((el) => rendered(el) && el.ariaDisabled !== "true" && !el.closest("#report")).filter((el) => {
-    hover(el, box(el).left + 1, box(el).top + 1);
-    const text = $("tip").hidden ? "" : $("tip").textContent;
-    return el.matches("a") ? text !== el.href : !text || (text.length > 100 && el.id !== "find");
-  }).map(describe);
-
-export function tipGaps() {
-  $("expandAll").click();
-  tap(nodeOf(fixtures().partial));
-  type("a");
-  fitBars();
-  const gaps = untipped(document.body);
-  $("optionsButton").click();
-  fitBars();
-  gaps.push(...untipped($("options")));
-  setMenu(true);
-  fitBars();
-  gaps.push(...untipped($("language")));
-  reset();
-  return [...new Set(gaps)].map((name) => `${name} has no tooltip of at most 100 characters`);
-}
-
-export function tipLooks() {
-  const [cx, cy] = [box(nodeOf(items[0])).left + 5, box(nodeOf(items[0])).top + 5];
-  hover(nodeOf(items[0]), cx, cy);
-  const tip = box($("tip"));
-  const reach = 32;
-  const tipped = !$("tip").hidden && $("tip").textContent === ui().nodeTip
-    && getComputedStyle($("tip")).backgroundColor === "rgb(215, 179, 148)"
-    && tip.left >= 3.5 && tip.right <= innerWidth - 3.5
-    && (Math.abs(tip.left - cx - reach) < 1 || Math.abs(tip.right - innerWidth + 4) < 1)
-    && (Math.abs(tip.top - cy - reach) < 1 || Math.abs(tip.bottom - cy + 8) < 1);
-  hover($("count"), 0, 0);
-  $("optionsButton").click();
-  hover($("include"), box($("include")).left + 5, box($("include")).top + 5);
-  const hinted = !$("tip").hidden && $("tip").textContent === ui().includeTip && $("options").contains($("tip"))
-    && box($("includeHint")).width <= 1 && $("include").getAttribute("aria-describedby") === "includeHint";
-  $("tooltips").click();
-  $("optionsOk").click();
-  hover(nodeOf(items[0]), cx, cy);
-  const silent = $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "false"
-    && (recall("tooltips") === "false" || attempt(() => localStorage) === null);
-  $("optionsButton").click();
-  keyDown($("tooltips"), " ");
-  $("optionsOk").click();
-  return { tipped, hinted, silent: silent && $("tip").hidden && $("tooltips").getAttribute("aria-checked") === "true" };
-}
-
-export const shownKeys = () => [...new Set(items.filter((item) => !item.group).map((item) => item.key))];
-
-export const uniqueKeys = () => {
-  const under = (nodes, inside) => nodes.flatMap((node) => [
-    ...(node.item && (inside || data.pictures[node.item].reach === "unique") ? [node.item] : []),
-    ...under(node.kids ?? [], inside || node.unique === true),
-  ]);
-
-  return new Set(under(data.tree, false));
-};
-
-export const ownKeys = () => {
-  const under = (nodes, inside) => nodes.flatMap((node) => [
-    ...(node.item && (inside || node.own) ? [node.item] : []), ...under(node.kids ?? [], inside || node.own === true),
-  ]);
-
-  return new Set(under(data.tree, false));
-};
-
-export function alternativesOf(key) {
-  const named = (node) => [node?.replaces ?? []].flat();
-  const nodes = (list) => list.flatMap((node) => [node, ...nodes(node.kids ?? [])]);
-  const variants = nodes(data.tree).filter((node) => node.replaces);
-  const own = named(variants.find((node) => node.item === key));
-  const others = variants.filter((node) => node.item !== key
-    && (named(node).includes(key) || named(node).some((each) => own.includes(each))));
-  return [...new Set([...own, ...others.map((node) => node.item)])].sort();
-}
-
-export const regionalKeys = () => new Set(keys().filter((key) => data.pictures[key].reach === "regional"));
+export const chainOf = (item) => onlyChildren(item).filter((each) => twistyOf(each));
 
 export const outside = (nodes, regional) => nodes.flatMap((node) => (regional.has(node.item)
   ? []
   : [...(node.item ? [node.item] : []), ...outside(node.kids ?? [], regional)]));
-
-export const keptPath = () => items.find((item) => !item.group && !item.kids.length && item.parent
-  && data.pictures[item.key].reach !== "regional").path;
 
 export const byPath = (path) => items.find((item) => item.path === path);
 
@@ -440,14 +191,17 @@ export function fixtures() {
   const leaves = items.filter((item) => !item.group && !item.kids.length);
   const partial = leaves.find((item) => size(item.set) > 1 && size(item.set) < data.civs.length / 2
     && item.parent?.parent);
-  const other = leaves.find((item) => item !== partial && size(item.set & partial.set) > 0
-    && size(partial.set & ~item.set & ALL) > 0);
-  const third = leaves.find((item) => ![partial, other].includes(item)
-    && size(partial.set & ~other.set & ~item.set & ALL) > 0);
+  const other = partial && leaves.find((item) => item !== partial && size(item.set & partial.set) > 0
+    && size(partial.set & ~item.set & allCivs) > 0);
+  const third = other && leaves.find((item) => ![partial, other].includes(item)
+    && size(partial.set & ~other.set & ~item.set & allCivs) > 0);
+  const sampled = { partial, other, third };
+  const missing = Object.keys(sampled).filter((name) => !sampled[name]);
+  if (missing.length) throw new Error(`data.json has no ${missing.join(", ")} item for the tests`);
 
-  const underAll = (item) => item.kids.reduce((s, kid) => s & kid.all, ALL);
+  const underAll = (item) => item.kids.reduce((s, kid) => s & kid.all, allCivs);
 
-  const without = (item) => underAll(item) & ~item.set & ALL;
+  const without = (item) => underAll(item) & ~item.set & allCivs;
 
   const plainLine = (item) => lineOf(item).every((each) => !nameIsShared(nameOf(each)));
 
@@ -461,13 +215,15 @@ export function fixtures() {
       && size(lineEnd(item).set) !== size(item.set)),
     even: items.find((item) => inner(item) && size(item.kids[0].set) === size(item.set)),
     uneven: items.find((item) => inner(item) && size(item.kids[0].set) !== size(item.set)),
-    upgraded: lines().find((item) => lineEnd(item) && size(item.set) > size(item.all)
+    upgraded: lines().find((item) => endsInLine(item) && size(item.set) > size(item.all)
       && item.all === lineEnd(item).set),
     loose: items.find((item) => building(item) && item.kids.length && size(without(item)) > 0),
-    headed: items.find((item) => building(item) && item.kids.length === 1 && lineEnd(item)),
+    headed: items.find((item) => building(item) && item.kids.length === 1 && endsInLine(item)),
     lone: items.find((item) => building(item) && !item.kids.length),
     rival: items.find((item) => item.excludes && item.rivals.length),
     walled: lines().find((item) => item.parent?.group && itemAbove(item) && lineOf(item).length > 1 && plainLine(item)
       && size(item.kids[0].set) !== size(item.set)),
   };
 }
+
+export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

@@ -63,7 +63,9 @@
       "tooltips": "Descripciones emergentes",
       "cancel": "Cancelar",
       "ok": "Aceptar",
-      "loading": "Cargando recursos de imagen..."
+      "loading": "Cargando recursos de imagen...",
+      "languageFailed": "No se pudo cargar el idioma.",
+      "messageTip": "Haz clic para cerrar este mensaje"
     },
     "groups": {
       "economy": "Economía",

@@ -63,7 +63,9 @@
       "tooltips": "Petua alat",
       "cancel": "Batal",
       "ok": "OK",
-      "loading": "Memuatkan aset imej..."
+      "loading": "Memuatkan aset imej...",
+      "languageFailed": "Bahasa tidak dapat dimuatkan.",
+      "messageTip": "Klik untuk menutup mesej ini"
     },
     "groups": {
       "economy": "Ekonomi",

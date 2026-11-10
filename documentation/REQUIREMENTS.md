@@ -2,7 +2,7 @@
 0. These requirements will apply to desktop at 16:9 in English. The UI particulars apply to simple UI mode. Node behaviour requirements always apply.
 1. aoe2civexplorer's user interface (henceforth: "the page") will have four discernable sections: header non the page's top side, input panel (node tree) on the page's left side, output panel (civ list) on the page's right side, and footer on the page's bottom side.
 2. The header will contain, in left-to-right order: a title consisting of the phrase "Explore Age of Empires II civilisations by technology availability" and an options button.
-3. The input panel will contain, in top-down order: a header section titled "Buildings, units and technologies" and three buttons "clear", "Expand all", "Collapse all", a search bar labelled "Find", a checkbox legend "[v] Must have: left-click or Space. [x] Must lack: right-click, long press or X.", a node tree expandible rightwards with each node having a checkbox before its name and compatible civilisations count label on the right side of the input panel.
+3. The input panel will contain, in top-down order: a header section titled "Buildings, units and technologies" and three buttons "clear", "Expand all", "Collapse all", a search bar labelled "Find", a checkbox legend "[v] Must have: left-click or Space. [x] Must lack: right-click, long press or X.", a node tree expandible rightwards with each node having a checkbox (except for some group nodes) before its name and compatible civilisations count label on the right side of the input panel.
 4. The output panel will contain, in top-down order: a header section titled "Civilisations" and displaying the number of currently displayed civilisations as "n compatible civilisations" where n is the number concerned, a list of civilisations compatible with the selected node filter.
 5. The footer will contain a label "Data from aoe2techtree.net, Update xxxxxx" where xxxxxx is the AoE2DE patch as of site data is up-to-date.  
 6. The Options button will be a cogwheel instead of a string label.
@@ -15,7 +15,7 @@
 13. The default value of the checkbox in the Options window will be off.
 14. The Options window's checkbox will display a green tick when the user left-clicks it.
 15. The effect described by the Options window's checkbox description will be true when the checkbox displays a green tick.
-16. The Options window will close when the user left-clicks the Close button.
+16. The Options window will close when the user left-clicks the Cancel or OK button. OK will apply any changes.
 17. All node checkboxes in the input panel will be cleared of their values when the user left-clicks the Clear button.
 18. All nodes will be expanded when the user left-clicks the Expand all button.
 19. All nodes will be collapsed when the user left-clicks the Collapse all button.

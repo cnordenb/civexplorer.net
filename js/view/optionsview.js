@@ -1,8 +1,8 @@
-import { data } from "../model/datahandler.js";
+import { data } from "../model/data/datahandler.js";
 import { language } from "../model/texts.js";
-import { $, clone, simple, demand } from "./stringbuilder.js";
+import { $, clone, simple, demand } from "./toolkit.js";
 
-const NEEDS = ["reset", "apply"];
+const NEEDS = ["showChoices", "apply"];
 
 let actions = null;
 
@@ -15,7 +15,7 @@ export function startOptionsView(controller) {
 function wireLanguages() {
   const picker = $("language");
   const button = $("languageButton");
-  button.addEventListener("click", () => setMenu($("languageList").hidden));
+  button.addEventListener("click", () => setMenu(!menuOpen()));
   $("languageList").addEventListener("click", (e) => {
     if (onScrollbar(e)) return;
     const option = e.target.closest("[data-language]");
@@ -31,33 +31,39 @@ function wireLanguages() {
   });
 }
 
-export function setMenu(open, focus) {
+export function setMenu(open, returnTo) {
   $("languageButton").setAttribute("aria-expanded", String(open));
   $("languageList").hidden = !open;
-  $("settings").hidden = open && simple();
-  focus?.focus();
+  coverSettings(open);
+  returnTo?.focus();
 }
+
+function coverSettings(open) {
+  $("settings").hidden = open && simple();
+}
+
+const menuOpen = () => !$("languageList").hidden;
 
 const onScrollbar = (e) => e.target === e.currentTarget
   && (e.offsetX >= e.target.clientWidth || e.offsetY >= e.target.clientHeight);
 
 function showLanguage(code) {
   $("languageName").textContent = data.languages[code].name;
-  for (const option of options()) {
+  for (const option of languageOptions()) {
     option.setAttribute("aria-current", String(option.dataset.language === code));
   }
 }
 
-export const options = () => [...$("languageList").querySelectorAll("[data-language]")];
+export const languageOptions = () => [...$("languageList").querySelectorAll("[data-language]")];
 
 function onMenuKey(e) {
-  const open = !$("languageList").hidden;
+  const open = menuOpen();
   if (e.key === "Escape" && open) {
     e.preventDefault();
     setMenu(false, $("languageButton"));
     return;
   }
-  const list = options();
+  const list = languageOptions();
   const to = MENU_MOVES[e.key]?.({ list, at: list.indexOf(document.activeElement), open });
   if (to === undefined) return;
   e.preventDefault();
@@ -80,7 +86,7 @@ function wireOptions() {
   const optionOf = (target) => target.closest(".option")?.id;
 
   $("optionsButton").addEventListener("click", () => {
-    actions.reset();
+    actions.showChoices();
     $("options").showModal();
   });
   $("optionsOk").addEventListener("click", () => actions.apply());
@@ -93,11 +99,10 @@ function wireOptions() {
   });
 }
 
-const toggle = (id) => tick(id, !checked(id));
+const toggle = (id) => setTicked(id, !checked(id));
 
-export function tick(id, on) {
+function setTicked(id, on) {
   $(id).setAttribute("aria-checked", String(on));
-  $(id).dataset.state = on ? "has" : "";
 }
 
 const checked = (id) => $(id).getAttribute("aria-checked") === "true";
@@ -119,18 +124,18 @@ export const optionsView = {
   },
 };
 
-export const optionValue = (id) => (readers[id] ?? checked)(id);
+export const readChoice = (id) => (readers[id] ?? checked)(id);
 
-const picked = () => options().find(isPicked)?.dataset.language;
+const picked = () => languageOptions().find(isPicked)?.dataset.language;
 
 const readers = { language: picked, civView: () => $("views").querySelector(":checked").value };
 
-export const show = (id, value) => (writers[id] ?? ((on) => tick(id, on)))(value);
+export const showChoice = (id, value) => (writers[id] ?? ((on) => setTicked(id, on)))(value);
 
-export const showView = (choice) => {
+function showView(choice) {
   for (const input of $("views").querySelectorAll("input")) {
     input.checked = input.value === choice;
   }
-};
+}
 
 const writers = { language: showLanguage, civView: showView };

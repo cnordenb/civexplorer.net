@@ -25,7 +25,7 @@
   <button type="button" class="tool icon" id="optionsButton" data-tip="optionsTip" aria-haspopup="dialog" aria-controls="options"><span class="cog" aria-hidden="true">⚙︎</span><span class="sr-only" data-text="options"></span></button>
 </header>
 <noscript><p>AoE2 Civ Explorer needs JavaScript.</p></noscript>
-<p class="load-error" id="loadError" hidden>AoE2 Civ Explorer could not load its data.</p>
+<p class="load-error" id="loadError" lang="en" hidden>AoE2 Civ Explorer could not load its data.</p>
 <div class="content" id="content" hidden>
 <main class="panes">
   <section class="pane" aria-labelledby="treeTitle">
@@ -75,11 +75,15 @@
     <div class="option" id="simple" data-tip="simpleTip" role="checkbox" tabindex="0" aria-checked="false"><span class="box" aria-hidden="true"></span><span data-text="simple"></span></div>
     <div class="option" id="include" data-tip="includeTip" role="checkbox" tabindex="0" aria-checked="false" aria-describedby="includeHint"><span class="box" aria-hidden="true"></span><span data-text="includeAll"></span></div>
     <p id="includeHint" data-text="includeHint"></p>
-    <div class="option" id="regional" data-tip="regionalTip" role="checkbox" tabindex="0" aria-checked="true" data-state="has"><span class="box" aria-hidden="true"></span><span data-text="includeRegional"></span></div>
+    <div class="option" id="regional" data-tip="regionalTip" role="checkbox" tabindex="0" aria-checked="true"><span class="box" aria-hidden="true"></span><span data-text="includeRegional"></span></div>
     <div class="views" id="views" role="radiogroup" aria-labelledby="viewLabel"><span id="viewLabel" data-text="civView"></span><label class="view" data-tip="listTip"><input type="radio" name="civView" value="list" checked><span data-text="viewList"></span></label><label class="view" data-tip="tileTip"><input type="radio" name="civView" value="tile"><span data-text="viewTile"></span></label></div>
-    <div class="option" id="tooltips" data-tip="tooltipsTip" role="checkbox" tabindex="0" aria-checked="true" data-state="has"><span class="box" aria-hidden="true"></span><span data-text="tooltips"></span></div>
+    <div class="option" id="tooltips" data-tip="tooltipsTip" role="checkbox" tabindex="0" aria-checked="true"><span class="box" aria-hidden="true"></span><span data-text="tooltips"></span></div>
   </div>
   <form method="dialog"><button class="tool" id="optionsCancel" data-tip="cancelTip"><span class="caption" data-text="cancel"></span></button><button class="tool" id="optionsOk" data-tip="okTip"><span class="caption" data-text="ok"></span></button></form>
+</dialog>
+<dialog class="message" id="languageError" role="alertdialog" aria-labelledby="languageErrorText">
+  <p id="languageErrorText" data-text="languageFailed">The language could not be loaded.</p>
+  <form method="dialog"><button class="tool" id="languageErrorOk" data-tip="messageTip" autofocus><span class="caption" data-text="ok"></span></button></form>
 </dialog>
 <dialog class="report" id="report" lang="en" aria-labelledby="reportTitle">
   <h2 id="reportTitle"></h2>

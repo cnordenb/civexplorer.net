@@ -2,6 +2,7 @@
 
 - [2026-11-02](#2026-11-02)
 - [2026-11-08](#2026-11-08)
+- [2026-11-10](#2026-11-10)
 
 Part 6 of the development log. It follows [part 5](DEVLOG5.md). The decisions made in the log are listed in
 [DECISIONS.md](../DECISIONS.md).
@@ -409,3 +410,429 @@ Part 6 of the development log. It follows [part 5](DEVLOG5.md). The decisions ma
 3. **`js/model/` is full**, with 7 files. Where should the next script of the model go?
 4. **`code_docu.pdf`** knows neither `itemtree.js` nor the new names until it is made again. Should it be made again
    now?
+
+## 2026-11-10
+
+### 05:21:12: Clean Code and Head First Design Patterns refactoring, round 3: test runner, view modules, settings, start-up
+
+#### What changed
+
+- **Why.** The code at `6e846da` was compared with *Clean Code* and *Head First Design Patterns* again. The test
+  runner stopped at the first group that threw and named none. `stringbuilder.js` was named for something it did not
+  do. A setting reached its control in Options by four routes. A leaf view, `pictures.js`, ran part of the start-up
+  and redrew the page. The language rule was written out in five places. The views read each other's markup, as the
+  tree view decoded the filter buttons that another view drew. Words such as `mark`, `state` and `kind` had two
+  meanings. Several functions did several jobs. The updater read the game's data in the game's own shape throughout.
+  The checks of model, view and controller were text searches. The page looks and works as before, but for the six
+  changes under "Behaviour changes".
+- **Tests.** `runAll()` runs each group through `runGroup()`, which catches what it throws: the group fails "the tests
+  ran to the end", with its name and error, and the next group runs. `runTests()` only catches, and
+  `runAndPublish()`, `withLimitTest()`, `numbered()`, `publish()` and `stopped()` do the rest. Every result but "the
+  tests ran to the end" is numbered, without the old rule that a numbered name holds a colon. Two throwaway errors, in
+  `textTests()` and in `runAndPublish()`, were reported as "textTests stopped: Error: probe …" and "the test runner
+  stopped: probe", and were removed. `fixtures()` throws when `data.json` lacks an item that a test needs, `beyond()`
+  fails when no case exists, `loaded()` names the pictures that did not load, `englishFirst()` puts the languages
+  back in a `finally`, and `toStart()` also shows the civilisations as a list. `.github/runtests.sh` runs the tests
+  for GitHub and by hand, and the whitelist of `tests.yml` allows only the script paths that `sourceTests()` allows.
+  In the tests themselves, the tooltip helpers moved to `pictures_test.js` and the focus helpers to `audit_test.js`;
+  `mustHave()` and `mustLack()` replace four pairs of lines; the parts of `rivals()` and `standIns()` have names, from
+  `greysTheirs` to `greysAlternatives`, and six more checks use `checkAll()`; loops over lists are `for…of`; bare
+  numbers are named constants, with `TIP_MARGIN` and `TIP_GAP` imported from `pictures.js`; clean-ups at the end of
+  three groups, which `toStart()` makes needless, are gone; and `sourceTests()` is now `ruleTests()` and
+  `layerTests()`, and `toolLooks()` `toolsAtRest()` and `toolsInUse()`. `static_test.js` reads every import into its
+  path and names (`importsIn()`), and Test 83 fails a script with an import it cannot follow. Test 85 checks from those
+  imports that only `js/model/` imports `civsets.js` and only `page.js` imports `subscribe`, and its check for texts
+  in the model's state reads `model.js` and `itemtree.js`. Test 81 reads `index.html` only up to the code that Live
+  Server injects, and looks for `//` in the code with its strings blanked. Test 84 tries its function finder on a
+  sample first, and checks the form rule below. Four throwaway faults, one for each new check, each failed the test
+  meant for it, and were removed. The tests keep their names and numbers, which the names from a real run before and
+  after showed; only Test 34's detail differs.
+- **View modules.** `js/view/` holds seven modules, each named for what it holds: `page.js` (the page's Composite, its
+  fixed and translated texts, its messages and showing it), `civsview.js` (the civilisations' pane: the count, the
+  list or the tiles with their setting, and **Filters**), `treeview.js` (the tree, its gestures, buttons and Find
+  box), `optionsview.js`, `report.js`, `pictures.js` (the picture look: the screen's pictures, their preloading, the
+  loading screen, the tooltip and the scroll bars) and the new `toolkit.js` (`$()`, `clone()`, `simple()`,
+  `compose()`, `place()` and `demand()`). `stringbuilder.js` became `civsview.js`, `scrollbars.js` went into
+  `pictures.js`, and `nodetree.js` became `treehandler.js`. `cellOf()` is in `icons.js`. The page's observer is
+  `{ update: redraw }`, so `draw` and the `page` object are gone, and so is Test 85's check for `page.update(`.
+- **Settings and start-up.** `SETTINGS` in `datahandler.js` lists each setting's values, the default first, and
+  `recallSetting()` and `rememberSetting()` read and store them everywhere, which ends eight decodings of stored
+  strings. `showChoices()` (was `reset()`) is the one writer of the controls of Options, at the start and after
+  **OK**, and `apply()` reads every control before it chooses. `optionsview.js` says `languageOptions()`,
+  `showChoice()`, `readChoice()` and `setTicked()` (were `options()`, `show()`, `optionValue()` and `tick()`), and
+  the switches are styled from `aria-checked`. `setInclude()` and `setRegional()` share `saveAndRebuild()`.
+  `script.js` asks for the mode once (`MODE`, `RUNS`) and starts the page; `startScreen()` sets the screen's pictures
+  once, `applySimple()` only switches the look, and `chooseSimple()` redraws and ends the loading screen. In
+  `pictures.js`, `finishLoading()` is `hideLoadingWhenReady()`, `copy()` `preload()`, `kept` `preloaded` and `rooted`
+  `appliesToRoot`. `fetchUpdate()` loads the languages it needs itself.
+- **Languages.** `firstLanguage()`, `hasLanguage()` and `startLanguage()` in `datahandler.js` hold the language rule,
+  which `unpack()`, `pack()`, `script.js` and `optionshandler.js` use. `chooseLanguage()` keeps the language it waits
+  for in `wanted`, without calling itself again. A language that cannot load shows `#languageError`, "The language
+  could not be loaded.", from `languageFailed` in the texts, in all 17 languages.
+- **Views and controllers.** The tooltip asks the tree view what is under the mouse (`itemAt()`, `branchAt()`,
+  `isOpen()`) and the model whether a branch is locked. A filter button carries its filter in a `WeakMap`, and
+  `unchip({ item, mark, lone })` takes it as one argument. In `treeview.js`, a press is one object, a long press and a
+  drifting press have names, and the drawing of a row, its mark and its bar are functions of their own. In
+  `treehandler.js`, `key()` acts on a key and `keyAction()` only finds what the key means; `MOVES` holds the four
+  moves of the focus and `BRANCH_KEYS` the right and left arrows (`enterOrExpand()`, `leaveOrCollapse()`); and
+  **Find** is `highlightMatches()` and `showMatches()`. `changesNames()` and `rebuilds()` in `toolkit.js` say what a
+  change means for a view. `civsview.js` builds an entry of the list and of **Filters** in functions of their own;
+  `page.js` sets its links with `setLink()`; the language menu says `menuOpen()`, `setMenu()` and `coverSettings()`;
+  and the scroll bars name their timings and steps (`LINE_PX`, `REPEAT_AFTER_MS`, `REPEAT_EVERY_MS`).
+- **Model.** The words of marking have one meaning each: `toggleMark()` (was `mark()`), `branchState()`,
+  `toggleState()`, `checkboxState()` and `filterMark()`, while `mark` is a mark's value and `kind` a node's type, and
+  `allCivs` is the set of every civilisation (was `ALL`). The questions about the tree's shape (`lineOf()`,
+  `lineEnd()`, `endsInLine()`, `chainOf()`, `itemChain()`, `ancestors()`, `descendants()`, `isUnitOrTech()`) and
+  `treeKeys()` moved to `itemtree.js`, which builds the items in named steps (`linkOriginals()`, `linkRivals()`,
+  `linkAlternatives()`) and prunes them with named questions (`isHidden()`, `tellsNothing()`, `isBareLeaf()`).
+  `filtersOf()` reads as one line of named steps, and `chipOf()` is `entryOf()`. The updater reads the game's nodes and
+  `extras` through `fromGame()` and `fromExtra()`, into one shape, works on maps keyed by civilisation and language,
+  and returns `{ messages, blocked, counts, files }`, which `report.js` shows in short functions.
+- **Form.** `icons.js` names a picture's file once (`fileName()`), `texts.js` exports the placeholder pattern that
+  `fill()` and `compose()` share, both with `Object.hasOwn`, and `pictures.css` names the parchment's ink, the gold
+  and the serif font stack as custom properties. At a script's top level, a function with statements is now a
+  `function` declaration and an arrow function a single expression: 52 arrows became declarations, and Test 84
+  checks the rule.
+- **Behaviour changes.**
+  - B1: the test runner goes on after a group throws and names it; `fixtures()` throws and `beyond()` fails when
+    `data.json` lacks a case.
+  - B2: GitHub runs six windows over http, from Node's built-in `http` module, and one over `file://`, from
+    `.github/runtests.sh`; its whitelist allows only the script paths that `sourceTests()` allows.
+  - B3: `cellOf()` throws for a picture that is not in its atlas.
+  - B4: the switches in Options have no `data-state`; CSS styles them from `aria-checked`, and they look the same.
+  - B5: the start-up only reads the stored settings, and no longer writes them back.
+  - B6: a language that cannot load shows `#languageError`, in the language in use, on a switch and at the start;
+    `#loadError` has `lang="en"`.
+- **Checked.** All 99 tests passed in all seven windows of `.github/runtests.sh`: over http in light and dark colours
+  at 1920 by 1080, 1000 by 1000 and 720 by 1280, and over `file://` in light colours at 1920 by 1080, after steps 1,
+  3 to 7, 9, 12, 13 and 16 to 18 of the work and at its end, and in one window after every other step; once more with
+  the civilisations stored as tiles. By hand, over http, with Chrome driven from Node: the switches in Options gave
+  the same 40 screenshots as at `6e846da` (light and dark, forced colours, with and without Simple UI, each switch
+  on and off), and changed settings came back after a reload; the start in the picture look, the loading screen,
+  Simple UI on and off, a reload in either look, and `?update`; a blocked language on a switch and at the start, and
+  a language that loads; the tooltips of the tree's arrows; clearing a filter button by click and by Enter, and the
+  focus after it; the keys, clicks, right-click, long and drifting presses, **Find**, and the buttons above the
+  tree, against `6e846da`; and `?update` with the data of aoe2techtree.net, and with data altered by hand, which gave
+  the same report and the same files with the old updater and the new.
+- **Documents.** `MAINTAINER.md`: the files table with `.github/runtests.sh`, the UML diagram, the scripts'
+  paragraphs and their order, how to add a setting, how to run the tests, the patterns by their true names, the
+  loading screen's functions, the tests' start state and a group that stops, and the form rule. `TESTS.md`: the
+  lines of every test, with the function each sits in, and the runner's names as the titles of Tests 6, 9, 68 and
+  79; Tests 81, 83, 84, 85, 86 and 99 as they now work; the address part of the language tests over http only; and
+  the details that now name what failed. `TERMINOLOGY.md`: filter entry, setting, picture look and start language.
+  `DECISIONS.md`: the bullets with old names and the patterns brought up to date, new bullets for this entry, and
+  seven rule conflicts.
+
+#### Not done
+
+- `code_docu.pdf` and the code-docu skills' files, which still name the old modules, as in the entries before.
+- The step that asked for no `params.has` in `js/view` and `js/script.js` leaves one: the `MODE` line, which that
+  same step gives.
+- Choosing the language already shown does not hide `#languageError`, as **OK** acts only on changed choices;
+  choosing a language that loads does (Question 8).
+- The range line under the tree keeps `compose()`, not `fill()`: with `fill()` it became one text node, and Test 69,
+  "every control has a name that contains its visible text", failed.
+- `updateLink` keeps its one line in `writeFixed()`, as its text comes from the texts and `data.source.update` has no
+  name to pass to `setLink()`.
+- One font stack in `pictures.css`, `"Trajan Pro", "Civ Georgia", Georgia, serif`, differs from the serif stack and
+  stays as written.
+- Two limits of 3 in the tests, the offenders the audit lists and the notes of the interface tests, keep their bare
+  numbers. Test 34's detail names the failing part instead of the window sizes.
+- `barProblems()` and `dropsGreyed()` stay in `helpers_test.js`, as `pictures_test.js` and `behaviour_test.js` have
+  400 lines of code (`DECISIONS.md`, Rule 25).
+- The titles of Tests 13, 47, 78 and 95 in `TESTS.md` still differ from the runner's names: those of 13 and 47 are
+  over 120 characters, and those of 78 and 95 read only after their category.
+- This entry follows the form of the entry of 2026-11-08 22:36:58, the last before it.
+
+#### Questions
+
+1. **Rule 26 and the CI's whitelist against one job per module.** `js/view/`, `js/model/` and `js/tests/` are full,
+   so the tooltip and the scroll bars share `pictures.js`, `datahandler.js` cannot be split, and test helpers stay in
+   `helpers_test.js`. Would one level of subfolders, or 9 files to a folder, be allowed, so that `tooltips.js` and
+   `scrollbars.js` can be modules of their own?
+2. **The tests over http.** `.github/runtests.sh` uses Node's built-in `http` module as a plain program, with no
+   package and no build. Is that within Rules 13 to 15? The first push shows whether the `ubuntu-26.04` image runs it
+   as expected.
+3. **The new text `languageFailed`.** Its 16 translations were written without a native speaker's check, and it also
+   shows at the start when the visitor's language cannot load. Should they be checked?
+4. **The 8 `techtree_*.webp` files** in `assets/images/ui/backgrounds/`, which nothing uses. Keep them or delete them?
+5. **Rule 17.** Would counting groups of tests instead of checks keep the rule's intent and allow one concept per
+   check?
+6. **Rule 7.** Would a narrow exception be acceptable for a comment giving a reason or a pattern's name?
+7. **`code_docu.pdf` and the code-docu skills** know neither the new modules nor the new names until they run again.
+   Should they run now?
+8. **`#languageError`.** Should choosing the language already shown hide it, as choosing one that loads does?
+9. **Test 84's name** speaks of lines and functions only, not of the form rule or the finder's sample, which it now
+   checks too. Should its name say so?
+
+### 09:36:28: Answers to the questions, subfolders, and one thing per test (Rule 17)
+
+#### What changed
+
+- **Answers.** Of the questions of 05:21:12: one level of subfolders is allowed (1); Node's built-in `http` module in
+  `.github/runtests.sh` is within Rules 13 to 15 (2); no native speaker can check the 16 translations of
+  `languageFailed` for now, so they stay as they are (3); the 8 `techtree_*.webp` files stay (4); Rule 17 now asks
+  that a test test one thing only, for one purpose, a requirement, a rule or a bug that once was, and that no two
+  tests test the same thing, with no limit of 100 (5); Rule 7 has no exception, and the code keeps no comments (6);
+  `code_docu.pdf` and the code-docu skills do not run yet (7); Question 8 is set out in more detail under "Questions"
+  (8); Test 84 went with the split of the tests, as it no longer kept Rule 17 (9).
+- **Subfolders.** `js/view/pictures/` holds the picture look: `pictures.js` (the screen's pictures, their preloading and
+  the loading screen), `tooltips.js` (the tooltip, with `tips`, `setTips()`, `TIP_MARGIN` and `TIP_GAP`) and
+  `scrollbars.js` (the scroll bars, with `barsByBox` and `LINE_PX`). `startPictures()` starts the other two with
+  `startTips()` (was `wireTip()`) and `startBars()`. `js/model/data/` holds what `datahandler.js` held: `storage.js`
+  (`SETTINGS`, `recall()`, `remember()`, `recallSetting()` and `rememberSetting()`), `address.js` (`params` and
+  `keepInAddress()`), `guard.js` (`attempt()`) and `datahandler.js`, the Facade, which loads, unpacks and packs the data
+  and the languages, holds the language rule and passes on the others' exports, so the scripts outside `js/model/data/`
+  import from it as before, by its new path. `treeview.js` stays whole: its gestures, buttons and **Find** box share its
+  rows, its actions and its press, and modules split from it would import each other. The scripts load in the same
+  order, with the new files in their place. The tests' check of paths allows one subfolder (`PLACED`), the check that
+  only the data layer stores data or touches the address exempts `js/model/data/`, and the whitelist of `tests.yml`
+  allows `js/model/`, `js/view/`, `js/controller/` and `js/tests/` one subfolder each.
+- **One thing per test.** The 99 tests are 289. Each checks one thing and names one purpose in `TESTS.md`: a
+  requirement; a rule, with WCAG 2.2 under Rule 3; or a bug that once was, with its entry. A behaviour that no
+  requirement names, such as the picture look, Include Regionals or the updater, is tested under Rule 4, which asks
+  for tests that the page still works, with the entry where it was decided, and a decision about the code's structure
+  under Rule 6 (Question 2). No test was dropped for want of a purpose. `js/tests/` holds `run_test.js`,
+  `helpers_test.js`, `audit_test.js` and a folder for each kind:
+  - `behaviour/`, 79 tests: `marking_test.js`, `branches_test.js`, `tree_test.js`, `lines_test.js`,
+    `greying_test.js`, `finding_test.js` and `samples_test.js`.
+  - `interface/`, 76 tests: `menu_test.js`, `languages_test.js`, `options_test.js`, `keys_test.js` (the keyboard,
+    accessibility and the runs of the audit), `uniques_test.js`, `headings_test.js` and `reporting_test.js`.
+  - `pictures/`, 69 tests: `pictures_test.js`, `picturetools_test.js`, `icons_test.js`, `findbox_test.js`,
+    `tooltips_test.js`, `treebuttons_test.js` and `scrollbars_test.js`.
+  - `static/`, 54 tests: `scanner_test.js`, the scanner of the scripts, `rules_test.js`, `layers_test.js`,
+    `data_test.js` and `updates_test.js`.
+  - `audit_test.js`, 11 tests, which the other files run in many states.
+
+  A thing checked in several places keeps one name, from `NAMES` in `helpers_test.js`, such as "layout: the page does
+  not scroll" and "options: the choices are remembered"; 13 tests run in more than one file. A sample that a test needs,
+  and that the data or the page must have, is now a guard that throws, as `fixtures()` does, and the group then fails
+  "the tests ran to the end"; the setup checks of the old Tests 8, 13 to 15, 83 and 84, among others, became such
+  guards. Parts that another test already checked went, such as the order of the civilisations in seven behaviour tests
+  and the state of the language button in the old Tests 33 and 34. The old Test 55 went, as the tests of every `lang`
+  attribute, of each language choice's tag and of each control's name cover it, and so did the old Test 99, which
+  counted the tests, with `withLimitTest()`, `LIMIT` and `tagTests()`. The paths of the style sheets and the scripts,
+  and the folder and the format of a picture that a style sheet names, are left to the whitelist of `tests.yml`; a path
+  or a `url()` outside the project is still caught, by "rules: the code has no dependencies".
+- **New tests**, of things no test checked: **Clear** removes every mark (Requirement 17); Space marks an item must
+  have; a right-click by pointer events marks it must lack; the tick and the cross in Simple UI (Requirement 23); an
+  edge case of Requirement 34; marking a line must lack clears the must-have marks below it; Up goes to the item
+  above; and a click outside the language menu closes it.
+- **Helpers.** A helper sits beside the tests that use it: the tooltip's in `tooltips_test.js`, the scroll bars'
+  (`loaded()`, `sprite()` and the others that `barProblems()` used) in `scrollbars_test.js`, and `dropsGreyed()` in
+  `finding_test.js`; those that a folder's files share are in `behaviour/samples_test.js` and
+  `pictures/picturetools_test.js`. `helpers_test.js` lost 43 declarations that nothing used any more, `checkAll()` and
+  `flags()` among them, and has `phone()`, `footerAsWide()` and `footerHidden()` for the footer's tests. `run_test.js`
+  runs the groups and numbers the results, with no limit.
+- **Checked.** All 289 tests passed in all seven windows of `.github/runtests.sh`: over http in light and dark
+  colours at 1920 by 1080, 1000 by 1000 and 720 by 1280, and over `file://` in light colours at 1920 by 1080. In each
+  folder, throwaway faults in the page, its style sheets or its data each failed the tests meant for them, and were
+  removed; where one failed nothing, its test was made stricter until it did. The order of the scripts was read
+  from `index.html` and the imports.
+- **Documents.** `TESTS.md` anew: each test with its file, its purpose and what it expects, in the order the tests
+  run, with a contents by the category in each name. `MAINTAINER.md`: the files table, the UML diagram, the
+  subfolders, the data and pictures paragraphs, the order of the scripts, how to add a setting, the table of
+  `js/tests/`, and the tests by file instead of number. `TERMINOLOGY.md`: setting and picture look.
+  `DECISIONS.md`: the decisions of these answers, the Facade over `js/model/data/`, the view modules, one thing per
+  test, the tests in groups and folders, the paths left to GitHub, and the end of the rule conflicts of Rules 17, 25
+  and 26.
+
+#### Not done
+
+- `code_docu.pdf` and the code-docu skills' files, which still name the old modules and test files, such as
+  `static_test.js`, `js/view/pictures.js` and `js/model/datahandler.js`.
+- `treeview.js` stays whole, as above.
+- `#languageError` is as it was (Question 1).
+- "layout: on a phone, the footer is hidden" checks only in a window under 720 pixels wide and over 639 high, and no
+  window of `.github/runtests.sh` is: there it passes without checking.
+- In a headless tab driven from Node, which gets no focus events, "language menu: moving focus out of it closes it"
+  (Test 90) fails, as the old Test 34 did; it passes in all seven windows of `.github/runtests.sh`.
+
+#### Questions
+
+1. **`#languageError` (Question 8 of 05:21:12).** Only putting a language to use hides it. **OK** acts only on the
+   choices that changed, so choosing the language already shown does nothing, and the text stays until a language
+   loads or the page reloads. The text also sits between the header and the panes (`.load-error`, `flex: none`, in
+   the body's column of `100dvh`), so showing or hiding it moves the panes and makes them shorter or taller, which
+   Rule 18 and Requirement 35 may forbid; `#loadError` did the same before 05:21:12. Should it stay as it is, hide on
+   **OK** when the language shown is chosen, hide on any **OK** or **Cancel**, or take no room, over the page or in
+   the Options window?
+2. **Tests under Rules 4 and 6.** Some tests rest only on a decision in the DEVLOG, under Rule 4 (the page still
+   works) or Rule 6, as no requirement names what they check: the picture look, Include Regionals, the updater, and
+   the structure of the code. Should they stay, or go?
+3. **Requirement 3 and the headings.** Requirement 3 gives each node a checkbox, while Test 188, "tree: a group
+   inside a building has no checkbox", checks the headings decided on 2026-10-26. Should Requirement 3 say so?
+4. **Requirement 16's "Close".** The Options window has **Cancel** and **OK**, and Test 114, "options: Cancel or OK
+   closes the window", reads them for Requirement 16's Close button. Is that right?
+5. **Include Regionals** is in no requirement, and Tests 108 and 111 rest on Rule 4. Should a requirement name it?
+6. **The Xolotl Warrior and the Stable** grey each other out, which Requirement 37's variant branches do not cover,
+   so Tests 44 and 49 rest on Rule 4. Is that right?
+7. **Greying out and Rule 18.** A branch that is greyed out closes (Test 46), which moves the rows below it. Does
+   Rule 18 allow it?
+8. **The paths in `url()`.** Only the whitelist of `tests.yml` checks them now, and it does not catch a style sheet
+   that names a picture that does not exist. Should a test check that?
+
+### 11:04:37: Answers to the questions of 09:36:28, Requirements 3 and 16, and the Civ view's test
+
+#### What changed
+
+- **Answers.** Of the questions of 09:36:28: the tests that rest on Rule 4 or Rule 6 stay (2); Requirement 3 now
+  allows some group nodes without a checkbox (3), and Requirement 16 names **Cancel** and **OK** and says that **OK**
+  applies any changes (4); Include Regionals (5) and the Xolotl Warrior (6) stay tested under Rule 4; Rule 18 allows
+  a greyed-out branch to close (7). Question 8 rested on no bug: the two style sheets and `index.html` name 47 files
+  in 49 places, and each of them exists, with the same case, so no test is due (8). Question 1 is asked again below,
+  with the steps that show it.
+- **Purposes.** In `TESTS.md`, Test 112, "options: the window's buttons are Cancel and OK", and Test 114, "options:
+  Cancel or OK closes the window", rest on Requirement 16, and Test 189, "tree: a group inside a building has no
+  checkbox" (was Test 188), on Requirement 3.
+- **The Civ view's test.** Of the six choices in the Options window, only the Civ view had no test that **OK**
+  applies it: the tests start with the list, and none picked **Tile**. Test 169, "pictures: OK shows the
+  civilisations in the Civ view chosen" (Requirement 16), picks **Tile** and **OK**, then **List** and **OK**, without
+  Simple UI, where the choice shows: the first two civilisations sit side by side as tiles, and not as a list.
+  "options: the choices are remembered" (Test 116) checks that the Civ view is stored too. Tests 169 to 289 are now
+  170 to 290.
+- **Checked.** All 290 tests passed in all seven windows of `.github/runtests.sh`. Two throwaway faults each failed
+  only the test meant for them, and were removed: tiles that never show failed Test 169, and a Civ view that is not
+  stored failed Test 116.
+- **Corrected.** The entry of 09:36:28 has, under "Not done", that "layout: on a phone, the footer is hidden" never
+  checks in the windows of `.github/runtests.sh`. It does: the window of 720 by 1280 gives the page 704 by 1129
+  pixels, which is under 720 wide, so the test checks the phone layout there, in light and dark colours.
+- **Found.** A language that cannot load shows its message in a line above the panes, which makes both panes shorter
+  and moves everything in them down: in a window of 1280 by 900, by 36 pixels with Simple UI and 48 without. When the
+  message goes, they move back. So it has been since 2026-11-02, with the text "AoE2 Civ Explorer could not load its
+  data." until 05:21:12 (Question 1).
+- **Documents.** `TESTS.md`: the purposes above, Test 169, the numbers from 169 on, Test 116's places, and the line
+  numbers in `pictures_test.js`. `DECISIONS.md`: a greyed-out branch closes under Rule 18, and the tests under Rules
+  4 and 6 stay.
+
+#### Questions
+
+1. **The message "The language could not be loaded."** (`#languageError`; Question 8 of 05:21:12 and Question 1 of
+   09:36:28). It shows when the file of a language chosen in the Options window, such as `locales/fr.json`, cannot be
+   fetched, for example offline: the page stays in the language it was in, and the message appears in a line of its
+   own between the title and the two panes. It also shows at the start, when the file of the visitor's own language
+   cannot be fetched and the page starts in English. In Chrome:
+   1. In DevTools, open "Network request blocking" and block `locales/fr.json`.
+   2. Open Options, choose Français and press **OK**. The page stays in English, the message appears, and both panes
+      move down and get shorter, by 36 pixels with Simple UI and 48 without.
+   3. Open Options, choose English, the language shown, and press **OK**. Nothing happens, as **OK** acts only on
+      the choices that changed, and the message stays.
+   4. Open Options, choose Deutsch and press **OK**. German loads, the message goes, and the panes move back up.
+
+   So the message goes only when another language loads, or on a reload, and its coming and going resizes both panes,
+   which Requirement 35 forbids. Which should be done?
+   - (a) Nothing.
+   - (b) Hide it on the next **OK** or **Cancel** too. It then goes when expected, but the panes still move when it
+     comes and goes.
+   - (c) Give its line room always. Nothing moves, but the panes are always 36 pixels shorter, 48 without Simple UI,
+     on phones too.
+   - (d) Show it in a small window over the page, like the updater's report, closed with **OK**. Nothing moves, and
+     it goes when closed. At the start, though, the window would open by itself, which WCAG 2.2's 3.2.5, Change on
+     Request, may not allow, so there the page could start in English without a message.
+
+### 11:35:26: The message that a language could not be loaded is a popup
+
+#### What changed
+
+- **The popup.** "The language could not be loaded." (`#languageError`) is now a popup: a modal `<dialog>`, with the
+  role `alertdialog`, over the page, which opens when the language chosen in Options cannot be fetched, and at the
+  start when the visitor's own language cannot. Its **OK** closes it, and the focus goes back to where it was, the
+  Options button after a choice. Nothing on the page moves: the panes keep their place and size (Requirement 35),
+  which the line between the title and the panes did not, and the message no longer stays until another language
+  loads. `showLanguageError()` in `page.js` opens it, in place of `setLanguageError()`; `optionshandler.js` calls it
+  when a language fails and hides nothing when one loads, so `useChosen()` is gone; and `script.js` calls it once the
+  page is shown. With Simple UI the popup is a plain box with an **OK** button, and in the picture look its **OK** is
+  the game's button, as in Options. `.load-error` now styles only `#loadError`. This answers Question 1 of 11:04:37.
+- **The new text `messageTip`**, "Click to close this message", is the tooltip of the popup's **OK**, in all 17
+  languages; its 16 translations were written without a native speaker's check, as those of `languageFailed` were.
+- **Tests.** Five new tests in `js/tests/interface/options_test.js`, which run after the accessibility tests: with
+  the file of the next language made to fail, choosing that language opens the popup (Test 233), the page and
+  Options stay in the language in use (234), the panes neither move nor change size (235), **OK** closes the popup
+  (236) and gives the focus back to the Options button (237). The audit also runs with the popup open. `wait()` moved
+  from `marking_test.js` to `helpers_test.js`, as both test files use it. Tests 233 to 290 are now 238 to 295.
+- **Checked.** All 295 tests passed in all seven windows of `.github/runtests.sh`. Throwaway faults, each removed at
+  once: a line above the panes again failed only Test 235; a popup that is not modal, only Test 233; an **OK** that does
+  not close it, Tests 236 and 237; and the focus taken away before the popup opens, Test 237, with "rules: only the
+  views touch the page", which that fault broke. Options left on the failed language failed Test 234 only when `apply()`
+  also no longer showed the choices: `apply()` shows the language in use after every **OK**, so the same line in
+  `languageFailed()` changes nothing then. By hand, in Chrome, with `locales/fr.json` blocked, with and without Simple
+  UI: the popup opened after Français and **OK**, and at the start with `?lng=fr`; the panes kept their place and size;
+  and **OK** closed it, with the focus back on the Options button after a choice, and on the page at the start.
+- **Documents.** `TESTS.md`: Tests 233 to 237, the numbers from 233 on, and the line numbers in `options_test.js`.
+  `MAINTAINER.md`: the popup in `script.js`, `page.js` and `optionshandler.js`. `DECISIONS.md`: the popup, how it
+  opens at the start under WCAG 2.2's 3.2.5, and the translations of `messageTip`.
+
+#### Not done
+
+- `languageFailed()` still shows the language in use in Options, which `apply()` has done already. It stays, as it
+  still counts when the window is open again as the language fails: the window then shows the language in use.
+- `code_docu.pdf` and the code-docu skills' files, which still name the old modules, as in the entries before.
+
+### 13:04:12: `code_docu.pdf` made again, with a chapter for each subfolder
+
+#### What changed
+
+- **`code_docu.pdf`** made again: 126 pages, 2.4 MB, 6893 links, none without a target, 783 bookmarks, and every page
+  A4; 14 chapters, 57 subchapters, 652 functions and 12 objects. Each subfolder of `js/` is now a chapter of its own,
+  after the folder it is in: `js/model/data/` (5), `js/view/pictures/` (7) and the four folders of tests,
+  `js/tests/behaviour/` (10), `interface/` (11), `pictures/` (12) and `static/` (13). It describes the code as it
+  stands after 11:35:26: `treehandler.js` in place of `nodetree.js`, `civsview.js` and `toolkit.js` in place of
+  `stringbuilder.js`, `itemtree.js`, the four scripts of `js/model/data/`, the three of `js/view/pictures/`, the tests
+  in 22 files, and the popup about a language that could not be loaded.
+- **Descriptions.** `layout.json` lists the 14 folders and their 57 files. The text in `desc/` was written again for
+  every script that was split, moved or renamed since 2026-11-02; where a function's code had not changed, its old
+  description was kept word for word, with the names of files and functions brought up to date. Two old descriptions
+  were wrong: `countOf()` takes what every item under an item has in common, its branch set, not what any of them has;
+  and `clear()` now cites Requirement 17 alone, as 18 and 19 are Expand all and Collapse all. `onTop()` no longer
+  cites Requirement 27, which was rescinded. `desc/` now holds six files, which `references/descriptions.md` lists.
+  In `desc/00.txt`, the folders `js/model/`, `js/view/`, `js/controller/` and `js/tests/` are described anew, and the
+  six subfolders for the first time. In `desc/01.txt`, the parts of `index.html`, `base.css` and `pictures.css` cover
+  their files' lines again, `index.html` has a part for the popup, and the introductions of the UML pages name the
+  subfolders.
+- **UML.** The overview's boxes name the scripts of a subfolder as `data/datahandler.js` and the folders of tests as
+  `behaviour/`, each now linked to its subchapter or chapter: `uml.js` read a name only up to a `/`, and `gen.mjs`
+  linked a folder's name as a file's. The diagrams of the model and the view take in their subfolders' scripts. The
+  model could not at first be drawn without a crossing, as `model.js` and `updater.js` both import `itemtree.js` and
+  `texts.js`; 48 shuffled orders of the arrows, shuffled orders of the boxes, and ELK's other layouts (stress, force
+  and mrtree) all failed and were dropped again. `uml.js` now also tries each arrow written the other way round
+  (`civsets <.. itemtree` for `itemtree ..> civsets`), which still draws the arrow from `itemtree` to `civsets` but
+  lets ELK lay the boxes out from its other end; with that arrow turned, the model is drawn clean. `collide.js` takes
+  an arrow's head from its marker, so a turned arrow is checked as the arrow it shows. `uml.js` also draws every order
+  and keeps the largest clean drawing, where it kept the first. The text is 6.5 points in the overview (7.6 before),
+  3.7 in the model (4.7), 4.5 in the view (5.6) and 9 in the controller.
+- **The skills' scripts.** `code-docu-uml/scripts/parts.mjs`: each part's diagram takes in its subfolders, a box of
+  the overview may name `sub/file.js` or `sub/`, and the overview is checked against the subfolders.
+  `code-docu-inventory/scripts/inventory.mjs` follows an `import()` held in a `const`, as `testRunner` in `script.js`
+  is, so `runTests()` and `loadFailed()` are called by `script.js`; `testmap.mjs` finds the file of each part of a
+  test's "File residence" in `TESTS.md`. The `SKILL.md` of `code-docu`, `code-docu-uml` and `code-docu-inventory`,
+  `references/form.md` and `references/descriptions.md` say so.
+- **Checked.** The draft listed no warning. `verify.py` found no dead link, no wrong header, no bad bookmark and no
+  page that is not A4. These pages were looked at: the title page, both pages of the contents, the four UML pages (the
+  model's also at four times the size, to follow its arrows), the page of `data.json`, the first pages of
+  `js/model/`, `js/model/data/` and `js/tests/behaviour/`, and the first page of the index. No `node_modules` or
+  `package.json` is in the repository. The tests were not run again: since 11:35:26, when all 295 passed, only
+  `.claude/skills/` and `documentation/` have changed.
+- **Documents.** `MAINTAINER.md`: a subfolder is a chapter too. `DECISIONS.md`: the decision on `code_docu.pdf` says
+  so and links here.
+
+#### Questions
+
+1. **The UML text** is now 3.7 points in the model and 4.5 in the view, the smallest yet: `js/model/` and its
+   subfolder have ten scripts, and `js/view/` and its subfolder nine. Question 1 of 2026-11-02 10:12:50 asked the
+   same at 4.7 points and is still open. Should the model's and the view's diagrams get a larger page, or be split,
+   such as `js/model/data/` and `js/view/pictures/` each on a page of their own?
+
+### 13:13:18: Every page of `code_docu.pdf` upright
+
+#### What changed
+
+- **The controller's UML page** was printed on its side, the only page of the PDF that was not upright: `uml.js` tried
+  each diagram on an upright and a lying A4 page and kept the larger drawing, and at 9 points the controller's three
+  boxes fit the lying page better. `uml.js` now tries the upright page alone, `doc.css` and `gen.mjs` no longer define
+  the lying page, and `verify.py` now fails a page that is not upright A4, where it passed a lying one. The
+  controller's diagram is upright, its three boxes one under the other, at 9 points as before; the other three UML
+  pages were upright already and are unchanged.
+- **`code_docu.pdf`** made again: 126 pages, all upright A4, 2.4 MB, 6888 links, none without a target. The five links
+  fewer are in the index, where a name that wraps over two lines is two links.
+- **Documents.** `references/form.md` and the `SKILL.md` of `code-docu-uml` and `code-docu-pdf` say that every page
+  is upright. `DECISIONS.md`: the decision on the UML pages says so and links here.

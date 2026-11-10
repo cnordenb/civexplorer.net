@@ -67,7 +67,9 @@
       "tooltips": "Tooltips",
       "cancel": "Abbrechen",
       "ok": "OK",
-      "loading": "Bildressourcen werden geladen..."
+      "loading": "Bildressourcen werden geladen...",
+      "languageFailed": "Die Sprache konnte nicht geladen werden.",
+      "messageTip": "Klicken, um diese Meldung zu schließen"
     },
     "groups": {
       "economy": "Wirtschaft",

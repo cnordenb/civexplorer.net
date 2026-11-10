@@ -100,9 +100,9 @@ Below, `REPO` is the repository's folder and `WORK` the work folder; run the com
    python .claude/skills/code-docu-pdf/scripts/shot.py "$WORK/code_docu.pdf" "$WORK/shot" 1,2,4,5,6,7
    ```
 
-   The lines `uml: …` that `build.mjs` prints give each UML page, its layout, its direction and its text size in
-   points; on 2026-11-02 the model's was the smallest, at 4.7 points. A line `uml problem: …` stops the build: an
-   arrow crosses or touches another, or runs under a box or a label, or a name links nowhere.
+   The lines `uml: …` that `build.mjs` prints give each UML page, its layout, its direction and its text size in points;
+   on 2026-11-02 the model's was the smallest, at 4.7 points, and on 2026-11-10 at 3.7. A line `uml problem: …` stops
+   the build: an arrow crosses or touches another, or runs under a box or a label, or a name links nowhere.
 
 5. **Install it.** Copy `$WORK/code_docu.pdf` over `documentation/code_docu.pdf`.
 

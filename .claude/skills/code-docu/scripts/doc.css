@@ -69,7 +69,6 @@ ol.toc, ol.index { margin: 8pt 0 0; padding: 0; list-style: none; }
 .index .iw { flex: none; color: #666; font-size: 0.92em; }
 .uml { margin-top: 6pt; }
 @page uml-portrait { size: A4 portrait; }
-@page uml-landscape { size: A4 landscape; }
 .uml svg { display: block; margin: 0 auto; }
 table.keys { width: 100%; margin-top: 6pt; border-collapse: collapse; font-size: 8.7pt; line-height: 1.33; }
 .keys th { padding: 2pt 4pt; border-bottom: 0.8pt solid #888; text-align: left; font-weight: 600; color: #333; }

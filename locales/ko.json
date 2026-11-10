@@ -63,7 +63,9 @@
       "tooltips": "툴팁",
       "cancel": "취소",
       "ok": "확인",
-      "loading": "이미지 에셋을 불러오는 중..."
+      "loading": "이미지 에셋을 불러오는 중...",
+      "languageFailed": "언어를 불러올 수 없습니다.",
+      "messageTip": "클릭하여 이 메시지 닫기"
     },
     "groups": {
       "economy": "경제",

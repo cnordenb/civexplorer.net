@@ -63,7 +63,9 @@
       "tooltips": "工具提示",
       "cancel": "取消",
       "ok": "确定",
-      "loading": "正在加载图片资源..."
+      "loading": "正在加载图片资源...",
+      "languageFailed": "无法加载语言。",
+      "messageTip": "单击以关闭此消息"
     },
     "groups": {"economy": "经济", "military": "军事", "uniqueUnits": "独特单位", "uniqueTechnologies": "独特科技", "fortifications": "防御工事"},
     "civs": {

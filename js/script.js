@@ -1,41 +1,62 @@
 import {
-  params, data, load, useData, loadLanguage, loadLanguages, preferredLanguage,
-} from "./model/datahandler.js";
+  params, load, useData, loadLanguage, loadLanguages, preferredLanguage, startLanguage, recallSetting,
+} from "./model/data/datahandler.js";
 import { startModel } from "./model/model.js";
-import { setLoadError, setLoading, writeFixed, showPage } from "./view/stringbuilder.js";
-import { startPictures, finishLoading } from "./view/pictures.js";
-import { startPage, redraw } from "./view/page.js";
-import { startOptions, chooseSimple, savedSimple } from "./controller/optionshandler.js";
-import { startTree } from "./controller/nodetree.js";
+import { startScreen, applySimple, startPictures, hideLoadingWhenReady, setLoading } from "./view/pictures/pictures.js";
+import { startPage, redraw, writeFixed, showPage, setLoadError, showLanguageError } from "./view/page.js";
+import { startOptions } from "./controller/optionshandler.js";
+import { startTree } from "./controller/treehandler.js";
 import { runUpdate } from "./controller/updatehandler.js";
 
-chooseSimple(savedSimple());
-load("data.json").then((raw) => {
+const MODE = ["test", "update"].find((name) => params.has(name)) ?? "page";
+
+const RUNS = {
+  test: {
+    languages: loadLanguages,
+    run: () => testRunner().then(({ runTests }) => runTests()),
+    failed: () => testRunner().then(({ loadFailed }) => loadFailed()),
+  },
+  update: { languages: loadPreferred, run: runUpdate, failed: () => null },
+  page: { languages: loadPreferred, run: () => null, failed: () => null },
+};
+
+startScreen();
+applySimple(recallSetting("simple"));
+load("data.json").then(useAndLoadLanguages).then(run, failLoad);
+
+function useAndLoadLanguages(raw) {
   useData(raw);
-  if (params.has("test") || params.has("update")) return loadLanguages();
+  return RUNS[MODE].languages();
+}
+
+function loadPreferred() {
   return loadLanguage(preferredLanguage()).catch(() => null);
-}).then(() => {
+}
+
+function run() {
   start();
   startPictures();
-  finishLoading();
-  if (params.has("test")) return import("./tests/run_test.js").then(({ runTests }) => runTests());
-  if (params.has("update")) return runUpdate();
-  return null;
-}).catch((error) => {
+  hideLoadingWhenReady();
+  return RUNS[MODE].run();
+}
+
+function failLoad(error) {
   setLoading(false);
   setLoadError(true);
-  if (params.has("test")) import("./tests/run_test.js").then(({ loadFailed }) => loadFailed());
+  RUNS[MODE].failed();
   throw error;
-});
+}
 
 function start() {
-  const code = preferredLanguage();
-  const first = Object.keys(data.languages)[0];
-  startModel(data.text[code] ? code : first);
+  const code = startLanguage();
+  startModel(code);
   startTree();
   startOptions();
   writeFixed();
   startPage();
   redraw("start");
   showPage();
+  if (code !== preferredLanguage()) showLanguageError();
 }
+
+const testRunner = () => import("./tests/run_test.js");

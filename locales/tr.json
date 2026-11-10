@@ -63,7 +63,9 @@
       "tooltips": "İpuçları",
       "cancel": "İptal",
       "ok": "Tamam",
-      "loading": "Görsel varlıklar yükleniyor..."
+      "loading": "Görsel varlıklar yükleniyor...",
+      "languageFailed": "Dil yüklenemedi.",
+      "messageTip": "Bu mesajı kapatmak için tıklayın"
     },
     "groups": {
       "economy": "Ekonomi",

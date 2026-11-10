@@ -1732,7 +1732,9 @@
       "tooltips": "Tooltips",
       "cancel": "Cancel",
       "ok": "OK",
-      "loading": "Loading image assets..."
+      "loading": "Loading image assets...",
+      "languageFailed": "The language could not be loaded.",
+      "messageTip": "Click to close this message"
     },
     "groups": {
       "economy": "Economy",

@@ -1,7 +1,7 @@
 # The form of code_docu.pdf
 
-What the PDF must look like, as decided in the DEVLOG (2026-10-19, 2026-10-30 and 2026-10-31) and recorded in
-`documentation/DECISIONS.md` under "Documents". The scripts already make it so; this list is what to keep when
+What the PDF must look like, as decided in the DEVLOG (2026-10-19, 2026-10-30, 2026-10-31 and 2026-11-10) and recorded
+in `documentation/DECISIONS.md` under "Documents". The scripts already make it so; this list is what to keep when
 changing them, and what to look for on the rendered pages.
 
 ## Order
@@ -16,10 +16,12 @@ changing them, and what to look for on the rendered pages.
    code in model, view and controller, file by file; then the scripts of each part, function by function, generated
    from the code. No arrow crosses or touches another, or runs under a box or a label, and every build checks it
    (decided 2026-11-01; until then one diagram of all the scripts).
-4. The chapters, one per folder, in the order of `layout.json`:
-   1 the main folder (`index.html`, `data.json`), 2 `css/`, 3 `js/` (`script.js`), 4 `js/model/`, 5 `js/view/`,
-   6 `js/controller/`, 7 `js/tests/`, 8 `locales/` (`de.json`, standing for every file in `locales/`).
-   This order, from the page down, was kept on 2026-10-31 over putting the four folders of scripts first.
+4. The chapters, one per folder, in the order of `layout.json`, each subfolder a chapter of its own after the folder
+   it is in (since 2026-11-10): 1 the main folder (`index.html`, `data.json`), 2 `css/`, 3 `js/` (`script.js`),
+   4 `js/model/`, 5 `js/model/data/`, 6 `js/view/`, 7 `js/view/pictures/`, 8 `js/controller/`, 9 `js/tests/`,
+   10 `js/tests/behaviour/`, 11 `js/tests/interface/`, 12 `js/tests/pictures/`, 13 `js/tests/static/`, 14 `locales/`
+   (`de.json`, standing for every file in `locales/`). This order, from the page down, was kept on 2026-10-31 over
+   putting the four folders of scripts first.
 5. The index.
 
 ## Chapters and subchapters
@@ -28,7 +30,7 @@ changing them, and what to look for on the rendered pages.
   subchapter follows on the same page; every other subchapter starts a page.
 - A subchapter is a file. It opens with what the file holds, its lines, what it imports and what imports it.
 - **Scripts.** Each function and object defined at the top level is a section, numbered chapter.subchapter.n in the
-  order of the file, such as 4.1.4 for `load()` in `datahandler.js`. A section gives its lines, "exported" or
+  order of the file, such as 5.1.5 for `load()` in `datahandler.js`. A section gives its lines, "exported" or
   "internal", what it does and why, then "Called by" and "Calls", grouped by file, its own file first. A function
   handed on to be called later counts as called by the one that hands it on, and a script's top-level code is named
   where it is the caller. Helpers defined inside a function are part of that function.
@@ -41,16 +43,18 @@ changing them, and what to look for on the rendered pages.
 ## Links
 
 - Every mention of a folder, file or function outside its own heading links to its chapter, subchapter or section: in
-  the text, the lists, the contents, the UML diagrams and the index. There were 3,425 links on 2026-10-31.
+  the text, the lists, the contents, the UML diagrams and the index. There were 3,425 links on 2026-10-31 and 6,893 on
+  2026-11-10.
 - Files of the repository that are not chapters, such as `RULES.md`, link to their page on GitHub
   (`https://github.com/cnordenb/civexplorer.net/blob/master/…`).
 - Every link must have a target in the PDF; `verify.py` fails otherwise.
 
 ## Pages
 
-- A4 throughout, the UML pages included. It was A3 until 2026-10-31, when A4 was chosen with smaller names. A UML
-  page is turned on its side when its diagram comes out larger that way.
-- The header at the top left names the chapter and the subchapter, such as "4 js/model/ › 4.1 datahandler.js"; the
+- A4 throughout, the UML pages included. It was A3 until 2026-10-31, when A4 was chosen with smaller names. Every
+  page is upright, the UML pages too; until 2026-11-10 a UML page was turned on its side when its diagram came out
+  larger that way.
+- The header at the top left names the chapter and the subchapter, such as "5 js/model/data/ › 5.1 datahandler.js"; the
   front pages name themselves ("Contents", "UML diagrams", "Index"). At the top right: "AoE2 Civ Explorer · Code
   documentation". At the bottom right: the page's number and the number of pages.
 - The page numbers in the contents and the index are those where each heading starts, read back from a printing.
@@ -58,13 +62,14 @@ changing them, and what to look for on the rendered pages.
 ## The PDF
 
 - Titled "AoE2 Civ Explorer: Code documentation", tagged, in English.
-- One bookmark for every chapter, subchapter and section, each titled as its heading, such as "4.1.4 load(url)",
+- One bookmark for every chapter, subchapter and section, each titled as its heading, such as "5.1.5 load(url)",
   with no number run into a name and no word given twice.
-- Its objects packed into compressed streams: about 1.4 MB instead of about 4 MB.
-- 65 pages on 2026-10-31.
+- Its objects packed into compressed streams: about 1.4 MB instead of about 4 MB on 2026-10-31, and 2.4 MB instead of
+  7.9 MB on 2026-11-10.
+- 65 pages on 2026-10-31, 126 on 2026-11-10.
 
 ## The index
 
 Every chapter, subchapter, function and object, in alphabetical order, one to a line, under a letter heading:
 chapters in bold, subchapters in plain letters, functions in the letters of the code, each with where it is (such as
-"function 4.1.4, in js/model/datahandler.js") and its page.
+"function 5.1.5, in js/model/data/datahandler.js") and its page.

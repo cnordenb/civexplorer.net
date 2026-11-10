@@ -8,27 +8,59 @@ The two style sheets index.html links: base.css, for Simple UI and the layout ei
 
 @ js/
 Where the scripts start: script.js, which index.html loads as a module. Every other script is in one of the four folders
-  below it: js/model/, js/view/ and js/controller/ for the page, and js/tests/ for the tests.
+  below it, or in a folder of theirs: js/model/, js/view/ and js/controller/ for the page, and js/tests/ for the tests.
 
 @ js/model/
-The data and the tree's rules: datahandler.js loads and stores the data, civsets.js holds the sets of civilisations,
-  texts.js the chosen language and icons.js the icons' file names, updater.js fetches the game's newest data for
-  `?update`, and model.js holds the tree and its rules, saves its own choices, and tells the page when they change.
-  None of them touches the page, and each imports only those before it.
+The data and the tree's rules: js/model/data/ loads and stores the data, civsets.js holds the sets of civilisations,
+  texts.js the chosen language and icons.js the icons' file names, itemtree.js builds the tree's items and answers
+  questions about its shape, updater.js fetches the game's newest data for `?update`, and model.js keeps the options,
+  the marks, the filters and the counts with the rules of marking, saves its own choices, and tells the page when they
+  change. None of them touches the page, and none imports a view or a controller.
+
+@ js/model/data/
+The only scripts that load or store data or read the address. datahandler.js, the Facade, loads data.json and the
+  language files, holds the rule of which language to start in, and passes on what the other three hold: storage.js
+  the saved settings, address.js the address's parameters, and guard.js `attempt()`, which turns what a browser
+  refuses into nothing. Every other script imports from datahandler.js alone.
 
 @ js/view/
-What the page shows: stringbuilder.js writes its text, treeview.js draws the tree, optionsview.js the Options window,
-  page.js holds them all as one view of the whole page, pictures.js holds what only the pictures need, scrollbars.js
-  draws the game's scroll bars, and report.js shows the report window. No view imports a controller.
+What the page shows: toolkit.js holds the small tools every view uses, page.js holds the views as one view of the whole
+  page and writes its fixed texts, civsview.js draws the civilisations and Filters, treeview.js the tree,
+  optionsview.js the Options window, and report.js the report window; js/view/pictures/ holds what only the pictures
+  need. No view imports a controller.
+
+@ js/view/pictures/
+The picture look, which Simple UI turns off: pictures.js picks and preloads the screen's pictures, runs the loading
+  screen and starts the other two, tooltips.js shows the tooltip, and scrollbars.js draws the game's scroll bars.
 
 @ js/controller/
-What the visitor's clicks, touches and keys mean: nodetree.js for the tree, optionshandler.js for the Options window,
-  and updatehandler.js for the updater. They change the model or ask a view to change, and never touch the page.
+What the visitor's clicks, touches and keys mean: treehandler.js for the tree and Filters, optionshandler.js for the
+  Options window, and updatehandler.js for the updater. They change the model or ask a view to change, and never
+  touch the page.
 
 @ js/tests/
-The tests, loaded only when the address ends in `?test`. run_test.js runs them and helpers_test.js holds the tools they
-  share; the other five hold the tests, which TESTS.md describes one by one.
+The tests, loaded only when the address ends in `?test`. run_test.js runs them, helpers_test.js holds the tools they
+  share and audit_test.js the accessibility audit; the tests themselves are in the four folders below, one for each
+  kind, and TESTS.md describes them one by one, each with the one thing it tests (Rule 17).
+
+@ js/tests/behaviour/
+The tests of what marking does: the marks and Filters, the counts, opening and closing, greying out and Find.
+  marking_test.js runs them all, and samples_test.js holds the test names and tools the others share.
+
+@ js/tests/interface/
+The tests of the page's controls: the language menu, every language, the Options window and the popup about a language
+  that could not load, the keyboard, the filters of unique items, the headings inside buildings and the report window.
+  keys_test.js also runs the accessibility audit in many states.
+
+@ js/tests/pictures/
+The tests of the picture look, which run with Simple UI off: the screen's pictures, the boxes and icons, the Find box,
+  the tooltip, the tree's buttons and the scroll bars. pictures_test.js runs them all, and picturetools_test.js holds
+  the tools the others share.
+
+@ js/tests/static/
+The tests that read the files instead of using the page: scanner_test.js reads the scripts and style sheets for the
+  others, rules_test.js and layers_test.js check the rules of RULES.md and of model, view and controller, data_test.js
+  looks for mistakes in data.json and the language files, and updates_test.js checks the updater.
 
 @ locales/
 One file for each language but English, all laid out alike, so only de.json is described here.
-

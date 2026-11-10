@@ -126,13 +126,23 @@ function addStatement(st, code, entries, top) {
   }
 }
 
+function dynamicImports(file, code) {
+  const at = (where) => path.posix.join(path.posix.dirname(file), where);
+  const wrappers = new Map([...code.matchAll(/const (\w+) = \(\) => import\(\s*"([^"]+)"\s*\)/g)]
+    .map(([, name, where]) => [name, at(where)]));
+  const calls = /(?:import\(\s*"([^"]+)"\s*\)|(\w+)\(\))\.then\(\(\{\s*([^}]+?)\s*\}\)/g;
+  return [...code.matchAll(calls)].flatMap(([, where, wrapper, names]) => {
+    const from = where ? at(where) : wrappers.get(wrapper);
+    return from ? names.split(",").map((name) => ({ from, name: name.trim() })) : [];
+  });
+}
+
 function parseModule(root, file, acorn) {
   const code = fs.readFileSync(path.join(root, file), "utf8");
   const ast = acorn.parse(code, { ecmaVersion: "latest", sourceType: "module", locations: true });
   const imports = new Map();
   const entries = [];
   const top = [];
-  const dynamic = [];
   for (const st of ast.body) {
     if (st.type !== "ImportDeclaration") addStatement(st, code, entries, top);
     else {
@@ -140,10 +150,7 @@ function parseModule(root, file, acorn) {
       for (const s of st.specifiers) imports.set(s.local.name, { from, name: s.imported?.name ?? "default" });
     }
   }
-  for (const m of code.matchAll(/import\(\s*"([^"]+)"\s*\)\.then\(\(\{\s*([^}]+?)\s*\}\)/g)) {
-    const from = path.posix.join(path.posix.dirname(file), m[1]);
-    for (const n of m[2].split(",").map((s) => s.trim())) dynamic.push({ from, name: n });
-  }
+  const dynamic = dynamicImports(file, code);
   return { file, code, imports, entries, top, dynamic, lineCount: code.split("\n").length };
 }
 

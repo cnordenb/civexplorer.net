@@ -1,11 +1,11 @@
 ---
 name: code-docu-pdf
 description: >-
-  Print, number, pack, check and render code_docu.pdf for AoE2 Civ Explorer: Chrome prints the page that gen.mjs
-  builds, the page of every heading is read back for the contents and the index, bookmarks are titled and the file
-  compressed, and the result is checked for dead links, wrong headers, bad bookmarks and pages that are not A4. Use
-  this skill when code_docu.pdf is being made or updated (with the code-docu skill) and a step of build.mjs fails,
-  when its checks have to change, or to look at pages of the PDF as pictures.
+  Print, number, pack, check and render code_docu.pdf for AoE2 Civ Explorer: Chrome prints the page that gen.mjs builds,
+  the page of every heading is read back for the contents and the index, bookmarks are titled and the file compressed,
+  and the result is checked for dead links, wrong headers, bad bookmarks and pages that are not upright A4. Use this
+  skill when code_docu.pdf is being made or updated (with the code-docu skill) and a step of build.mjs fails, when its
+  checks have to change, or to look at pages of the PDF as pictures.
 ---
 
 # Printing and checking code_docu.pdf
@@ -54,7 +54,7 @@ file with object streams and compressed streams: about 1.4 MB instead of about 4
 - a page between the first chapter and the index does not name its chapter and subchapter in its header;
 - a bookmark runs a number into a name, or repeats a word, as Chrome's own titles did;
 - a link in the PDF has no target;
-- a page is not A4;
+- a page is not upright A4 (until 2026-11-10 a lying A4 page passed);
 - the `data.json` subchapter takes more than one page.
 
 A new check belongs here when a decision about the form adds something that can be counted. Keep each check one

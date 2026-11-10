@@ -1,4 +1,4 @@
-import { data } from "./datahandler.js";
+import { data } from "./data/datahandler.js";
 
 export let language;
 export let words;
@@ -20,13 +20,15 @@ export const nameOf = (item) => (item.group ? words.groups[item.key] : words.ite
 
 export const civName = (civ) => words.civs[civ] ?? civ;
 
-export const plural = (key, n) => {
+export function plural(key, n) {
   const forms = words.ui[key];
   return fill(forms[plurals.select(n)] ?? forms.other, { n: numbers.format(n) });
-};
+}
 
-export const fill = (template, values) => template.replace(/\{(\w+)\}/g,
-  (whole, key) => (key in values ? String(values[key]) : whole));
+export const PLACEHOLDER = /\{(\w+)\}/g;
+
+export const fill = (template, values) => template.replace(PLACEHOLDER,
+  (whole, key) => (Object.hasOwn(values, key) ? String(values[key]) : whole));
 
 export const plain = (text) => text.toLocaleLowerCase(tag).normalize("NFD")
   .replace(/\p{M}/gu, "").replace(/[^\p{L}\p{N}]/gu, "");

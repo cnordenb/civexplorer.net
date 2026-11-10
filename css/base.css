@@ -121,10 +121,10 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 .node .name { min-width: 0; overflow-wrap: anywhere; }
 .box { position: relative; flex: none; width: 20px; height: 20px; border: 2px solid var(--line); border-radius: 3px; background: var(--bg); }
 .box::before, .box::after { content: ""; position: absolute; left: 50%; top: 50%; }
-[data-state="has"] > .box { border-color: var(--yes); }
+[data-state="has"] > .box, .option[aria-checked="true"] > .box { border-color: var(--yes); }
 [data-state="lacks"] > .box { border-color: var(--no); }
 [data-state="mixed"] > .box { border-color: var(--ink); background: var(--dash); }
-[data-state="has"] > .box::after {
+[data-state="has"] > .box::after, .option[aria-checked="true"] > .box::after {
   width: 7px; height: 12px; border: solid var(--yes); border-width: 0 3px 3px 0; transform: translate(-50%, -60%) rotate(45deg);
 }
 [data-state="lacks"] > .box::before, [data-state="lacks"] > .box::after {
@@ -134,7 +134,7 @@ h1 { flex: 1 1 auto; align-self: center; min-width: 0; margin: 0; font-size: 1re
 [data-state="mixed"] > .box::after { width: 10px; height: 0; border-top: 3px solid #fff; transform: translate(-50%, -50%); }
 @media (forced-colors: active) {
   .box { forced-color-adjust: none; border-color: CanvasText; background: Canvas; }
-  [data-state] > .box::before, [data-state] > .box::after { border-color: CanvasText; }
+  [data-state] > .box::before, [data-state] > .box::after, .option[aria-checked] > .box::before, .option[aria-checked] > .box::after { border-color: CanvasText; }
   [data-state="mixed"] > .box { background: CanvasText; }
   [data-state="mixed"] > .box::after { border-color: Canvas; }
 }
@@ -180,6 +180,9 @@ dialog p { margin: 8px 0; }
 .report[open] { display: flex; flex-direction: column; gap: 8px; }
 .report :is(h2, p) { margin: 0; }
 .report form { text-align: right; }
+.message { width: fit-content; max-width: calc(100vw - 32px); }
+.message p { margin: 0 0 16px; }
+.message form { display: flex; justify-content: flex-end; }
 .report-body { flex: 1 1 auto; min-height: var(--target); overflow-y: auto; overscroll-behavior: contain; border-block: 1px solid var(--line); }
 .report-list { margin: 8px 0; padding-left: 1.5em; overflow-wrap: anywhere; }
 .downloads a { display: inline-flex; align-items: center; min-height: var(--target); }

@@ -22,7 +22,7 @@ output panel - the frame on the right hand side of the screen titled "Civilisati
 civ list - the civilisations that fit every mark, listed under "Civilisations" in the output panel
 civ count - the number right of a node: how many in the civ list have it, and if collapsed also its whole branch
 filters list - the "Filters:" summary of every mark, between the output panel's header and the civ list
-filter entry - one item of the filters list: a node, line or branch with its mark, clearing that mark when clicked
+filter entry - a filters list item: a node, line or branch, its mark and if it is lone; clicked, it clears the mark
 chip - the code's name for a filter entry, called a filter button in the tests
 lone filter entry - a unique node's own filter entry, kept while its line or group is marked too; lone in the code
 full - "Full" before a filter entry: a root node or building node with several child nodes, its whole branch must have
@@ -37,8 +37,10 @@ regional node - a node aoe2techtree.net counts as regional, e.g. "Eagle Scout", 
 reach - a node's class in data.json, common, regional or unique, telling unique and regional nodes from the rest
 options window - the "Options" window opened by the cogwheel button in the header, with language and settings
 options button - the cogwheel button in the header that opens the options window
+setting - a stored choice in options, with its values and its default in SETTINGS in js/model/data/storage.js
 simple ui - the "Simple UI" setting in the options window: no images or fonts, the look the requirements describe
 pictures - the look with simple ui off: game art, icons, cursors and fonts, all styled under the class pictures on html
+picture look - the page with simple ui off: its pictures, loading screen, tooltips and scroll bars; js/view/pictures/
 parchment - the game's paper art behind the page and the options window with pictures, sized by the screen
 tile - a civilisation of the civ list as its icon in a box, with pictures while "Civ view:" is set to "Tile"
 tooltip - the box by the cursor with pictures, e.g. "Left-click to enable, right-click to disable", set by "Tooltips"
@@ -46,6 +48,7 @@ loading screen - the grey "Loading image assets..." screen of pictures, shown un
 atlas - one webp per icon folder holding all its icons in a grid, from which nodes and civilisations get their icons
 sprite - a node's icon as data.json names it: its kind, which picks the atlas, and its picture in that atlas
 locale file - a json file in locales/ with the text of one language besides english, e.g. de.json for german
+start language - the preferred language if it could be loaded, otherwise the first language in data.json
 overrides - corrections to the game's names, english ones in data.json and the others in their locale file
 updater - the tool at index.html?update that fetches aoe2techtree.net's data and offers new data.json and locale files
 report window - the window in which the updater, or the tests at index.html?test, list what they found

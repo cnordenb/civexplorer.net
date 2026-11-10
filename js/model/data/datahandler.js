@@ -1,6 +1,10 @@
-import { useCivs } from "./civsets.js";
+import { useCivs } from "../civsets.js";
+import { recall } from "./storage.js";
+import { params } from "./address.js";
+export { SETTINGS, recall, remember, recallSetting, rememberSetting } from "./storage.js";
+export { params, keepInAddress } from "./address.js";
+export { attempt } from "./guard.js";
 
-export const params = new URLSearchParams(location.search);
 export let data = null;
 
 export function useData(raw) {
@@ -8,14 +12,14 @@ export function useData(raw) {
   useCivs(data.civs);
 }
 
-export const unpack = (file) => {
-  const first = Object.keys(file.languages)[0];
+export function unpack(file) {
+  const first = firstLanguage(file);
   return { ...file, overrides: { [first]: file.overrides }, text: { [first]: file.text } };
-};
+}
 
 export const loadLanguages = () => Promise.all(Object.keys(data.languages).map(loadLanguage));
 
-export const loadLanguage = (code) => (data.text[code]
+export const loadLanguage = (code) => (hasLanguage(code)
   ? Promise.resolve()
   : load(localeFile(code)).then((raw) => addLanguage(data, code, JSON.parse(raw))));
 
@@ -31,39 +35,28 @@ export const load = (url) => new Promise((resolve, reject) => {
 
 export const localeFile = (code) => `locales/${code}.json`;
 
-export const addLanguage = (siteData, code, file) => {
+export function addLanguage(siteData, code, file) {
   siteData.overrides[code] = file.overrides;
   siteData.text[code] = file.text;
-};
+}
+
+export const firstLanguage = (from = data) => Object.keys(from.languages)[0];
+
+export const hasLanguage = (code) => !!data.text[code];
 
 export function preferredLanguage() {
   const codes = Object.keys(data.languages);
-  return [params.get("lng"), recall("language")].find((code) => codes.includes(code)) ?? codes[0];
+  return [params.get("lng"), recall("language")].find((code) => codes.includes(code)) ?? firstLanguage();
 }
 
-export const recall = (key) => attempt(() => localStorage.getItem(key));
-
-export const remember = (key, value) => attempt(() => (value === null
-  ? localStorage.removeItem(key)
-  : localStorage.setItem(key, value)));
-
-export const keepInAddress = (key, value) => attempt(() => {
-  const search = new URLSearchParams(location.search);
-  search.set(key, value);
-  history.replaceState(history.state, "", `?${search}${location.hash}`);
-});
-
-export const attempt = (action) => {
-  try {
-    return action();
-  } catch (error) {
-    if (error instanceof DOMException) return null;
-    throw error;
-  }
-};
+export function startLanguage() {
+  const code = preferredLanguage();
+  return hasLanguage(code) ? code : firstLanguage();
+}
 
 export function pack(siteData) {
-  const [first, ...others] = Object.keys(siteData.languages);
+  const first = firstLanguage(siteData);
+  const others = Object.keys(siteData.languages).filter((code) => code !== first);
 
   const ofLanguage = (key, code) => siteData[key][code] ?? {};
 
@@ -74,7 +67,3 @@ export function pack(siteData) {
     ...others.map((code) => ({ path: localeFile(code), value: local(code) })),
   ];
 }
-
-export const treeKeys = (nodes, key) => nodes.flatMap((node) => [
-  ...(node[key] ? [node[key]] : []), ...treeKeys(node.kids ?? [], key),
-]);

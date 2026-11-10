@@ -29,7 +29,7 @@ The third argument keeps the scripts whose path contains it; without it, every `
 each script it prints the lines of its top-level code and what that code calls, then a line per function or object:
 
 ```
-34-39 -tipFor(target) -> nodetree.js#itemAt pictures.js#branchTip <- pictures.js#wireTip
+54-59 -tipFor(target) -> treeview.js#itemAt tooltips.js#branchTip <- tooltips.js#showTip
 ```
 
 `+` is exported, `-` internal, `{obj}` an object; after `->` the functions it calls, after `<-` those that call it,
@@ -39,10 +39,10 @@ and a key ending in `#` is a script's top-level code.
 
 - **A section** is a function declaration, or a `const` or `let` whose value is a function or an object literal, at
   the top level of a script. Anything defined inside a function is part of that function.
-- **A call** is any mention of a function's name in the body, called or not, as long as it names a function of the
-  same script, one it imports, or one it imports with `import("…").then(({ … }) => …)`. A function handed on to be
-  called later, such as an event handler, thus counts as called by the function that hands it on. Names of the
-  browser's own functions are not listed.
+- **A call** is any mention of a function's name in the body, called or not, as long as it names a function of the same
+  script, one it imports, or one it imports with `import("…").then(({ … }) => …)`, or through a `const` that holds such
+  an `import()`, as `testRunner` in `script.js` does. A function handed on to be called later, such as an event handler,
+  thus counts as called by the function that hands it on. Names of the browser's own functions are not listed.
 - **Lines** are those of the file as it is on disk, from the first line of the declaration to its last.
 
 If a call is missing, look at how the name reaches the caller: a name that comes through an object (`view.show()`)

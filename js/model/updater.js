@@ -1,4 +1,5 @@
-import { data, load, treeKeys, pack } from "./datahandler.js";
+import { data, load, loadLanguages, firstLanguage, pack } from "./data/datahandler.js";
+import { treeKeys } from "./itemtree.js";
 import { fill } from "./texts.js";
 import { iconFile, byFile } from "./icons.js";
 
@@ -8,79 +9,111 @@ const ABBREVIATION = /[\p{L}\p{N}_]\.(\s|$)|\bE-|-\s/u;
 const GAME_UPDATE = /Update\s*<a\b[^>]*\bhref="([^"]+)"[^>]*>\s*(\d+)\s*<\/a>/;
 
 export async function fetchUpdate() {
+  await loadLanguages();
+  const { messages, fresh } = refresh(data, await fetchUpstream());
+  if (!fresh) return { messages, blocked: true, counts: null, files: [] };
+  return { messages, blocked: false, counts: countsOf(fresh), files: changedFiles(data, fresh) };
+}
+
+async function fetchUpstream() {
   const get = async (path) => JSON.parse(await load(data.source.data + path));
 
   const techtree = await get("data.json");
   const civs = Object.keys(techtree.civs).sort();
   const [trees, strings, page] = await Promise.all([
-    Promise.all(civs.map((civ) => get(`trees/${civ.toUpperCase()}.json`))),
-    Promise.all(Object.keys(data.languages).map((code) => get(`locales/${code}/strings.json`))),
+    keyedBy(civs, (civ) => get(`trees/${civ.toUpperCase()}.json`)),
+    keyedBy(Object.keys(data.languages), (code) => get(`locales/${code}/strings.json`)),
     load(data.source.url),
   ]);
-  const { messages, fresh } = refresh(data, { civs, techtree, trees, strings, page });
-  if (!fresh) return { messages, fresh, files: [] };
-  const before = new Map(pack(data).map(({ path, value }) => [path, toJson(value)]));
-  const files = pack(fresh).map(({ path, value }) => ({ path, json: toJson(value) }))
+  return { civs, techtree, trees, strings, page };
+}
+
+async function keyedBy(keys, fetchOne) {
+  return new Map(await Promise.all(keys.map(async (key) => [key, await fetchOne(key)])));
+}
+
+const countsOf = (fresh) => ({
+  civs: fresh.civs.length,
+  items: Object.keys(fresh.availability).length,
+  languages: Object.keys(fresh.languages).length,
+});
+
+function changedFiles(current, fresh) {
+  const before = new Map(pack(current).map(({ path, value }) => [path, toJson(value)]));
+  return pack(fresh).map(({ path, value }) => ({ path, json: toJson(value) }))
     .filter(({ path, json }) => path === "data.json" || json !== before.get(path));
-  return { messages, fresh, files };
 }
 
 function refresh(current, upstream) {
-  const { civs, techtree, trees, strings, page } = upstream;
   const messages = [];
 
   const say = (key, values) => messages.push(fill(current.tools[key], values));
 
-  const { nodes, owners, pictures } = gather(civs, trees);
-  addExtras(current.extras, { nodes, owners, pictures }, say);
+  const { nodes, owners, pictures, sourced } = gather(upstream, current.extras);
   const keys = treeKeys(current.tree, "item");
   const problems = treeProblems(keys, nodes);
-  problems.forEach(([key, values]) => say(key, values));
+  [...sourced, ...problems].forEach(([key, values]) => say(key, values));
   if (problems.length) return { messages, fresh: null };
-
-  const fresh = structuredClone(current);
-  fresh.civs = civs;
-  fresh.availability = Object.fromEntries(keys.map((key) => [key, availabilityOf(owners.get(key), civs)]));
-  fresh.pictures = Object.fromEntries(keys.map((key) => [key, pictureOf(nodes.get(key), pictures.get(key))]));
-  addIcons(fresh, say);
-  translate(current, fresh, { keys, nodes, techtree, strings });
-  fresh.source.update = gameUpdate(current, page, say);
-  compare(current, fresh, { keys, nodes, owners, say });
+  const fresh = freshData(current, upstream.civs, { keys, nodes, owners, pictures });
+  const icons = iconsFor(fresh.icons.atlas, fresh.pictures);
+  fresh.icons = { ...fresh.icons, atlas: icons.atlas };
+  fresh.text = translated(current, fresh, { keys, nodes, techtree: upstream.techtree, strings: upstream.strings });
+  const update = gameUpdate(current, upstream.page);
+  fresh.source.update = update.update;
+  [
+    ...icons.news, ...update.news, ...civChanges(current, fresh), ...availabilityChanges(current, fresh, keys),
+    ...unowned(keys, owners), ...renames(current, fresh), ...unplaced(current, keys, nodes),
+    ...missingText(fresh).map((problem) => ["missingText", problem]),
+  ].forEach(([key, values]) => say(key, values));
   return { messages, fresh };
 }
 
-function gather(civs, trees) {
+function gather({ civs, trees }, extras) {
+  const game = fromTrees(civs, trees);
+  const sourced = Object.keys(extras).filter((name) => game.nodes.has(name)).map((name) => ["sourced", { name }]);
+  for (const [name, extra] of Object.entries(extras)) {
+    const { node, owners, counts } = fromExtra(name, extra);
+    game.nodes.set(name, node);
+    game.owners.set(name, owners);
+    game.pictures.set(name, counts);
+  }
+  return { ...game, sourced };
+}
+
+function fromTrees(civs, trees) {
   const nodes = new Map();
   const owners = new Map();
   const pictures = new Map();
-  civs.forEach((civ, i) => {
-    for (const node of [...trees[i].buildings, ...trees[i].units_techs]) {
+  for (const civ of civs) {
+    for (const node of [...trees.get(civ).buildings, ...trees.get(civ).units_techs].map(fromGame)) {
       if (!nodes.has(node.name)) {
         nodes.set(node.name, node);
         owners.set(node.name, new Set());
         pictures.set(node.name, new Map());
       }
-      if (node.node_status !== "NotAvailable") owners.get(node.name).add(civ);
+      if (node.available) owners.get(node.name).add(civ);
       const counts = pictures.get(node.name);
-      const seen = counts.get(node.picture_index) ?? 0;
-      if (node.use_type === nodes.get(node.name).use_type) counts.set(node.picture_index, seen + 1);
+      if (node.kind === nodes.get(node.name).kind) counts.set(node.picture, (counts.get(node.picture) ?? 0) + 1);
     }
-  });
+  }
   return { nodes, owners, pictures };
 }
 
-function addExtras(extras, { nodes, owners, pictures }, say) {
-  for (const [name, extra] of Object.entries(extras)) {
-    if (nodes.has(name)) say("sourced", { name });
-    const added = fromExtra(name, extra);
-    nodes.set(name, added.node);
-    owners.set(name, added.owners);
-    pictures.set(name, added.counts);
-  }
-}
+const fromGame = (node) => ({
+  name: node.name,
+  nameId: node.name_string_id,
+  helpId: node.help_string_id,
+  kind: node.use_type.toLowerCase(),
+  reach: /^(Regional|Unique)/.exec(node.node_type)?.[1].toLowerCase() ?? "common",
+  picture: node.picture_index,
+  available: node.node_status !== "NotAvailable",
+});
 
 export const fromExtra = (name, extra) => ({
-  node: { name, name_string_id: extra.nameId, use_type: capitalise(extra.kind), node_type: capitalise(extra.reach) },
+  node: {
+    name, nameId: extra.nameId, helpId: null, kind: extra.kind, reach: extra.reach, picture: extra.picture,
+    available: true,
+  },
   owners: new Set(extra.has),
   counts: new Map([[extra.picture, 1]]),
 });
@@ -93,6 +126,14 @@ function treeProblems(keys, nodes) {
   return [...duplicates.map((name) => ["duplicate", { name }]), ...unknown.map((name) => ["unknown", { name }])];
 }
 
+function freshData(current, civs, { keys, nodes, owners, pictures }) {
+  const fresh = structuredClone(current);
+  fresh.civs = civs;
+  fresh.availability = Object.fromEntries(keys.map((key) => [key, availabilityOf(owners.get(key), civs)]));
+  fresh.pictures = Object.fromEntries(keys.map((key) => [key, pictureOf(nodes.get(key), pictures.get(key))]));
+  return fresh;
+}
+
 export function availabilityOf(owners, civs) {
   const having = civs.filter((civ) => owners.has(civ));
   const lacking = civs.filter((civ) => !owners.has(civ));
@@ -102,31 +143,36 @@ export function availabilityOf(owners, civs) {
 
 export function pictureOf(node, counts) {
   const [picture] = [...counts].reduce((best, each) => (each[1] > best[1] ? each : best));
-  const reach = /^(Regional|Unique)/.exec(node.node_type)?.[1].toLowerCase() ?? "common";
-  return { kind: node.use_type.toLowerCase(), picture, reach };
+  return { kind: node.kind, picture, reach: node.reach };
 }
 
-function addIcons(fresh, say) {
-  for (const [name, sprite] of Object.entries(fresh.pictures)) {
-    const atlas = (fresh.icons.atlas[sprite.kind] ??= []);
-    if (atlas.includes(sprite.picture)) continue;
-    atlas.push(sprite.picture);
-    atlas.sort(byFile);
-    say("icon", { name, file: iconFile(sprite) });
+function iconsFor(known, pictures) {
+  const atlas = structuredClone(known);
+  const news = [];
+  for (const [name, sprite] of Object.entries(pictures)) {
+    const list = (atlas[sprite.kind] ??= []);
+    if (list.includes(sprite.picture)) continue;
+    list.push(sprite.picture);
+    list.sort(byFile);
+    news.push(["icon", { name, file: iconFile(sprite) }]);
   }
+  return { atlas, news };
 }
 
-function translate(current, fresh, { keys, nodes, techtree, strings }) {
-  Object.entries(current.languages).forEach(([code, settings], i) => {
+function translated(current, fresh, { keys, nodes, techtree, strings }) {
+  const texts = Object.entries(current.languages).map(([code, settings]) => {
+    const naming = { strings: strings.get(code), settings, offset: current.source.helpOffset };
     const overrides = current.overrides[code] ?? {};
-    const text = (fresh.text[code] ??= {});
 
-    const gameName = (civ) => capitalise(joinLines(strings[i][techtree.civs[civ].name_string_id] ?? "", settings));
+    const gameName = (civ) => capitalise(joinLines(naming.strings[techtree.civs[civ].name_string_id] ?? "", settings));
 
-    text.civs = Object.fromEntries(fresh.civs.map((civ) => [civ, overrides[civ] || gameName(civ) || civ]));
-    text.items = Object.fromEntries(keys.map((key) => [key,
-      overrides[key] || localName(strings[i], nodes.get(key), settings, current.source.helpOffset) || key]));
+    return [code, {
+      ...fresh.text[code],
+      civs: Object.fromEntries(fresh.civs.map((civ) => [civ, overrides[civ] || gameName(civ) || civ])),
+      items: Object.fromEntries(keys.map((key) => [key, overrides[key] || localName(nodes.get(key), naming) || key])),
+    }];
   });
+  return { ...fresh.text, ...Object.fromEntries(texts) };
 }
 
 export function joinLines(text, settings) {
@@ -144,48 +190,47 @@ export function joinLines(text, settings) {
 
 const isLower = (char) => !!char && char !== char.toUpperCase() && char === char.toLowerCase();
 
-function localName(strings, node, settings, offset) {
-  const label = joinLines(strings[node.name_string_id] ?? "", settings);
+function localName(node, { strings, settings, offset }) {
+  const label = joinLines(strings[node.nameId] ?? "", settings);
   if (label && !ABBREVIATION.test(label)) return capitalise(label);
-  const bold = /<b>(.*?)<\/b>/.exec(strings[node.help_string_id - offset] ?? "");
+  const bold = /<b>(.*?)<\/b>/.exec(strings[node.helpId - offset] ?? "");
   return capitalise(bold ? joinLines(bold[1], settings) : label);
 }
 
-function gameUpdate(current, page, say) {
+function gameUpdate(current, page) {
+  const before = current.source.update;
   const found = GAME_UPDATE.exec(page);
-  if (!found) {
-    say("noUpdate", { source: current.source.name, number: current.source.update.number });
-    return current.source.update;
-  }
+  if (!found) return { update: before, news: [["noUpdate", { source: current.source.name, number: before.number }]] };
   const update = { number: Number(found[2]), url: found[1].replaceAll("&amp;", "&") };
-  if (update.number !== current.source.update.number) say("newUpdate", update);
-  return update;
+  return { update, news: update.number === before.number ? [] : [["newUpdate", update]] };
 }
 
-function compare(current, fresh, { keys, nodes, owners, say }) {
-  const differs = (key, section) => JSON.stringify(current[section][key]) !== JSON.stringify(fresh[section][key]);
+const civChanges = (current, fresh) => [
+  ...fresh.civs.filter((civ) => !current.civs.includes(civ)).map((name) => ["civAdded", { name }]),
+  ...current.civs.filter((civ) => !fresh.civs.includes(civ)).map((name) => ["civRemoved", { name }]),
+];
 
-  fresh.civs.filter((civ) => !current.civs.includes(civ)).forEach((name) => say("civAdded", { name }));
-  current.civs.filter((civ) => !fresh.civs.includes(civ)).forEach((name) => say("civRemoved", { name }));
-  keys.filter((key) => key in current.availability && differs(key, "availability"))
-    .forEach((name) => say("changed", { name }));
-  keys.filter((key) => !owners.get(key).size).forEach((name) => say("nobody", { name }));
-  for (const [code, settings] of Object.entries(current.languages)) {
-    for (const section of ["civs", "items"]) {
-      for (const [key, name] of Object.entries(fresh.text[code][section])) {
-        const before = current.text[code]?.[section]?.[key];
-        if (before !== undefined && before !== name) say("renamed", { language: settings.name, key, name });
-      }
-    }
-  }
-  [...nodes.keys()].filter((name) => !keys.includes(name) && !current.ignore.includes(name)).sort()
-    .forEach((name) => say("unplaced", { name }));
-  missingText(fresh).forEach((problem) => say("missingText", problem));
+const availabilityChanges = (current, fresh, keys) => keys.filter((key) => key in current.availability
+  && JSON.stringify(current.availability[key]) !== JSON.stringify(fresh.availability[key]))
+  .map((name) => ["changed", { name }]);
+
+const unowned = (keys, owners) => keys.filter((key) => !owners.get(key).size).map((name) => ["nobody", { name }]);
+
+function renames(current, fresh) {
+  const renamesIn = (code, section) => Object.entries(fresh.text[code][section])
+    .filter(([key, name]) => ![undefined, name].includes(current.text[code]?.[section]?.[key]));
+
+  return Object.entries(current.languages).flatMap(([code, { name: language }]) => ["civs", "items"]
+    .flatMap((section) => renamesIn(code, section)).map(([key, name]) => ["renamed", { language, key, name }]));
 }
+
+const unplaced = (current, keys, nodes) => [...nodes.keys()]
+  .filter((name) => !keys.includes(name) && !current.ignore.includes(name)).sort()
+  .map((name) => ["unplaced", { name }]);
 
 export function missingText(siteData) {
   const codes = Object.keys(siteData.languages);
-  const reference = siteData.text[codes[0]];
+  const reference = siteData.text[firstLanguage(siteData)];
   const groups = [...new Set(treeKeys(siteData.tree, "group"))];
   return codes.flatMap((code) => {
     const text = siteData.text[code] ?? {};
@@ -220,8 +265,8 @@ const isScalar = (value) => value === null || typeof value !== "object";
 
 const isFlatList = (value) => Array.isArray(value) && value.every(isScalar);
 
-const oneLine = (value) => {
+function oneLine(value) {
   if (Array.isArray(value)) return `[${value.map(oneLine).join(", ")}]`;
   if (isScalar(value)) return JSON.stringify(value);
   return `{${Object.entries(value).map(([key, item]) => `${JSON.stringify(key)}: ${oneLine(item)}`).join(", ")}}`;
-};
+}

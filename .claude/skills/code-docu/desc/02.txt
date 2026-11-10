@@ -1,294 +1,381 @@
-@ js/view/stringbuilder.js
-The page's text: the fixed texts, the texts of the chosen language, the list of civilisations and Filters, the loading
-  screen, and the small helpers every view uses. Its views of the texts, the civilisations and Filters are parts of the
-  page in page.js.
-- $: Short for `document.getElementById`, used wherever the page is touched.
-- clone: Copies the element inside a template in index.html. Repeated markup lives in index.html (Rule 2); the code only
-  fills it in.
-- simple: Tells whether Simple UI is on, from the `pictures` class on the page, which is what shows the pictures. One
-  source of truth, readable from every script.
+@ js/script.js
+Where the page starts: its top-level code runs once, `RUNS` says what the page does in each of its modes, and start()
+  starts the parts of the page in their order. It never touches the page itself.
+- [Start-up 23-25]: Sets the screen's pictures once (startScreen()), then Simple UI from the saved setting, so pictures
+  load at once or never. Loads data.json, then has useAndLoadLanguages() load the languages, run() start the page,
+  and failLoad() show the load error if loading fails. What each step does depends on the mode, which line 11 reads
+  once from the address (`MODE`): `?test`, `?update` or neither.
+- RUNS: What each mode does, `?test`, `?update` or the page alone: which languages to load, what to run once the page
+  is up, and what to do if data.json cannot load. `?test` loads every language, runs the tests (runTests()) and, if
+  loading fails, marks them failed (loadFailed()), so CI never waits for a result that cannot come; `?update` loads
+  the visitor's language and runs the updater (runUpdate()), which loads the others itself.
+- useAndLoadLanguages: Reads data.json (useData()) and loads the languages the mode needs: every one for `?test`,
+  else the visitor's. Runs once, when data.json has loaded.
+- loadPreferred: Loads the visitor's language, preferredLanguage(), and goes on without it if it cannot be loaded: the
+  page then starts in English, and start() opens the popup that says so. A visitor downloads only the language shown.
+- run: Starts the page (start()) and its pictures (startPictures()), lets the loading screen go once every picture has
+  loaded (hideLoadingWhenReady()), and runs what the mode runs: the tests, the updater or nothing. Runs once, when
+  data.json and the languages have loaded.
+- failLoad: Shows that the page could not load: hides the loading screen, shows `#loadError` and, with `?test`, marks
+  the tests failed. It sees only a failure to load data.json or, with `?test`, a language, not an error of the page
+  or the tests, and throws the error again, so that it shows in the console.
+- start: Starts the page: gives the model the start language (startLanguage()), the visitor's or, when it could not
+  be loaded, the first, and the model reads its saved Include settings itself; starts the controllers of the tree and
+  of the Options window, writes the fixed texts, has the page observe the model, draws it once with `redraw("start")`
+  and reveals it. If the visitor's language could not be loaded, it then opens the popup `#languageError`
+  (showLanguageError()). Runs once, from run().
+- testRunner: Loads run_test.js, the tests, only when `RUNS` asks for them, so the page alone never downloads them.
+
+@ js/model/civsets.js
+Sets of civilisations: each civilisation is one bit, so a set of civilisations is a single number that `&` and `|`
+  combine quickly, and `allCivs` is the set of every one. It imports nothing: useData() hands it the civilisations.
+- useCivs: Takes the civilisations of data.json and gives each one bit, in their order, and makes `allCivs` from them.
+  Runs once, when data.json has loaded.
+- bit: Returns a civilisation's bit, or stops with an error for an unknown name, so a typo in data.json cannot silently
+  drop a civilisation.
+- size: Counts the civilisations in a set by counting its bits. Behind every number on the page.
+- setOf: Turns an availability rule from data.json (`"all"`, a `has` list or a `lacks` list) into a set. Rules stay
+  short in the file while the code works with sets.
+- civsOf: Turns a set back into a list of civilisations, in data.json order. Used to list the civilisations that fit.
+
+@ js/model/texts.js
+The chosen language: its text, its language tag, and how it sorts, counts and writes numbers, with the functions that
+  put names and counts into words in it. Everything that shows, sorts or counts text reads it. `PLACEHOLDER`, the
+  pattern of a placeholder such as `{n}`, is exported too, so that fill() and compose() in toolkit.js find
+  placeholders alike.
+- useLanguage: Switches the active language: its text, language tag, sorting, plural rules and number format. Everything
+  that shows, sorts or counts text reads these, so one call changes them all.
+- nameOf: Returns a tree item's or group's name in the current language, or its key if missing. Used wherever an item is
+  shown or searched.
+- civName: Returns a civilisation's name in the current language, or its key if missing. Keeps the civilisation list
+  translated.
+- plural: Picks the right form of a counted text, such as "1 civilisation" or "5 civilisations", by the language's
+  plural rules, and fills in the formatted number.
+- fill: Replaces `{name}` placeholders in a text with values, leaving unknown ones alone. All text lives in the data
+  with placeholders, so the code never builds sentences itself.
+- plain: Lower-cases a text and strips accents, spaces and punctuation, so Find matches names however they are typed, in
+  any language.
+
+@ js/model/icons.js
+The icons' file names, the order of the pictures in an atlas, and where each item's icon is: facts about the data,
+  which the views and the updater both need.
+- fileName: Names a picture's PNG file from its number or name, such as `8.png`: the one place that knows the pattern,
+  for iconFile() and byFile().
+- iconFile: Returns the path of a tree item's icon PNG from its kind and picture number, such as
+  `assets/images/icons/nodes/unit/8.png`, for the updater's report of new icons.
+- civFile: Returns the name of a civilisation's icon file: its name in lower case, unless `icons.names` in data.json
+  gives another, such as `inca` for the Incas.
+- byFile: Sorts picture numbers or names as their PNG files sort by name, `1.png`, `10.png`, `100.png` and on to
+  `11.png`, which is the order of the cells in an atlas: a fact about the data, which cellOf() and iconsFor() in
+  updater.js both use.
+- spriteOf: Returns an item's sprite, its kind and its picture: a group's from `icons.groups` in data.json, any other
+  item's from `pictures`. The tree view finds an icon through it and atlasOf(), so it never reads data.json itself.
+- atlasOf: Returns the pictures of a kind's atlas, from `icons.atlas` in data.json, in which cellOf() finds a cell.
 - cellOf: Finds a picture's cell in its atlas, which holds the pictures in file-name order, row by row, with as many
-  columns as the square root of their number, rounded up. The order is worked out once per list.
-- place: Tells an icon which cell of its atlas to show, as four numbers for CSS: its column and row, and the atlas's
-  columns and rows. Scripts give CSS only numbers.
-- compose: Writes a text with placeholders into an element, putting elements such as the source link where their
-  placeholder is. Lets a translated sentence contain a link.
-- demand: Checks that a controller has every action a view needs, and stops with an error that names the missing ones.
-  treeview.js and optionsview.js call it as they start, so a missing action shows at once.
-- writeFixed: Writes the texts that never change: the report window's English words, the source's, Microsoft's and the
-  project's links, the address of the game update's notes, and Microsoft's notice around its links. Runs once at the
-  start.
-- writeTexts: Writes every text of the chosen language: the page's `lang`, each element marked `data-text`, and the
-  footer's source and game update, whose link reads "Update" and its number in the language (Req. 5, 11).
-- textsView: The view of the texts: writes them again at the start and when the language changes.
-- share: Notes the names that more than one row uses, so that Filters can say which one is meant.
-- chipName: Names an entry of Filters, as filtersOf() gives it, from what chipOf() makes of it: a shared name "in" its
-  parent, and "Full" before a building or group marked in full (Req. 24).
-- civIcon: Makes a civilisation's icon from its template, showing its cell of the civilisations' atlas. Only used
-  without Simple UI.
-- listCivs: Lists the civilisations that fit the marks (matchingCivs()), translated and sorted (Req. 4), with icons
-  and links to aoe2techtree.net without Simple UI; writes the count, and the hint when the list is empty.
-- civsView: The view of the civilisations: lists them again after every change.
-- listFilters: Makes one Filters button per entry (Req. 22, 23), with its mark and name, and a label telling screen
-  readers what a click clears. Hides Filters when nothing is marked.
-- filtersView: The view of Filters: notes the shared names again when the tree or the language changed, then makes the
-  buttons again.
-- showPage: Shows the header and the content, which stay hidden until the page has started.
-- setLoadError: Shows or hides the message that the data or a language could not be loaded.
-- spin: Gives the loading picture its address, kept in `data-src` so that it loads only when the loading screen shows
-  it.
-- setLoading: Shows or hides the loading screen, with its turning picture, made once, and makes the page behind it
-  unreachable while it shows.
+  columns as the square root of their number, rounded up. The order is worked out once per list. It stops with an
+  error for a picture that is not in its atlas, as the page would otherwise quietly show a cell outside it. The
+  civilisations' atlas is in the order of their icons' files, so for a civilisation it is given civFile().
 
-@ js/view/treeview.js
-The tree on the left as the visitor sees it: its rows with their names, boxes, icons and counts, which branches are
-  open, what Find found, and the focus. It is a part of the page in page.js, and hands every click, touch and key to
-  the actions of nodetree.js, its controller (Strategy).
-- rowOf: The elements of an item's row: its entry, row, name, "must lack" words, counts, arrow, list and icon. They are
-  kept here, by item, so that the model's items hold no element (Test 85).
-- opened: Tells whether a row's branch is open, read from its arrow's `aria-expanded`, which is the one place this is
-  kept.
-- isOpen: Tells whether an item's branch is open.
-- shown: Tells whether an item's row can be seen, that is, whether every branch above it is open.
-- heading: Tells whether a group is only a heading inside an item, which has no box and cannot be marked.
-- focusOf: The part of a row that takes focus: a heading's arrow, or any other row's name.
-- itemAt: Returns the tree item an element belongs to, but not a heading, so one listener on the tree serves every row,
-  and the tooltip knows when it is over the tree.
-- dress: Gives a tree row its icon between its box and name, from its cell of its atlas, with its kind and reach for the
-  outline, or takes it away with Simple UI on (Rules 9, 22).
-- build: Makes a row for each item from the template, with its arrow, and ids that tie the arrow and the list to the
-  name for screen readers. A heading loses its box. Calls itself for the items below.
-- endPress: Cancels a long press in progress and its highlight, when the finger moves or lifts, or the tree is drawn
-  again, and notes when a touch ended.
-- replant: Draws the tree from the model again, keeping the branches that were open open by their paths, and dresses
-  each row. Runs at the start and whenever the tree is built again.
-- label: Writes every row's name in the current language.
-- count: Writes an item's count of civilisations that fit the marks, from the model's countOf(): its own number, or
-  "own–all" when it is closed with items under it, and a spoken version for screen readers.
-- setOpen: Opens or closes an item's branch, and rewrites its count, since a closed item shows two numbers.
-- paint: Updates every box: its state for the eye, `aria-checked` for screen readers, the hidden "must lack" words, the
-  bold of a row's own mark, and greyed-out rows and arrows.
-- treeView: The view of the tree: draws it again when the tree was built again, dresses its rows when Simple UI
-  changes, names them when the language changes, then closes greyed-out items, paints the boxes and writes every
-  count. Then it hands the change to its controller's redrawn(), so that Find follows the tree as it is drawn now.
-- focus: Moves focus to an item's row, or to its arrow when asked and it has one.
-- highlight: Highlights the items Find found, and announces how many there are, or that there are none (Req. 20, 21).
-- reveal: Scrolls the tree's own list just enough to show a row, and nothing around it, so the Find box being typed in
-  never moves (Rule 18).
-- findText: What is typed in the Find box.
-- onKey: Hands a key in the tree to the controller's key(), with Shift, the other modifier keys and whether an arrow
-  has focus, and stops the browser's own action when the controller used the key (WCAG 2.1.1).
-- onPress: Starts a right-click, or a touch that becomes a long press after half a second, which marks must lack (Req.
-  3). The row shows as pressed when the long press is ready.
-- onRelease: Ends a press: reports a hold on the item to the controller if the press was ready and ends on the same
-  item, and swallows the click that follows.
-- onMenu: Stops the browser's own menu over the tree, and reports the menu key to the controller. Right-clicks and long
-  presses are left to onPress() and onRelease().
-- onClick: Opens or closes a branch from its arrow, or a heading from its name, or reports a click on an item to the
-  controller, unless the click ends a long press. What a gesture marks is the controller's to decide.
-- onChip: Has the controller clear the marks behind a Filters button, and moves focus to the next button, or to the
-  heading after the last one (WCAG 2.4.3).
-- wireTools: Connects Expand all and Collapse all, which hand focus to each other without Simple UI, Clear (Req. 17 to
-  19), Find with its clearing cross and Enter, and the Filters buttons, each to its action. Runs once at the start.
-- startTreeView: Starts the tree's view with its controller's actions, checked with demand(), and connects keys,
-  presses, moves that cancel a long press, the menu and clicks, then the tools around the tree. Runs once, from
-  startTree().
+@ js/model/itemtree.js
+Builds the tree's items from data.json: what Include and Include Regionals hide, the rows a variant borrows from the
+  items it stands in for, each item's branch set, the civilisations that have it and everything under it, and the
+  copies, rivals, opponents and alternatives. It owns `items` and `roots`, which model.js passes on, so the imports go
+  one way and every other script imports them from model.js.
+It also answers the questions about the tree's shape, which need no marks: an item's line of upgrades, the items under
+  it in a chain, the items above and below it, and whether it counts as a unit or technology.
+- buildItems: Builds the items afresh from data.json and the tree's settings, `{ include, regional }`: lends the
+  variants their rows, leaves out what Options leaves out, turns the rest into items, stores their branch sets, and
+  links copies, rivals and alternatives. rebuild() in model.js runs it and keeps the marks.
+- reachOf: Returns an item's reach in data.json, `"common"`, `"regional"` or `"unique"`, or nothing for a group. The
+  one place that reads it, for pruning, for lending and for isUnique() in model.js.
+- withBorrowedKids: Adds under every item that names items it stands in for the rows those items lend, in the order
+  named, so their technologies are written only once in data.json.
+- placesIn: Lists every node of data.json's tree once, top to bottom, each with whether it lies inside an item or a
+  group of lines. borrowedKids() looks an item up in it.
+- placesBelow: Lists the nodes under a place in the tree for placesIn(), top to bottom, each with whether an item or a
+  group of lines lies above it.
+- treeKeys: Lists every item (or group) name in a tree, top to bottom. Used to check the tree, to find groups that need
+  text, and by the updater to know which items to look up.
+- borrowedKids: Finds the item that a `"replaces"` names and returns the rows it lends; none if it is not in the tree
+  or counts as a unit or technology, as its rows are then its own upgrades.
+- lentCopy: Copies a row and the rows under it that can be lent, marked as copies, for an item that stands in for it.
+- isLendable: Tells whether a row can be lent to an item that stands in for its own: neither unique nor marked `"own"`.
+- keysIn: Turns a `"replaces"` or `"excludes"` value, one name, a list or nothing, into a list.
+- prune: Leaves out what Options leaves out: the unique groups and unique items (keeping their rows), regional items
+  without Include Regionals, and items that one, all or all but one civilisation have, unless something under them is
+  shown.
+- isHidden: Tells whether Options hides a node and everything under it: a unique group without Include Unique and
+  Universal, or a regional item without Include Regionals.
+- ownerCount: Counts the civilisations that have an item, from its rule in data.json; none for a group.
+- tellsNothing: Tells whether an item tells nothing about who fits, as one civilisation, all or all but one have it.
+- isBareLeaf: Tells whether a node is left out because nothing under it is shown: always for a group, and for an item
+  that tells nothing (tellsNothing()) without Include Unique and Universal.
+- liftedKids: Hands the rows of a unique item that is left out to its place, noting the item in their path, so that
+  without the Camel Scout the Camel Rider is a row of the Stable. Lent rows are dropped.
+- collect: Turns the shown part of data.json's tree into the items the page uses (newItem()), top to bottom, and notes
+  on each whether it is a unit or technology. Stops with an error for an item without availability.
+- newItem: Makes one item: its key, a path that tells copies apart, its set of civilisations (all, for a group), and
+  room for its mark, its branch set and its links, which the steps after collect() fill in.
+- inUnitOrTechLine: Tells whether an item is a unit or technology: an item with another item, or a `"lines"` group,
+  above it. Worked out once, as the item is made, for isUnitOrTech().
+- storeBranchSets: Stores each item's branch set in `item.all`, walking the items from the last to the first, so the
+  rows' sets are ready before the item above them needs them. A row's count of matching civilisations uses it.
+- branchSetOf: An item's branch set: the civilisations that have it and, by their branch sets, everything under it.
+- linkOriginals: Links every copied item to its original, the item of the same key that is not a copy, so that model.js
+  can share their marks (shareMarksWithOriginals()).
+- linkRivals: Links the items that `"excludes"` names as rivals, both ways, and gives every item the opponents its
+  rival's branch holds (addOpponents()).
+- linkAlternatives: Links the items that `"replaces"` names as alternatives, both ways, and adds the other items that
+  stand in for the same (addSiblingAlternatives()).
+- linkBothWays: Links items both ways by `"excludes"` or `"replaces"`, as rivals or as alternatives.
+- addOpponents: Gives every item the opponents that its must have greys out: everything on its rival's branch, and the
+  other way round.
+- opposeBranches: Gives everything on an item's branch the whole of its rival's branch as opponents, each branch
+  without the other. The rival's branch is worked out once, not once for every item on the item's.
+- branchWithout: An item and everything under it, but its rival and what is under that, so the Stable's branch leaves
+  out the Xolotl Warrior inside it.
+- addSiblingAlternatives: Adds to the alternatives of an item that stands in for others the other items that stand in
+  for the same, so marking the Folwark greys out the Settlement too.
+- lineOf: The whole line of upgrades an item is on, from its top to its end, or just the item if it is on none. Filters
+  names and clears lines with it.
+- endsInLine: Tells whether an item's chain (itemChain()) ends a line of upgrades: the item is no group, and the chain's
+  last item has nothing under it, so the line neither forks nor goes on into a group.
+- lineEnd: The last item of an item's chain (itemChain()): the end of its line of upgrades, unless the line forks or
+  goes on into a group first. endsInLine() tells which.
+- chainOf: An item and the rows below it for as long as each has exactly one row under it. Marking opens these.
+- itemChain: An item and the items below it for as long as each has exactly one row under it and that row is not a
+  group. passedTo() and lineEnd() follow it.
+- chainWhile: An item and the rows below it for as long as each has exactly one row under it and that row is taken by
+  the test it is given. chainOf() and itemChain() are made with it.
+- isUnitOrTech: Tells whether an item is a unit or technology, as collect() noted on it (inUnitOrTechLine()). Buildings
+  and groups mark everything in them; units and technologies pass marks along lines.
+- ancestors: The items above an item, from its parent up to the top. Find opens them to bring a found row into sight,
+  and inUnitOrTechLine() reads them.
+- descendants: Everything under an item, at every depth.
 
-@ js/view/optionsview.js
-The Options window as the visitor sees it: the language menu, the boxes and Civ view, as they are ticked and picked
-  before OK. It is a part of the page in page.js, and hands opening the window and OK to the actions of
-  optionshandler.js, its controller (Strategy).
-- options: Lists the language menu's buttons. Used by the menu's keys and by the tests.
-- setMenu: Opens or closes the language menu, and moves focus if asked. With Simple UI it hides the settings while the
-  list is open, so that the window keeps its size (Rule 18); without Simple UI the list lies over them, as the game's
-  combo box does.
-- buildLanguages: Makes one button per language, named and tagged in its own language, so screen readers say each name
-  right (WCAG 3.1.2). Runs once at the start.
-- showLanguage: Shows a language as chosen in the window: its name on the menu's button and its mark in the list. OK
-  makes it the page's language.
-- tick: Shows an Options box as ticked or not, for the eye and for screen readers.
-- showView: Marks the chosen view among the Civ view radio buttons.
-- picked: The language marked in the window's list, which OK makes the page's language.
-- checked: Tells whether an Options box is ticked.
-- toggle: Ticks or unticks an Options box in the window only; OK applies it.
-- readers: How the window reads the two settings that are no boxes: the language and Civ view.
-- optionValue: What the window shows for a setting: its own reading, or its box.
-- show: Shows a value of a setting in the window: the language, Civ view, or a box.
-- optionsView: The view of the Options window: marks the page's language in it at the start and when the language
-  changes.
-- wireOptions: Connects the cogwheel button, which has the controller show the page's values in the window before it
-  opens, OK, which has the controller apply the window, and the boxes, by click and by Space. Runs once at the start.
-- onMenuKey: Handles the language menu's keys: Down and Up open it at the current language and move through it, Home and
-  End jump, and Escape closes it and returns focus (WCAG 2.1.1).
-- onScrollbar: Tells whether a click landed on the language list's own scroll bar, which Chrome reports as a click, so
-  that scrolling the list does not close it.
-- wireLanguages: Connects the language menu: its button, a click on a language or anywhere else in the list (Req. 11,
-  12), its keys, and closing when focus or a click goes elsewhere. Runs once at the start.
-- startOptionsView: Starts the Options window's view with its controller's actions, checked with demand(), and
-  connects the language menu and the window. Runs once, from startOptions().
-
-@ js/view/page.js
-The whole page as one view (Composite), and the model's only observer (Observer). It holds the views of the texts,
-  Options, the tree, the civilisations and Filters, and passes each change to all of them, always in that order. Its
-  update, draw(), is only for the model's notices; redraw() draws the page for the start and for Simple UI.
-- draw: Passes a change to every view, in order: the model's `"marks"`, `"tree"` and `"language"`, `"start"` once at
-  the start, and `"look"` after Simple UI changes.
-- redraw: Draws the page again without a change of the model: `"start"` once, from start(), and `"look"` when Simple
-  UI changes, from applySimple().
-- startPage: Has the model tell the page of its changes. Runs once, from start().
-
-@ js/view/scrollbars.js
-The game's scroll bars, which replace the browser's without Simple UI. A bar is placed after each list that scrolls, so
-  it does not scroll with it, and CSS draws it from the numbers fit() gives it.
-- fit: Gives a list's bar its place along the list's right edge, its height and the knob's position, as numbers for CSS,
-  and hides the bar with Simple UI or when the list holds no more than it shows, and the knob when the bar is too short
-  for it.
-- fitAll: Fits every bar again. Runs when a list or what is in it changes size, when anything is added or taken out,
-  when Simple UI changes and when the window does.
-- watch: Has the size observer watch a list and everything directly in it, so a bar is fitted again when they change
-  size.
-- hold: Makes an arrow or the bar's body act on a press, and again every 50 milliseconds after 400 while held, keeping
-  hold of the pointer so the press stays while it leaves.
-- page: Scrolls a list by a page, less a line, towards a press above or below the knob, and not at all once the knob
-  reaches the pointer.
-- drag: Lets the knob be dragged: the list scrolls as far as the knob moves, scaled from the body's room to the list's.
-- wire: Connects a bar: the arrows scroll a line, the body pages, the knob drags and the wheel over the bar scrolls the
-  list; the list's scrolling fits the bar again. A line is 40 pixels, but in the language list without Simple UI it is
-  one language, and the wheel there, over the list or its bar, scrolls a language at a time, so that the list always
-  shows whole languages.
-- startBars: Puts a bar from its template after every list that scrolls, connects it, and fits the bars again whenever
-  anything about them changes. Runs once, from startPictures().
-
-@ js/view/pictures.js
-What only the pictures need: Civ view, list or tiles, the tooltip, and the pictures and loading screen that come with
-  leaving Simple UI. It also starts the scroll bars.
-- setView: Shows the civilisations as a list or as tiles, and marks the choice among the radio buttons. Tiles are
-  pictures, so CSS shows them only without Simple UI.
-- setTips: Switches the tooltips on or off, and ticks the Tooltips box.
-- branchTip: The tooltip of a branch's arrow, or of the name of a group inside a building, which has no box and opens on
-  a click: to collapse the branch while it is open, to expand it while it is closed, and none on a locked branch, whose
-  arrow is disabled.
-- tipFor: Returns the tooltip's text for what the mouse is over: the marking hint over the tree, the text that an
-  element's `data-tip` names over every control, the hint of a branch's arrow (branchTip()), or the address of a
-  civilisation's or the footer's link.
-- wireTip: Moves the tooltip with the mouse, with its corner at the cursor picture's corner and inside the window, and
-  puts it into the Options window while that is open. After every click it works the tooltip out again for what is under
-  the mouse (`elementFromPoint`), so that it follows a button that changes, such as Expand all turning into Collapse
-  all. It shows only for a mouse, without Simple UI and with Tooltips on.
-- beyond: Tells whether a screen is wider or higher in device pixels than a size, such as `QHD`, 2560 by 1440.
-- backgroundFor: Picks the parchment for a screen from its size in device pixels: `fhd` on a phone, whose shorter side
-  is under `PHONE_SIDE`, 720 pixels; `ultrawide` if it is more than twice as wide as high; then `uhd` beyond `QHD`,
-  `qhd` beyond `FHD`, and `fhd` otherwise.
-- screenPictures: Works out the pictures for the screen: the parchment from backgroundFor() (`fhd`, `qhd`, `uhd` or
-  `ultrawide`) and the size of every other picture, `4k` with `uhd` or `ultrawide` and `sd` otherwise.
-- rulesIn: Lists every rule of a style sheet, with the rules inside media queries.
-- linksIn: Lists the picture and font addresses in a rule's text, made whole from the style sheet's own address.
-- filesOf: Lists the addresses in a style sheet's rules whose selectors pass a test.
-- rooted: Tells whether a selector already holds for `<html>` or `<body>`, as for the parchment and the cursors, whose
-  pictures show at once.
-- fits: Tells whether a picture is the one for the screen: the parchment of `data-background`, and the size of
-  `data-assets`. Pictures without a size always fit.
-- pictureFiles: Lists the pictures and fonts in the style sheets that the screen uses, so the loading screen can wait
-  for them all.
-- copy: Loads a picture once into a kept image, so that the browser has it before the page shows it.
-- onPage: The addresses of the images already in the page, but for the loading screen's own.
-- done: Waits for a kept image to be decoded, or to fail, so that waiting never stops.
-- ready: Tells whether every picture and font has loaded already.
-- finishLoading: Hides the loading screen once every picture and font has loaded, at once if they have already. Without
-  Simple UI only; a later call takes over from an earlier one.
-- applySimple: The page's part of switching Simple UI (Req. 32, 33): the first time it picks the screen's pictures and
-  sets `--pixel`, the size of one screen pixel; it shows the loading screen when leaving Simple UI, adds or removes the
-  `pictures` class, and has redraw() draw the page's views again with `"look"`.
-- startPictures: Starts the tooltip and the scroll bars. Runs once, after start().
-
-@ js/view/report.js
-The report window of the updater and the tests. It only shows what they found.
-- openReport: Opens the report window, used by the tests and the updater, with a title and a status line, and empties
-  it.
-- report: Adds a line to the report window.
-- showUpdating: Opens the report window for the updater, saying that it is loading the source's data.
-- showUpdate: Shows what the updater found: each change, the counts of civilisations, items and languages, and each
-  changed file to download; or that the update is blocked, when the new data cannot be used.
-- showUpdateFailed: Shows why the update failed.
-
-@ js/controller/nodetree.js
-What the visitor's clicks, touches and keys in the tree mean: marking, opening and closing, the arrow keys, Find, the
-  buttons above the tree and the buttons of Filters. These are the actions treeview.js is started with (Strategy).
-  They change the model, or ask the tree's view to open a branch or move the focus, and never touch the page. The view
-  hands them each change of the model once it has drawn it, so they never subscribe to the model.
-- expand: Opens an item and each only child below it, so opening Militia shows its whole line in one step, unless the
-  item is greyed out and closed. Used by the arrows and the Right key.
-- branch: Opens or closes a branch, from its arrow or a heading's name.
-- toggle: Handles a mark from a gesture or a key: opens the way to every row the mark will reach (toReveal(), Req.
-  28, 31), then calls mark(). The model refuses a greyed-out item, which then reaches nothing.
-- gesture: Turns what the tree's view reports into a mark: a click marks must have (Req. 3), and a long press, a
-  right-click and the menu key must lack, as key() decides for Space and X.
-- search: Notes the items whose names hold Find's text, but those inside closed greyed-out items (behind()), and has
-  the view highlight them and say how many there are (Req. 20, 21).
-- find: Runs Find: searches, opens the branches down to the matches, their ancestors(), and shows
-  the first (Req. 20, 21).
-- redrawn: Keeps Find up to date once the tree's view has drawn a change: after marks it only searches again, so that
-  no branch opens or closes, and after a new tree, a new language or the start it runs the whole of Find again, since
-  the names or the rows changed. Nothing changes for `"look"`.
-- enter: Opens the branches down to the first item Find found and moves focus to it, on Enter in its box.
-- moveRight: The Right key: goes into an open branch, to its first row, or opens a closed one and stays.
-- moveLeft: The Left key: closes an open branch and stays, or goes out of a closed one, to the item above.
-- MOVES: Where each key that moves goes from an item, among the rows in sight: Down and Up to the next and the previous
-  row, Home and End to the first and the last, and Right and Left as moveRight() and moveLeft() decide.
-- key: Handles a key in the tree: Space marks must have and X must lack, as `MARK_KEYS` says (Req. 3); Up, Down, Home,
-  End, Right and Left move, open and close as `MOVES` says (WCAG 2.1.1). Tells the view whether it used the key.
-- expandAll: Opens every branch but those of closed greyed-out items.
-- collapseAll: Closes every branch.
-- unchip: Clears what a Filters button stands for: a unique item's own entry with unmarkOwn(), and any other with
-  unmarkLine(). The tree's view hands it the button's item, its mark and whether the entry is the item's own.
-- startTree: Starts the tree's view with these actions, and with the model's clear() for Clear. Runs once, from
-  start().
-
-@ js/controller/optionshandler.js
-What the settings of the Options window do: the language, the two Include boxes, Simple UI, Civ view and Tooltips, each
-  saved and applied on OK. Its reset() and apply() are the actions optionsview.js is started with (Strategy). The
-  language in use is the model's alone: only the one still loading is kept here, as `pending`.
-- setLanguage: Makes a language the page's through the model's chooseLanguage(), which tells the page. Runs when a
-  language is chosen and its file is loaded.
-- setInclude: Switches Include Unique and Universal (Req. 13 to 15): has the model build the tree again, keeping
-  marks, which saves the choice, and ticks the box.
-- setRegional: Switches Include Regionals: has the model build the tree again, keeping marks, which saves the choice,
-  and ticks the box.
-- savedSimple: Reads the saved Simple UI choice: off unless it was saved as on, so a first visit shows the pictures.
-- setSimple: Switches Simple UI (Req. 32, 33): saves the choice, ticks the box and has applySimple() change the page.
-  Simple UI is only how the page looks, so it does not go through the model.
-- chooseView: Chooses Civ view, list or tiles: saves the choice and shows it.
-- chooseTips: Switches Tooltips on or off: saves the choice and shows it.
-- choices: Every setting of the Options window as an entry: how to read its value now and how to set it. reset() and
-  apply() go through it.
-- apply: Applies every setting whose window value differs from the page's, when OK is pressed.
-- reset: Shows the page's values again in the window, dropping what was changed, each time the window opens.
-- choose: Chooses a language: loads its file if needed, as `pending` so that only the last one chosen is used, and
-  shows it; the model saves it and puts it in the address. If the file cannot be loaded, it shows the load error and
-  puts the window back on the language in use.
-- startOptions: Starts the Options window: ticks the two Include boxes as the model has them, starts the window's
-  view with reset() and apply(), builds the language menu, and restores Civ view and Tooltips. Runs once, from
-  start().
-
-@ js/controller/updatehandler.js
-Runs the updater, which `?update` opens.
-- runUpdate: Runs the updater: shows that it is loading, has updater.js fetch the new data and work out what
-  changed, and has report.js show it, or why it failed. It changes nothing by itself.
-
-@ js/tests/run_test.js
-Runs the tests and shows the report. Loaded only when the address ends in `?test`.
-- merge: Combines the results into one line per test, failed if any of its checks failed, with the first details and the
-  window's size. A test may check in several states and languages.
-- reportLine: Writes a test's report line, such as "Test 15 failed: ...", from its number, name and details.
-- announce: Writes lines of the report to the console, one by one and each starting with `tests:`, where the workflow
-  on GitHub reads them from Chrome's log.
-- loadFailed: Marks the tests as failed when the page could not load, and says so in the console, so CI never waits for
-  a result that cannot come.
-- prepare: Notes the visitor's language, options and saved choices, then sets the tests' starting point: Include
-  unticked, Include Regionals ticked, Simple UI and Tooltips on.
-- restore: Puts back the visitor's language, options, view, address and saved choices after the tests.
-- rounds: Runs every test in three rounds, functional, accessibility and maintainability, in the order TESTS.md lists
+@ js/model/updater.js
+The updater, which `?update` runs: it fetches aoe2techtree.net's data, trees and texts and its page, works out the
+  civilisations, who has what, the icons, every name and the game update, compares them with data.json and writes the
+  new files. It reads files only through load() in datahandler.js. The game's nodes and the `extras` of data.json are
+  read into one shape (fromGame(), fromExtra()), an Adapter, and the trees and texts are kept in maps keyed by
+  civilisation and language.
+- fetchUpdate: Loads every language of the page, has fetchUpstream() download aoe2techtree.net's data, trees, texts and
+  page, runs refresh(), and returns what report.js shows: the report's lines, whether the tree blocks the update, the
+  numbers of civilisations, items and languages, and the files that changed, data.json always. So a game update needs
+  only a browser.
+- fetchUpstream: Downloads aoe2techtree.net's data first, as it names the civilisations, sorted here once, then the
+  tree of every civilisation, the game's texts in every language of the page and its page, all at once.
+- keyedBy: Fetches one file for each civilisation or language, all at once, and keeps them in a map by its key.
+- countsOf: Counts the civilisations, items and languages of the new data, for the report's last line.
+- changedFiles: Splits the current and the new data into their files (pack()), writes each as data.json is laid out
+  (toJson()), and keeps the new files that differ from the current ones, and data.json always.
+- refresh: The updater's core: from the current data and what fetchUpstream() fetched, it works out the civilisations,
+  who has what, the icons and every name from aoe2techtree.net's data and the extras, takes the game update from its
+  page (gameUpdate()), and writes the report. Stops if treeProblems() finds an unknown item, or one named twice.
+- gather: The updater's first step: reads aoe2techtree.net's trees into three tables (fromTrees()) and adds the items
+  of `extras` in data.json to them (fromExtra()). Lists any extra that aoe2techtree.net now has itself, for the report,
+  so it can be taken out of `extras`.
+- fromTrees: Reads aoe2techtree.net's tree of every civilisation into three tables: each item's node, in the updater's
+  shape (fromGame()), the civilisations that have it, and how often each of its pictures is used.
+- fromGame: Turns a node of aoe2techtree.net's trees into the updater's shape: its name, the numbers of its name and
+  help texts, its kind, its reach (common, regional or unique), its picture, and whether the civilisation has it.
+  With fromExtra(), the rest of the updater reads one shape, wherever an item comes from.
+- fromExtra: Turns an entry of `extras` in data.json, an item aoe2techtree.net gives to no civilisation, into the node,
+  owners and picture counts the updater gathers for every other item, the node in the shape fromGame() gives. A test
+  checks the extras the same way.
+- capitalise: Upper-cases the first letter of a text, as some names in the game start in lower case.
+- treeProblems: Lists what stops the updater, for its report: the items the tree names twice, in alphabetical order,
+  then those that aoe2techtree.net does not have.
+- freshData: Makes the new data: a copy of the current one with aoe2techtree.net's civilisations, and who has each item
+  of the tree (availabilityOf()) and its icon (pictureOf()).
+- availabilityOf: Writes who has an item in its shortest form: `"all"`, a `has` list or a `lacks` list. Keeps data.json
+  small; a test checks that every rule is stored this way.
+- pictureOf: Picks an item's icon for data.json from aoe2techtree.net's data: its kind, the picture most civilisations
+  show, and whether it is common, regional or unique, which the outlines and Include Regionals use.
+- iconsFor: Adds every new picture to a copy of the list of its atlas in `icons.atlas`, in file-name order, and lists
+  it for the report with its PNG, so the atlas can be built again.
+- translated: Works out every civilisation's and item's name in every language from the game's texts, unless an
+  override says otherwise, writing out abbreviated names from the help text, and returns the new data's texts with
   them.
-- runTests: Runs the tests, numbers them in the order they first ran, checks the 100-test limit (Rule 17), marks the
-  page passed or failed, and shows the report, failures first. For CI it then has announce() write the failed tests,
-  the count and whether they passed. Its Close leaves the tests: it opens the page's own address, without `?test`.
+- joinLines: Joins a game text broken with `<br>` into one line, by the language's rules for spaces and hyphens, and
+  tidies spaces. The game breaks names to fit its buttons.
+- isLower: Tells whether a character is a lower-case letter. joinLines() uses it to tell a hyphenated word from a real
+  hyphen.
+- localName: Finds an item's name in a language's game texts. If that name looks abbreviated, it takes the bold name
+  from the item's help text instead, which is written out in full.
+- gameUpdate: Reads the game update from aoe2techtree.net's page: the number after "Update" and the address of its
+  notes, which its link leads to and the footer links too. A new number goes into the report; if the page has none,
+  the report says so and data.json keeps the update it had.
+- civChanges: Lists the civilisations added or gone, for the report.
+- availabilityChanges: Lists the items of the tree whose civilisations changed, for the report.
+- unowned: Lists the items of the tree that no civilisation has, for the report.
+- renames: Lists the civilisations and items renamed in each language, for the report. A name that was not there before
+  is new, not renamed.
+- unplaced: Lists the items aoe2techtree.net has that are not yet in the tree, in alphabetical order, for the report,
+  leaving out those that `ignore` in data.json names.
+- missingText: Lists, per language, the page texts and group names that are missing. A test and the updater's report use
+  it, so no language shows a blank.
+- toJson: Writes JSON the way data.json is laid out: short objects and lists on one line, the rest indented, and a list
+  that ends an object of scalars opened on the object's line. Keeps the updater's files readable and their changes easy
+  to review.
+- isScalar: Tells whether a value is text, a number, true or false, or null. Helps toJson() decide what fits on one
+  line.
+- isFlatList: Tells whether a value is a list of scalars only, which toJson() writes on one line.
+- oneLine: Writes a value as one line of JSON, with a space after each comma and colon. The building block of toJson().
+
+@ js/model/model.js
+The marks and their rules: how marks pass on, what is greyed out, which civilisations fit and how many, and what
+  Filters shows, with Include, Include Regionals and the language, which it saves itself. itemtree.js builds the items;
+  model.js passes them on with the questions about the tree's shape, so every other script imports them from here.
+It is the subject of the Observer pattern: only its own functions change it, and each then tells its observer,
+  page.js, what changed. It never touches the page.
+- subscribe: Adds an observer, which notify() then calls after every change. Only page.js subscribes (Test 255), and it
+  never leaves, so there is no `unsubscribe`.
+- notify: Tells every observer what kind of change was made, once and as soon as `matching` is up to date: `"marks"`,
+  `"tree"` or `"language"`. The observers read the rest from the model themselves. It is the model's own (Test 256), so
+  nothing else can announce a change.
+- startModel: Takes the language, reads the saved Include settings (recallSetting()), and builds the tree once, saving
+  nothing and telling no one: the page is drawn afterwards, all at once, with `redraw("start")`. Runs once, from
+  start().
+- setInclude: Turns Include Unique and Universal on or off, and has saveAndRebuild() save the choice, build the tree
+  again, keeping marks, and tell the page that the tree changed.
+- setRegional: Turns Include Regionals on or off, and has saveAndRebuild() save the choice, build the tree again,
+  keeping marks, and tell the page that the tree changed.
+- saveAndRebuild: Saves a setting of the tree (rememberSetting()), builds the tree again, keeping marks, and tells the
+  page that the tree changed. What setInclude() and setRegional() share.
+- setLanguage: Makes a language the one the tree's names are in, saves the choice, has keepInAddress() put it in the
+  address (`?lng=`), so a shared link keeps it, and tells the page that the language changed.
+- rebuild: Has buildItems() build the items afresh from data.json and the Include settings, keeps every mark by its
+  path, shares the marks of copies with their originals, and works out `matching` again (updateMatching()). Runs at the
+  start and whenever an Include setting changes.
+- shareMarksWithOriginals: Ties every lent row to the original that linkOriginals() found, so both share one mark:
+  marking Two-Man Saw under the Mule Cart marks it under the Lumber Camp too, with one entry in Filters. The copy reads
+  and writes its mark, `self`, through its original, a Proxy for one property.
+- updateMatching: Works out the civilisations that fit every mark, as `matching`.
+- toReveal: The rows a mark will reach, or none if it clears the item or the item is greyed out. The controller opens
+  the way to them before it marks, so they come into sight before the greyed-out branches close (Req. 28, 31).
+- toggleMark: Marks an item must have or must lack, or clears it if it already has that mark, passes must have up to its
+  prerequisites, works out `matching` again and tells the page that the marks changed. A greyed-out item is left as
+  it is, and no one is told (Req. 37).
+- clear: Clears every mark (Req. 17), works out `matching` again and tells the page that the marks changed.
+- unmarkLone: Clears the must have of a unique item whose lone filter entry is cleared, and only that, and tells the
+  page that the marks changed.
+- unmarkLine: Clears what an entry of Filters stands for: the marks of its kind along its line, or the item and
+  everything in it, keeping the lone filter entries (keepingLoneFilters()), and tells the page that the marks changed.
+- keepingLoneFilters: Makes a change, then gives back its must have to every unique item that had a lone filter entry
+  before it, so clearing a line or a building keeps those entries (Req. 36).
+- marksChanged: Works out `matching` again with updateMatching() and tells the page that the marks changed. Every
+  change of the marks ends with it.
+- barred: Tells whether an item is greyed out: not marked must have itself, while one of its alternatives or opponents
+  is (Req. 37).
+- toggleState: The mark an item has now, which toggleMark() sets or clears: its own for a unit or technology, otherwise
+  what all of it shows (branchState()).
+- spreadOf: The rows a mark reached, which marking opens: down to the first fork, and the rows it passed to or
+  everything inside.
+- applyMark: Sets or clears a mark: on everything in a building or group, or along a unit's or technology's line. Must
+  lack also clears must have below that depended on it.
+- setMark: Marks an item and everything under it, groups only through their rows, skipping the rivals of the item
+  marked. How a building or group is marked or cleared.
+- setMarkUnder: Does the work of setMark(): marks an item and, row by row, everything under it but the rivals of
+  `top`, the item that setMark() was given.
+- passedTo: The items a mark passes down to: along the item's line until it forks, and only those the same civilisations
+  have (Req. 29, 30).
+- prerequisites: The units and technologies above an item that its must have passes up to, stopping at a building or at
+  an item that some civilisations with it lack (Req. 34).
+- covers: Tells whether every civilisation that has an item also has the one above it, so that must have may pass up to
+  it.
+- behind: Tells whether an item lies inside a closed greyed-out item, where Find does not look.
+- locked: Tells whether a greyed-out item is also closed: unless its own rival is inside it, as the Xolotl Warrior is
+  inside the Stable, which stays open so the Xolotl Warrior stays in sight.
+- isInside: Tells whether an item lies anywhere under another.
+- branchState: The mark a branch shows: the one an item's own mark and all its rows share, or `"mixed"` when they
+  differ, leaving out the rivals of the item asked about.
+- stateUnder: Does the work of branchState(): the mark that an item and every row under it share, or `"mixed"`,
+  leaving out the rivals of `top`, the item asked about.
+- checkboxState: What a row's box shows: a unit's or technology's own mark, or a dash if a row below has another;
+  otherwise branchState().
+- countOf: The two counts beside an item's name, `withItem` and `withBranch`: the civilisations that fit the marks and
+  have the item, or for a group everything in it, and those that fit and have the item and everything under it, its
+  branch set. The tree's view shows one or both.
+- matchingCivs: The civilisations that fit every mark, for the list on the right.
+- filtersOf: Works out the entries of Filters, in the tree's order: the lone filter entries (loneFilters()), and one
+  entry per marked building, group or line (markedFilters()), but none for what a marked row above covers, and only
+  one for each line and mark (topFilters()).
+- loneFilters: The lone filter entries: one for every unique item that is not a copy and whose must have keeps its
+  own entry (keepsOwnFilter()), so it stays named in Filters while its line or group is marked too (Req. 36).
+- topFilters: Keeps of the marked entries those that no other entry outranks (outranks()), so that each line has one
+  entry for each of its marks.
+- outranks: Tells whether one entry stands in for another: the same mark on the same line, and deeper for must have
+  or higher for must lack, so that a line's entry is its deepest must have and its highest must lack.
+- depth: How deep an entry's item lies in its line, counted from the line's top.
+- markedFilters: An entry for every marked item that is not a copy, with its mark (filterMark()) and its line, unless
+  a marked row above covers it (covered()) or it keeps a lone filter entry instead.
+- covered: Tells whether an item's mark is already in the entry of the row above it, or above a copy of it: that row's
+  whole branch has the mark, and the row does not keep a lone filter entry of its own.
+- byIndex: Sorts entries in the tree's order, by their items' places in `items`.
+- entryOf: What an entry of Filters, as filtersOf() gives it, names: a line's deepest item with must have, unless the
+  entry is lone, and whether it reads "Full": a building or group marked in full, with more than one row (Req. 24).
+  chipName() puts it into words.
+- filterMark: The mark an item stands for in Filters: the one all of it shows, else its own.
+- keepsOwnFilter: Tells whether a mark keeps an item's lone filter entry: must have on an item that isLoneUnique()
+  picks.
+- isLoneUnique: Tells whether an item is unique in a line that is not all unique, so it keeps its own entry in Filters
+  (Req. 36).
+- isUnique: Tells whether data.json counts an item as unique, by its reach (reachOf()).
+
+@ js/model/data/datahandler.js
+The Facade over the data: it loads data.json and the language files, unpacks and packs them, and holds the language
+  rule, which language the page starts in. It passes on what the other three scripts of js/model/data/ hold, the saved
+  settings of storage.js, the address of address.js and attempt() of guard.js, so every script outside js/model/data/
+  imports from it alone, and none of them reads a file, the browser's storage or the address (Tests 250, 251).
+- useData: Reads data.json and hands its list of civilisations to useCivs(), which gives each civilisation one bit.
+- unpack: Turns data.json as stored into the shape used in memory, where overrides and text are kept per language, so
+  other languages can be added beside English.
+- loadLanguages: Loads every language's file. The tests and the updater need them all.
+- loadLanguage: Loads a language's file unless it is loaded already. A visitor downloads only the language shown, not
+  all of them.
+- load: Fetches a file as text and returns a promise. It uses XMLHttpRequest because, unlike `fetch()`, it also reads
+  files when the page is opened from disk, as the tests in CI do.
+- localeFile: Returns the path of a language's file, such as `locales/de.json`. Keeps the pattern in one place for
+  loading and for the updater's downloads.
+- addLanguage: Adds one language file's overrides and text to the data in memory. Used when a language loads, and when a
+  test reads back the files the updater would write.
+- firstLanguage: The first language of data.json, English, or of the data it is given. The language rule rests on it:
+  it is the default (Req. 10), the one whose texts data.json itself holds, and the one the page falls back on.
+- hasLanguage: Tells whether a language's file has loaded, so that its texts are in the data.
+- preferredLanguage: The language the visitor prefers: the one in the address (`?lng=`), else the visitor's saved
+  choice, else the first, English (Req. 10). Shared links and return visits keep their language; first visits are
+  English.
+- startLanguage: The start language: the preferred language if its file has loaded, else the first. start() gives it
+  to the model, and opens the popup `#languageError` when it is not the preferred one.
+- pack: Splits the data in memory back into files: data.json with English, and one file per other language. The updater
+  writes these, and a test checks that nothing is lost.
+
+@ js/model/data/storage.js
+The saved choices, in the browser's storage. `SETTINGS` lists each setting of the Options window with its values, the
+  first being its default, so that each is read and stored the same way everywhere. Every read and write goes through
+  attempt(), so a browser that refuses its storage, as in a private window, only forgets the choices. datahandler.js
+  passes it all on.
+- recall: Reads a saved choice from the browser's storage, or null. Remembers the visitor's language and options between
+  visits.
+- remember: Saves a choice in the browser's storage, or removes it when the value is null. Failures are ignored, as the
+  page works without storage.
+- recallSetting: Reads a saved setting back as one of its values in `SETTINGS`, or its default when none is saved or
+  the saved one is none of them. The model reads Include and Include Regionals with it, script.js Simple UI, and
+  optionshandler.js Civ view and Tooltips.
+- rememberSetting: Saves a setting's value as text, which recallSetting() turns back into the value. The model saves
+  Include and Include Regionals with it, and optionshandler.js Simple UI, Civ view and Tooltips.
+
+@ js/model/data/address.js
+The address: `params`, the parameters the page was opened with, such as `?test`, `?update` and `?lng=`, read once, and
+  keepInAddress(), the one function that writes it. datahandler.js passes both on.
+- keepInAddress: Puts a choice into the address, as `?lng=` for the language, so that a shared link keeps it, without
+  a new step in the browser's history. The only function that writes the address, and only model.js calls it;
+  failures are ignored.
+
+@ js/model/data/guard.js
+attempt(), which runs what the browser may refuse. storage.js and address.js use it, and so do the views, through
+  datahandler.js, to read the style sheets, try a selector and capture the pointer.
+- attempt: Runs a function and returns null instead of a `DOMException`, the error with which the browser refuses, such
+  as storage in a private window, so a refusal never breaks the page. Any other error is thrown again, so that a
+  mistake in the code is not hidden.

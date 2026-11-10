@@ -17,8 +17,8 @@ jobs:
         run: |
           extra="$(git ls-files | grep -vxE \
             -e 'index\.html|data\.json|favicon\.ico|README\.md|LICENSE|\.assetsignore|\.gitignore|\.github/.*' \
-            -e '\.well-known/discord|css/[a-z]+\.css|js/(model/|view/|controller/)?[a-z]+\.js' \
-            -e 'js/tests/[a-z]+_test\.js' \
+            -e '\.well-known/discord|css/[a-z]+\.css|js/(script|(model|view|controller)/([a-z]+/)?[a-z]+)\.js' \
+            -e 'js/tests/([a-z]+/)?[a-z]+_test\.js' \
             -e 'locales/[a-z]+\.json' \
             -e 'documentation/[A-Za-z_]+\.(md|pdf)|documentation/DEVLOG/DEVLOG[1-9][0-9]*\.md' \
             -e 'assets/images/([a-z0-9]+/)*[a-z0-9_]+\.(webp|png)|assets/images/icons/nodes/colour_key\.csv' \
@@ -31,34 +31,8 @@ jobs:
             echo "$extra"
             exit 1
           fi
-      - name: Run the tests in Chrome, in light and dark colours and at several window sizes
-        run: |
-          status=0
-          limit=120
-          for scheme in 1 0; do
-            for size in 1920,1080 1000,1000 720,1280; do
-              google-chrome --headless=new --no-sandbox --disable-gpu --allow-file-access-from-files \
-                --blink-settings=preferredColorScheme=$scheme --window-size=$size --enable-logging=stderr --v=0 \
-                "file://$PWD/index.html?test" 2> chrome.log &
-              for second in $(seq $limit); do
-                grep -qE ':CONSOLE[^]]*] "tests: (passed|failed)"' chrome.log && break
-                kill -0 $! 2> /dev/null || break
-                sleep 1
-              done
-              kill $! 2> /dev/null || true
-              wait $! 2> /dev/null || true
-              report="$(sed -n 's/^.*:CONSOLE[^]]*] "tests: \(.*\)", source: .*$/\1/p' chrome.log)"
-              outcome="$(printf '%s\n' "$report" | tail -n 1)"
-              if [ "$outcome" = passed ] || [ "$outcome" = failed ]; then
-                printf '%s\n' "$report" | tail -n 2 | head -n 1
-                printf '%s\n' "$report" | head -n -2 | sed 's/^/  /'
-              else
-                echo "The tests did not finish in $limit seconds in a window of ${size/,/ by } pixels."
-              fi
-              [ "$outcome" = passed ] || status=1
-            done
-          done
-          exit $status
+      - name: Run the tests in Chrome over http and file, in light and dark colours and at several window sizes
+        run: bash .github/runtests.sh
       - name: Check that no folder holds more than 7 files, the main folder 8, apart from assets and locales
         if: always()
         run: |

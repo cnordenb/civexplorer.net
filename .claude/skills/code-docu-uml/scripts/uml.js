@@ -6,7 +6,6 @@ const PT_PER_MM = 72 / 25.4;
 const FONT_PX = 16;
 const PAGES = {
   "uml-portrait": { width: 176, height: 263 },
-  "uml-landscape": { width: 263, height: 176 },
 };
 const SAFETY_MM = 4;
 const MAX_PT = 9;
@@ -39,7 +38,7 @@ function link(root, links) {
     const cls = boxName(g);
     for (const text of g.querySelectorAll("text")) {
       const s = text.textContent.trim();
-      const name = /^[+-]?([\w$.]+)/.exec(s)?.[1];
+      const name = /^[+-]?([\w$./]+)/.exec(s)?.[1];
       const href = s === cls ? links.classes[cls] : links.members[cls]?.[name];
       if (href) wrap(text, href);
       else if (/data\.json/.test(s)) wrap(text, links.data);
@@ -64,6 +63,8 @@ const fit = (section, box, result, direction) => Object.entries(PAGES).map(([pag
     MAX_PT / (FONT_PX * PT_PER_MM)) };
 });
 
+const flip = (edge) => edge.replace(/^(\s*)(\S+) \.\.> (\S+)$/, "$1$3 <.. $2");
+
 function orders(edges) {
   const list = [edges, [...edges].reverse()];
   let seed = 1;
@@ -79,6 +80,7 @@ function orders(edges) {
     }
     list.push(order);
   }
+  edges.forEach((_, i) => list.push(edges.map((e, j) => (i === j ? flip(e) : e))));
   return [...new Map(list.map((order) => [order.join("\n"), order])).values()];
 }
 
@@ -89,6 +91,7 @@ async function layouts(mermaid, d, section, box) {
   }
   let tried = 0;
   let first = null;
+  const clean = [];
   for (const edges of orders(d.edges)) {
     const fits = [];
     for (const direction of ["TB", "LR"]) {
@@ -97,9 +100,9 @@ async function layouts(mermaid, d, section, box) {
       tried += 1;
     }
     first ??= fits;
-    if (fits.some((f) => !f.problems.length)) return { tried, fits };
+    clean.push(...fits.filter((f) => !f.problems.length));
   }
-  return { tried, fits: first };
+  return { tried, fits: clean.length ? clean : first };
 }
 
 async function draw(mermaid, d) {

@@ -63,7 +63,9 @@
       "tooltips": "Infobulles",
       "cancel": "Annuler",
       "ok": "OK",
-      "loading": "Chargement des ressources d'image..."
+      "loading": "Chargement des ressources d'image...",
+      "languageFailed": "La langue n'a pas pu être chargée.",
+      "messageTip": "Cliquez pour fermer ce message"
     },
     "groups": {
       "economy": "Économie",

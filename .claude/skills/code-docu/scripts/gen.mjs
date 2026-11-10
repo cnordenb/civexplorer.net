@@ -108,7 +108,8 @@ function overviewDiagram() {
   const source = /```mermaid\n([\s\S]*?)```/.exec(maintainer.slice(maintainer.indexOf("### UML diagram")))[1];
   warnings.push(...overviewProblems(source, modules, layout.folders));
   const boxes = overviewBoxes(source);
-  const files = (b) => linksOf(b.files.map((f) => [f, `#${chapterId(`${b.dir}/${f}`)}`]));
+  const files = (b) => linksOf(b.files.map((f) => [f, f.endsWith("/")
+    ? `#${folderId(`${b.dir}/${f.slice(0, -1)}`)}` : `#${chapterId(`${b.dir}/${f}`)}`]));
   return { id: "uml-overview", title: "Overview", source, links: { data: DATA_LINK(),
     classes: linksOf(boxes.map((b) => [b.name, `#${folderId(b.dir)}`])),
     members: linksOf(boxes.map((b) => [b.name, files(b)])) } };
@@ -189,7 +190,7 @@ const uml = umlHtml(diagrams);
 const index = indexHtml();
 const title = titleHtml();
 for (const [page, text] of [["title", "Code documentation"], ["contents", "Contents"], ["uml-portrait", "UML diagrams"],
-  ["uml-landscape", "UML diagrams"], ["index", "Index"]]) header(page, text);
+  ["index", "Index"]]) header(page, text);
 
 const css = fs.readFileSync(path.join(HERE, "doc.css"), "utf8");
 const html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'

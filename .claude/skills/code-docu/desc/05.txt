@@ -1,0 +1,329 @@
+@ js/tests/interface/menu_test.js
+The tests of the language menu in the Options window: opening, closing and choosing a language with the mouse and the
+  keys, the start in English, and the choice kept in the address (Req. 8 to 12).
+- menuTests: Tests the language menu with an item marked: opening it (menuOpening()), closing it (menuClosing()) and
+  choosing a language (menuChoosing()), and that the mark and the civilisation list survive the change of language
+  (Test 64). Then puts the first language back.
+- menuKeys: Tests the language menu's keys: Down on its button opens it at the language in use, Down goes to the next
+  language and End to the last (Tests 228 to 230; WCAG 2.1.1). Run with the accessibility tests.
+- menuOpening: Tests opening the menu: it is in the Options window (Req. 8), opening the window puts focus on its
+  button (WCAG 2.4.3), a click on the button opens it, it offers every language by its own name (Req. 9) and marks the
+  language in use (WCAG 1.3.1) (Tests 81 to 85). Returns the window's size before and after, for menuClosing().
+- menuClosing: Tests closing the menu: Escape closes it and hands focus back to its button, a left-click in its list or
+  outside it closes it, and so does moving focus out of it, while the window never changes its size (Tests 86 to 90;
+  Req. 12; Rule 18; WCAG 2.1.1, 2.4.3).
+- menuChoosing: Tests choosing a language: the menu closes with focus back on its button, which names the language
+  chosen (WCAG 4.1.2), the page waits for OK, without a choice the page starts in English (englishFirst(); Req. 10),
+  and the language chosen is kept in the address, except over `file://` (Tests 87, 89, 91 to 94).
+- windowSize: The Options window's size, as "width by height", to tell whether the language menu changes it.
+- englishFirst: Tells whether a first visit, with no saved choice and a German browser, starts in the language the
+  address names, or else in English (Req. 10). Puts the saved choice and the browser's languages back afterwards.
+
+@ js/tests/interface/languages_test.js
+The tests of one language, run in every language in turn: the page's text, the tree's names, the footer and the
+  civilisation list in that language (Req. 5, 11).
+- languageTests: Tests one language, picked through Options: the page's text and the tree's names are in it and no
+  placeholders are left (Tests 95 to 97; Req. 11), then the footer (footerTexts(), and footerOnce() in the first
+  language only) and the civilisation list (civList()). A failure names the first three offenders.
+- footerTexts: Tests that the footer names the game update in the chosen language (Req. 5) and gives Microsoft's
+  notice in English (Tests 98, 99).
+- footerOnce: Tests what the footer shows in every language alike, so only once: it names the data's source (Req. 5),
+  its links lead where data.json says, Microsoft's notice is marked as English (WCAG 3.1.2), and the footer is as wide
+  as the panes, or hidden on a phone (Tests 100 to 104).
+- civList: Tests that the civilisations are named in the chosen language (Req. 11) and sorted in its order (Tests 105,
+  106).
+
+@ js/tests/interface/options_test.js
+The tests of the Options window: opening and closing it, its two Include boxes by mouse and keyboard, and the choices
+  remembered (Req. 7, 13 to 16), and the popup that says a language could not be loaded. Its helpers list the items
+  the tree shows, those Include leaves out and the regional ones, the last two worked out from data.json.
+- optionTests: Tests the Options window and its two Include boxes, with an item marked: what the tree leaves out by
+  default (Tests 107, 108; Req. 15), opening the window (openingOptions()), ticking and unticking with OK
+  (confirmingOptions()), and closing it without OK (cancellingOptions()).
+- optionKeys: Tests that Space ticks and unticks Include and Include Regionals (Test 232; WCAG 2.1.1), that nothing
+  changes before OK, and that OK then shows or leaves out those items, keeping the mark (Tests 92, 107, 108, 64).
+  Run with the accessibility tests; puts Include back unticked.
+- openingOptions: Tests opening Options from its button: the window opens (Req. 7) with Include unticked (Req. 13) and
+  Include Regionals ticked, its buttons are Cancel and OK (Req. 16), and a click on Include shows a green tick
+  (Req. 14) but changes nothing before OK, which closes the window (closedAndFocused()) (Tests 92, 109 to 113).
+- confirmingOptions: Tests what OK does: with Include ticked the tree shows every item, and with Include Regionals
+  unticked and ticked again the regional items go and come back, each time with the mark kept, and both choices are
+  remembered, unless the browser allows no storage (Tests 64, 107, 108, 116).
+- cancellingOptions: Tests closing Options without OK, by Cancel and by closing the window otherwise: the changes to
+  Include and the language are thrown away, and the window opens again showing the settings in use (Tests 117, 118).
+- closedAndFocused: Checks that Cancel or OK has closed the Options window and that focus is back on the Options button
+  (Tests 114, 115; Req. 16; WCAG 2.4.3).
+- leftOut: Lists what the tree shows that Include, unticked, should leave out: the unique items (uniqueKeys()), and
+  the groups and items with nothing under them that at most one civilisation has, or all but at most one (Req. 15).
+- missing: Lists the items of the full tree that the tree does not show, which with Include ticked must be none.
+- someRegional: Tells whether the tree shows any regional item.
+- everyRegional: Tells whether the tree shows every regional item.
+- withoutRegionals: Tells whether the tree shows just the items outside regional items and all under them (outside()),
+  as it should with Include ticked and Include Regionals unticked.
+- languagePopupTests: Tests the popup about a language that cannot load: with the next language's file made to fail
+  (failing()), choosing it opens the modal popup with its message (Test 233), leaves the page and Options in the
+  language in use (Test 234) and moves and resizes no pane, open or closed (Test 235; Req. 35); the audit runs with
+  the popup open; and its OK closes it (Test 236) and gives focus back to the Options button (Test 237; WCAG 2.4.3).
+- failing: Makes a language's file fail to load while `act` runs: forgets the language's texts and sends the request
+  for its file (localeFile()) to a file that does not exist, waits up to five seconds for the popup to open, then puts
+  both back.
+- paneBoxes: The place and size of each pane, to tell whether the popup moves or resizes one (Req. 35).
+- confirmBox: Opens Options, clicks a box and presses OK, as a visitor changing one setting would.
+- noStorage: Tells whether the browser refuses the page its storage, so that no choice can be remembered.
+- shownKeys: Lists the items currently in the tree, to compare the default tree with the full one.
+- uniqueKeys: Lists the items the default tree leaves out as unique: those inside unique groups and those
+  aoe2techtree.net calls unique.
+- regionalKeys: Lists the items aoe2techtree.net calls regional, which Include Regionals leaves out when unticked.
+- keptPath: Finds the path of a leaf below the top of the tree, and not regional, to mark while an Include box
+  changes. Paths survive the tree being built again; item objects do not.
+
+@ js/tests/interface/keys_test.js
+The keyboard tests of the tree, Filters and Find, and the runs of the accessibility audit (audit()) in many states and
+  every language, which run with the other accessibility tests in the order TESTS.md lists them.
+- keyboardTests: Runs the keyboard tests: filterFocus(), treeMoves() and findKey().
+- accessibilityTests: Runs the audits and the accessibility tests in the order TESTS.md lists them: the menu's audit
+  and keys (menuKeys()), the first language, wider text spacing, the keys of Options (optionKeys()), then every other
+  language and the Options window.
+- filterFocus: Tests that a filter button clears its item and hands focus to the next filter button, and that clearing
+  the last one hands it to the civilisations' heading, with every civilisation listed and the Filters list hidden
+  (Tests 193 to 196; Req. 4, 22; WCAG 2.4.3).
+- treeMoves: Tests the keys of the tree: Right opens a line all the way down, the steps of stepKeys() and
+  branchKeys(), End and Home go to the last and the first item, and Down on an arrow goes to the next arrow (Tests 197,
+  204 to 206; WCAG 2.1.1).
+- stepKeys: Tests that Up on the first item keeps focus there, Down goes to the next item and Up to the item above
+  (Tests 198 to 200; WCAG 2.1.1).
+- branchKeys: Tests that Right on an open branch goes to its first item, Left on an item goes back to the branch above
+  it, and Left on an open branch closes it (Tests 201 to 203; WCAG 2.1.1).
+- findKey: Tests that Enter in Find goes to the first match (Test 207; WCAG 2.1.1).
+- menuAudit: Runs the accessibility audit with a mark and the language menu open. This is the audit's first run, so its
+  checks are listed from here.
+- languageAudits: Runs the accessibility audit in one language: as loaded, with filters, and with everything open. The
+  focus checks run only in the first language.
+- textSpacing: Tests that wider text spacing, as WCAG 1.4.12 describes it, makes nothing stick out sideways, with an
+  item marked (Test 231).
+- optionAudits: Runs the audit with the Options window open, and with everything included and open.
+
+@ js/tests/interface/uniques_test.js
+The tests of the filter buttons of unique items, which keep a button of their own while their line or group is
+  marked too (Req. 36).
+- uniqueFilterTests: Tests the filter buttons of unique items, with Include ticked: in a line (inLine()) and in a full
+  group (inGroup()), and that marking the end of a wholly unique line gives it one filter button (Test 188; Req. 36).
+- uniqueCases: Picks a unique item in a line with items that are not unique, and a line whose items are all unique.
+  Throws when data.json lacks either, so that the tests fail rather than pass without checking.
+- inLine: Tests a unique item marked in its line: it gets its own filter button beside the line's, which clears only
+  it, while the line's button, once the item is marked again, leaves it marked (Tests 185 to 187; Req. 36).
+- inGroup: Tests a unique item in a group marked whole: it keeps its own filter button beside the group's, and the
+  group's button leaves it marked (Tests 185, 187; Req. 36).
+- unique: Tells whether aoe2techtree.net calls an item unique.
+- names: Lists the names on the filter buttons, sorted.
+- unmark: Clicks the filter button with a given name, which clears its mark.
+
+@ js/tests/interface/headings_test.js
+The tests of the headings: a group inside a building, which has no checkbox and only opens and closes (Req. 3).
+- headingTests: Tests a group inside a building, such as the Castle's Unique Units, with Include ticked: it has no
+  checkbox (Req. 3), a click on its name opens it, neither a click nor a right-click marks anything, and Down from the
+  row above reaches its arrow (Tests 189 to 192; WCAG 2.1.1). Throws when data.json has no such group.
+- unmarked: Tells whether no item is marked.
+
+@ js/tests/interface/reporting_test.js
+The tests of the report window, in which the updater and the tests list what they found: what stays in place, what
+  scrolls, and its Close button.
+- reportTests: Tests the report window with 200 lines in it: Close has focus (WCAG 2.4.3), only its list scrolls, its
+  title, count and Close stay in place and in view (Rule 18), its download links scroll with the list, and Close sits
+  on the right and is the plain button, with or without Simple UI (Tests 289 to 295).
+- tops: The tops of the report's title, count and Close, rounded, to tell whether scrolling the list moves them.
+- look: Sums up how Close is drawn, with its `::before` and `::after`: background, border, corners, colour, font and
+  content, to compare it with and without Simple UI.
+
+@ js/tests/pictures/pictures_test.js
+The tests of the picture look, run with Simple UI off, and the runner of every test in js/tests/pictures/. There the
+  page need not meet WCAG (Rule 22), nor the UI particulars of REQUIREMENTS.md (Req. 0). This file tests the screen's
+  pictures, the cursors, the Options button, switching Simple UI and the Civ view.
+- pictureTests: Runs the tests of the picture look with Simple UI off: the screen (screenTests()), the icons
+  (iconTests()), the Find box (findBoxTests()), the tooltip (tooltipTests()), the tree's buttons once the fonts have
+  loaded (treeButtonTests()), Simple UI (simpleUiTests()), the Civ view (civViewTests()) and the scroll bars
+  (scrollBarTests()), then turns Simple UI on again (Rules 9, 18, 22; Req. 0, 32, 33).
+- screenTests: Tests the pictures as a whole: no page scrolling and the footer without Simple UI, the choice for each
+  screen (misjudged()), the background, the sizes of the pictures, the parchment and the cursors, then the Options
+  button (optionsButtonTests()) (Tests 29, 103, 104, 119 to 124; Rule 12).
+- wrongSizes: Lists the pictures that do not suit the parchment chosen, trying every parchment in turn (withGrades()):
+  `_sd` and `_x1` pictures with fhd and qhd, `_4k` and `_x2` ones with uhd and ultrawide. Options is open meanwhile,
+  so that its pictures and its backdrop count too (Test 121).
+- offParchment: Lists the header, panes and footer that stick out of the parchment, worked out from the five numbers
+  `--ratio`, `--left`, `--top`, `--right` and `--bottom` in pictures.css and the window's size (Test 122).
+- strayCursors: Lists the elements without the right cursor: the pointing hand over the links of the civilisations and
+  of the footer, and the sword elsewhere (Test 123).
+- bigCursors: Lists the elements whose `_x2` cursor is not set at 1.5x, which draws it at two thirds of its size, as
+  large as the `_x1` ones. Run with the 4K pictures only (Test 124).
+- optionsButtonTests: Tests the Options button: it shows its picture, at rest its normal one, and its gold ring (Tests
+  125 to 127).
+- simpleUiTests: Tests ticking and unticking Simple UI in Options, with an item marked: its box never moves (Rule 18),
+  OK takes every image and the civilisations' links away (Req. 33), the choice is remembered, the title is the full
+  sentence alone (Req. 2), and unticking brings every image and link back (Tests 116, 164 to 168). Throws if the
+  pictures or links are missing to begin with.
+- picturesOn: Tells whether the main pictures show: those of the page, of its body and of the Options button.
+- imagesShown: Names every element that shows a picture: images and everything CSS draws with a picture, the page's
+  own background included. Simple UI must leave it empty (Req. 33).
+- simpleSpot: Returns where the Simple UI box is, to check that switching Simple UI does not move it (Rule 18).
+- civLinks: Counts the civilisations in the list that are links.
+- civViewTests: Tests that OK shows the civilisations in the Civ view chosen, as tiles side by side after Tile and not
+  after List, and that the choice is remembered (Tests 116, 169; Req. 16). Throws with fewer than two civilisations
+  listed.
+- pickView: Chooses a Civ view, Tile or List, through Options and OK, as a visitor would.
+- sideBySide: Tells whether the first two civilisations sit side by side, as tiles do, rather than one under the other.
+
+@ js/tests/pictures/picturetools_test.js
+Small tools the tests of the picture look share: the size of pictures the page chose, telling a picture by its
+  address, the pictures an element shows, the parchment a screen should get, and checks run for every parchment.
+  `GRADES` gives the size of pictures each parchment goes with.
+- grade: The size of pictures the page chose, `sd` or `4k`, from `data-assets`.
+- scale: The scale of the pictures that come as `_x1` and `_x2`, such as the cursors and the scroll bars: `x2` with
+  the `4k` pictures, `x1` otherwise.
+- picture: Tells whether the background in an element's style is a given picture.
+- at: Tells whether a CSS `url()` points at a given picture in `assets/images/`.
+- graded: Tells whether a CSS value names a given picture in any of its sizes, `_sd`, `_4k`, `_x1` or `_x2`.
+- pictured: Tells whether an element shows a picture through CSS: a background, list marker, border image, content or
+  cursor, in itself or its parts.
+- styles: Gets an element's styles and those of its `::before`, `::after` and `::marker` parts, so decorations are
+  checked too.
+- urlsOf: Lists the picture addresses in an element's style: background, border image, list marker, content and cursor.
+- files: Reads the addresses out of a CSS value.
+- misjudged: Lists the screens, from phones to ultrawide and from 100% to 300%, for which screenPictures() picks another
+  parchment or picture size than fitted().
+- fitted: Works out on its own, apart from the page's code, which parchment a screen should get from its size and scale,
+  to judge screenPictures().
+- beyond: Tells whether a screen, in its own pixels, is wider or taller than a given size.
+- fitting: Tells whether a picture's address suits a parchment: its own parchment, or the `_sd` and `_x1` pictures with
+  fhd and qhd and the `_4k` and `_x2` ones with uhd and ultrawide.
+- withGrades: Runs a check once for each parchment, with the page's `data-background` and `data-assets` set to it, and
+  returns what the runs found, each once. Puts the page's own choice back afterwards, so that one window can judge
+  every parchment.
+- fitBars: Fits every scroll bar to its list at once, as resizing the window does, so that the tests need not wait for
+  the browser to draw the page again.
+
+@ js/tests/pictures/icons_test.js
+The tests of the checkboxes, the radio buttons and the icons in the picture look: each box shows its state's picture,
+  each row and civilisation link its own cell of its atlas, outlined as `colour_key.csv` says, and each atlas fits its
+  grid.
+- iconTests: Runs the tests of the boxes (boxTests()) and, with Include ticked so that every item is in the tree, of
+  the icons: a row has an icon exactly when its item or group has a picture (Test 130), the tree's icons
+  (treeIconTests()), the civilisations' (civIconTests()) and the atlases (misfit(); Test 137). Throws unless
+  `colour_key.csv` gives nine outlines.
+- boxTests: Tests, with one item must have and one must lack, that every checkbox shows its state's picture from the
+  checkbox sheet (offSprite()) and that the Civ view's radio buttons show theirs (offRadio()) (Tests 128, 129). Throws
+  when the tree shows no box of some state.
+- offSprite: Tells whether a checkbox, those of Options included, does not show the sheet's picture for its state,
+  empty, ticked or crossed, at the sheet's size and place, or has a drawn mark other than the dash of a mixed one.
+- offRadio: Tells whether a radio button of the Civ view does not show its picture from its sheet, the lower one when
+  chosen.
+- edges: Reads `colour_key.csv` into the outline colour of each kind and reach of tree icon, so the tests compare the
+  page with the file.
+- hex: Turns a colour written as six hex digits into the `rgb(r, g, b)` form the browser reports.
+- ownPicture: The picture data.json gives a group or an item, if any: from `icons.groups` for a group, from `pictures`
+  for an item.
+- treeIcon: Describes a row's icon for the checks: its item, its picture, the cell of its atlas it should show
+  (cellIn()) and how to tell that atlas.
+- treeIconTests: Tests every tree icon: it shows its own cell of its atlas (offCell()), sits between its checkbox and
+  its name, is 44 pixels square, and has the outline `colour_key.csv` gives it, a group's none (Tests 131 to 134).
+- square: Tells whether an icon is 44 pixels square.
+- outlined: Tells whether an icon has a solid outline of 2 pixels in a given colour.
+- civIcons: Describes the icon of each civilisation link for the checks, as treeIcon() does a row's: its cell of the
+  civilisations' atlas at the screen's scale. Throws when no civilisation is listed.
+- civIconTests: Tests that every civilisation link begins with its icon, and that the icon shows its own cell of the
+  atlas (offCell()) (Tests 135, 136).
+- cellIn: Works out where a picture's cell is in its atlas: the files sorted by name, row by row, in a square grid.
+- offCell: Tells whether an icon does not show its cell of its atlas: the wrong file, repeat, box, size or position.
+- share: Turns a column or row into the percentage CSS needs to show that cell of an atlas.
+- atlases: Collects the atlases that the icons show, each with its grid, for misfit().
+- misfit: Lists the atlases whose size does not fit their grid of cells, 48 pixels for the tree's and 60 or 104 for
+  the civilisations', which would shift every icon.
+
+@ js/tests/pictures/findbox_test.js
+The tests of the Find box in the picture look: its frame, its search icon and clearing cross, its width, and the
+  number found beside it.
+- findBoxTests: Tests the Find box with the pictures: its frame (framed()), the search icon while empty and the
+  clearing cross otherwise, its width of up to 325 pixels, the number found aligned right and on one line beside the
+  box, and a width that typing never changes (Tests 78, 138 to 142; Req. 21; Rule 18). Then tests the cross
+  (crossTests()).
+- lens: The style of the search icon, drawn as the `::after` of the box around Find.
+- framed: Tells whether Find has the text field's frame: its border image, cut 15 pixels in and repeated, not
+  stretched.
+- crossTests: Tests that the cross clears the search and hands focus to the Find box, and that the focused box shows no
+  focus outline (Tests 143 to 145).
+
+@ js/tests/pictures/tooltips_test.js
+The tests of the tooltip in the picture look: over the tree and in the Options window, Include's, the Tooltips
+  setting, and a tooltip on every control.
+- tooltipTests: Runs the tests of the tooltip: treeTipTests(), includeTipTests(), silentTipTests() and everyTipTests().
+- treeTipTests: Tests the tooltip over a tree row: it says how to mark it, has its parchment colour, starts at the
+  cursor's bottom-right corner where there is room, and stays inside the window (Tests 146 to 149).
+- includeTipTests: Tests the tooltip over Include, inside the Options window, with Include's own tooltip, while the
+  description stays hidden but still describes the box to screen readers (Tests 150 to 153).
+- silentTipTests: Tests that no tooltip shows once Tooltips is unticked, and that the choice is remembered (Tests 116,
+  154). Then ticks it again.
+- everyTipTests: Tests that every control has a tooltip of at most 100 characters, but for Find's, and that a link's
+  tooltip is its address (Tests 155, 156): on the page with every branch open, a mark and a search, then in the
+  Options window and with its language list open (tipsOver()).
+- tipsOver: Moves the mouse over every control and link in a part of the page that can be seen, is not disabled and is
+  outside the report, and notes the tooltip each shows, if any.
+- inside: A point 5 pixels inside an element's top left corner, where the mouse is put over it.
+- hover: Moves the mouse over an element, to a given point, as a visitor would.
+- unique: Drops repeated names from a list, as some controls are passed over in more than one part of the page.
+
+@ js/tests/pictures/treebuttons_test.js
+The tests of the two buttons above the tree in the picture look: Clear, and Expand all or Collapse all, side by side,
+  drawn whole, staying put and keeping focus, in every language.
+- treeButtonTests: Tests the tree's buttons: Clear and Expand all, with Collapse all in Expand all's place exactly while
+  a top branch is open (showing()), side by side across the pane (sideBySide()), drawn whole (looks()), the toggle
+  button neither moving nor losing focus when it changes (Rule 18), and all of it in every language (everyLanguage())
+  (Tests 157, 161, 162).
+- showing: Checks that the buttons shown are the ones given, such as Clear and Collapse all (Test 157).
+- sideBySide: Tests that the two buttons fill the pane's width side by side, equally wide (Test 158).
+- looks: Tests that each button shows the whole button picture (cut()) and that no caption is cut (Tests 159, 160).
+- everyLanguage: Picks every other language in turn, ending with the first, and tests that the buttons keep their size
+  and place (Test 163; Rule 18) and are drawn whole, with Expand all and with Collapse all (looks()).
+- spots: The place and size of each button shown, rounded, with or without their tops.
+- shown: Lists the buttons above the tree that can be seen.
+- cut: Tells whether a button is not drawn as the whole button picture: the wrong file or sheet size, drawn parts left
+  on, or not 290 by 50 in proportion.
+
+@ js/tests/pictures/scrollbars_test.js
+The tests of the game's scroll bars in the picture look, and the helpers that judge a bar. Each check of a bar is a
+  function named in `BAR_TESTS` with its test, run on every bar shown in each state barStates() is given.
+- scrollBarTests: Tests the game's scroll bars: they hide the browser's own (ownBars()), every bar is right
+  (barStates()) with every branch closed, with every branch open and a filter, scrolled to the end, in Options and with
+  the language list open, the tree keeps its width as its bar comes, the down arrow and the wheel scroll
+  (scrollTests()), the language list's bar has the combo box's arrows (comboArrows()) and its wheel scrolls a language
+  at a time (languageWheel()), and with Simple UI the lists have the browser's own bars and none of the game's (Tests
+  170, 174, 181, 183, 184). Throws when the tree does not scroll with every branch open.
+- ownBars: Lists the lists whose own browser scroll bar is not as wanted: hidden with the pictures and back with Simple
+  UI.
+- barStates: Tests the scroll bars in one state of the page: a list has the game's bar exactly while it scrolls, and
+  never with Simple UI (Test 171), and every bar shown passes each check of `BAR_TESTS` (Tests 172 to 178).
+- partsOf: Gathers what the checks of a bar need: its list, arrows, track and knob and their boxes, the list's style,
+  whether it is the language list, the pictures that did not load, and the proportions of an arrow and of the knob in
+  their sheets (frameShape()).
+- sheetOf: Loads the picture sheet that an element draws from, to read its size.
+- loaded: Waits until every image has loaded or failed, or ten seconds have passed, so the tests check pictures only
+  once they are there, then stops its own timer and lists the images that did not load.
+- settled: Waits until an image has loaded or failed.
+- frameShape: The height of one picture in a sheet divided by its width, from the sheet's own size, so a test can tell a
+  picture drawn in proportion from a stretched one.
+- unloadedSheets: Names a bar whose picture sheets did not load (Test 172).
+- offEdge: Names a bar that does not run along its list's right edge, inside its border and as high as its inside
+  (Test 173).
+- outOfRoom: Names a bar that is not in the room kept for it in its list's right padding, where it covers nothing and
+  moves nothing (Test 174; Rule 18).
+- wrongSprites: Names the parts of a bar that do not show their own pictures, unstretched: the arrows from the
+  endings' sheet, or the combo box's on the language list, the track repeated downwards, and the knob (Test 175).
+- sprite: Describes how an element draws its picture: the file, its size, its repeat and its position.
+- unequal: Names a bar whose arrows, body and knob are not equally wide; the language list's arrows, the combo box's,
+  are left out (Test 176).
+- misshapen: Names a bar whose arrows or knob are out of their pictures' proportions; the language list's arrows are
+  left out (Test 177).
+- strayKnob: Names a bar whose knob is not where its list is scrolled to (Test 178).
+- scrollTests: Tests that a press on the down arrow scrolls its list a line at once, and that the wheel over the bar
+  scrolls it at once, without animation (Tests 179, 180; Rule 11).
+- comboArrows: Names the arrows of the language list's bar that are not of the combo box's size, 19 by 14 pixels, or
+  on a 4K screen 35 by 28 of the screen's own pixels, or not centred on the bar, for one parchment (Test 181).
+- languageWheel: Tests that the wheel scrolls the language list by one language at once (Test 182; Rule 11).
