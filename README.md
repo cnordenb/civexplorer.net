@@ -9,7 +9,8 @@
 
 <img width="2896" height="1840" alt="image" src="https://github.com/user-attachments/assets/4a2f58a3-84ec-4f4f-891f-640422f9e7e4" />
 
-
+## But why?
+[Popular demand.](https://www.reddit.com/r/aoe2/comments/1xa1t9d/explore_civs_by_tech_availability/)
 
 
 ## Description
