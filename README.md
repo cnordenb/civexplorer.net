@@ -1,5 +1,5 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/cnordenb/civexplorer.net)](#)
-[![language](https://img.shields.io/badge/language-JavaScript-FFFF00)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![language](https://img.shields.io/badge/language-JavaScript-F1E05A)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![accessibility](https://img.shields.io/badge/accessibility-WCAG_2.2_AAA-A5FFCA)](https://www.w3.org/TR/WCAG22/)
 [![license](https://img.shields.io/badge/license-MIT-007FFF)](https://github.com/cnordenb/civexplorer.net/blob/master/LICENSE)
 [![testing](https://img.shields.io/badge/testing-yes-C3FF00)](https://github.com/cnordenb/civexplorer.net/blob/master/documentation/TESTS.md)
