@@ -1,1 +1,1 @@
-Discovered vulnerabilities can be informed of privately to _hjoerleif_ in Discord direct message.
+Discovered vulnerabilities can be informed of privately at https://github.com/cnordenb/civexplorer.net/security/advisories/new
